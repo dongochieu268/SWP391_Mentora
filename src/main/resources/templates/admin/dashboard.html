@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | Mentora Admin</title>
+  <link rel="shortcut icon" type="image/png" th:href="@{/assets/images/logos/favicon.png}"/>
+  <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+  <!-- Sidebar -->
+  <aside class="left-sidebar">
+    <div>
+      <div class="brand-logo d-flex align-items-center justify-content-between">
+        <a th:href="@{/admin/dashboard}" class="text-nowrap logo-img">
+          <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
+        </a>
+        <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+          <i class="ti ti-x fs-6"></i>
+        </div>
+      </div>
+      <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+        <ul id="sidebarnav">
+          <li class="nav-small-cap">
+            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+            <span class="hide-menu">Admin</span>
+          </li>
+          <li class="sidebar-item">
+            <a class="sidebar-link" th:href="@{/admin/dashboard}"
+               th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
+              <i class="ti ti-home"></i>
+              <span class="hide-menu">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-small-cap">
+            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+            <span class="hide-menu">Quản lý người dùng</span>
+          </li>
+          <li class="sidebar-item">
+            <a class="sidebar-link" th:href="@{/admin/users}"
+               th:classappend="${activePage == 'users'} ? ' active'" aria-expanded="false">
+              <i class="ti ti-users"></i>
+              <span class="hide-menu">Quản lý TK (UC06)</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a class="sidebar-link" th:href="@{/admin/create-teacher}"
+               th:classappend="${activePage == 'create-teacher'} ? ' active'" aria-expanded="false">
+              <i class="ti ti-user-plus"></i>
+              <span class="hide-menu">Tạo GV (UC07)</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a class="sidebar-link" th:href="@{/admin/students}"
+               th:classappend="${activePage == 'students'} ? ' active'" aria-expanded="false">
+              <i class="ti ti-school"></i>
+              <span class="hide-menu">Quản lý SV (UC08)</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main wrapper -->
+  <div class="body-wrapper">
+    <header class="app-header">
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <ul class="navbar-nav">
+          <li class="nav-item d-block d-xl-none">
+            <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+        </ul>
+        <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+          <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+            <li class="nav-item dropdown">
+              <a class="nav-link" href="javascript:void(0)" id="drop2"
+                 data-bs-toggle="dropdown" aria-expanded="false">
+                <img th:src="@{/assets/images/profile/user-1.jpg}" alt="avatar"
+                     width="35" height="35" class="rounded-circle">
+              </a>
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                <div class="message-body">
+                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                    <i class="ti ti-user fs-6"></i>
+                    <p class="mb-0 fs-3" th:text="${user.fullName}">Admin</p>
+                  </a>
+                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                    <i class="ti ti-mail fs-6"></i>
+                    <p class="mb-0 fs-3" th:text="${user.email}">admin@mentora.com</p>
+                  </a>
+                  <a th:href="@{/logout}" class="btn btn-outline-primary mx-3 mt-2 d-block">Đăng xuất</a>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <div class="body-wrapper-inner">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <h5 class="fw-semibold mb-4">Dashboard</h5>
+          </div>
+        </div>
+        <!-- Stats -->
+        <div class="row g-4 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-primary d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-users text-primary fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">133</h4>
+                  <p class="mb-0 text-muted">Tổng sinh viên</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-success d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-chalkboard text-success fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">12</h4>
+                  <p class="mb-0 text-muted">Giảng viên</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-warning d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-book text-warning fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">24</h4>
+                  <p class="mb-0 text-muted">Môn học</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-danger d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-ban text-danger fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">5</h4>
+                  <p class="mb-0 text-muted">TK bị cấm</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Quick links -->
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold mb-3">Thao tác nhanh</h5>
+            <div class="d-flex gap-3 flex-wrap">
+              <a th:href="@{/admin/users}" class="btn btn-outline-primary">
+                <i class="ti ti-users me-1"></i> Quản lý tài khoản
+              </a>
+              <a th:href="@{/admin/create-teacher}" class="btn btn-outline-success">
+                <i class="ti ti-user-plus me-1"></i> Tạo giảng viên
+              </a>
+              <a th:href="@{/admin/students}" class="btn btn-outline-warning">
+                <i class="ti ti-school me-1"></i> Quản lý sinh viên
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/assets/libs/jquery/dist/jquery.min.js}"></script>
+<script th:src="@{/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/js/sidebarmenu.js}"></script>
+<script th:src="@{/assets/js/app.min.js}"></script>
+<script th:src="@{/assets/libs/simplebar/dist/simplebar.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+</body>
+</html>

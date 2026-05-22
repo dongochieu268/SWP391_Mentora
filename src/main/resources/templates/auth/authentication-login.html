@@ -35,6 +35,9 @@
                                 <img th:src="@{/assets/images/logos/logo.svg}" alt="logo">
                             </a>
                             <p class="text-center">Welcome to Mentora</p>
+                            <!-- ALERTS -->
+                            <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
+                            <div th:if="${success}" class="alert alert-success py-2" th:text="${success}"></div>
                             <!-- LOGIN FORM -->
                             <form th:action="@{/login}" method="post">
                                 <!-- EMAIL -->
@@ -45,6 +48,7 @@
                                            id="email"
                                            name="email"
                                            placeholder="Enter your email"
+                                           th:value="${email}"
                                            required>
                                 </div>
                                 <!-- PASSWORD -->

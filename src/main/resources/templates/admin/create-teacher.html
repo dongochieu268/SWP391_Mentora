@@ -3,105 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tạo giảng viên | Mentora Admin</title>
-  <link rel="shortcut icon" type="image/png" th:href="@{/assets/images/logos/favicon.png}"/>
+  <title>Tạo giảng viên | mentora</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
   <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
 <body>
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
-  <!-- Sidebar -->
-  <aside class="left-sidebar">
-    <div>
-      <div class="brand-logo d-flex align-items-center justify-content-between">
-        <a th:href="@{/admin/dashboard}" class="text-nowrap logo-img">
-          <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
-        </a>
-        <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-          <i class="ti ti-x fs-6"></i>
-        </div>
-      </div>
-      <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
-        <ul id="sidebarnav">
-          <li class="nav-small-cap">
-            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-            <span class="hide-menu">Admin</span>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" th:href="@{/admin/dashboard}"
-               th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
-              <i class="ti ti-home"></i>
-              <span class="hide-menu">Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-small-cap">
-            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-            <span class="hide-menu">Quản lý người dùng</span>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" th:href="@{/admin/users}"
-               th:classappend="${activePage == 'users'} ? ' active'" aria-expanded="false">
-              <i class="ti ti-users"></i>
-              <span class="hide-menu">Quản lý TK (UC06)</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" th:href="@{/admin/create-teacher}"
-               th:classappend="${activePage == 'create-teacher'} ? ' active'" aria-expanded="false">
-              <i class="ti ti-user-plus"></i>
-              <span class="hide-menu">Tạo GV (UC07)</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" th:href="@{/admin/students}"
-               th:classappend="${activePage == 'students'} ? ' active'" aria-expanded="false">
-              <i class="ti ti-school"></i>
-              <span class="hide-menu">Quản lý SV (UC08)</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
 
-  <!-- Main wrapper -->
   <div class="body-wrapper">
-    <header class="app-header">
-      <nav class="navbar navbar-expand-lg navbar-light">
-        <ul class="navbar-nav">
-          <li class="nav-item d-block d-xl-none">
-            <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
-              <i class="ti ti-menu-2"></i>
-            </a>
-          </li>
-        </ul>
-        <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-          <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-            <li class="nav-item dropdown">
-              <a class="nav-link" href="javascript:void(0)" id="drop2"
-                 data-bs-toggle="dropdown" aria-expanded="false">
-                <img th:src="@{/assets/images/profile/user-1.jpg}" alt="avatar"
-                     width="35" height="35" class="rounded-circle">
-              </a>
-              <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
-                <div class="message-body">
-                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                    <i class="ti ti-user fs-6"></i>
-                    <p class="mb-0 fs-3" th:text="${user.fullName}">Admin</p>
-                  </a>
-                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                    <i class="ti ti-mail fs-6"></i>
-                    <p class="mb-0 fs-3" th:text="${user.email}">admin@mentora.com</p>
-                  </a>
-                  <a th:href="@{/logout}" class="btn btn-outline-primary mx-3 mt-2 d-block">Đăng xuất</a>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </header>
+    <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
 
     <div class="body-wrapper-inner">
       <div class="container-fluid">
@@ -113,11 +26,12 @@
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title fw-semibold mb-1">UC07 — Tạo tài khoản Giảng viên</h5>
-                <p class="text-muted mb-4">Tài khoản sẽ được tạo với <code>email_verified = 0</code>.
-                  Chỉ set thành <code>1</code> sau khi giảng viên xác nhận qua email kích hoạt.</p>
+                <p class="text-muted mb-4">
+                  Tài khoản được tạo với <code>email_verified = 0</code>.
+                  Chỉ set thành <code>1</code> sau khi giảng viên xác nhận qua email kích hoạt.
+                </p>
 
                 <form th:action="@{/admin/create-teacher}" method="post">
-                  <!-- Full Name -->
                   <div class="mb-3">
                     <label for="fullName" class="form-label fw-semibold">
                       Họ và tên <span class="text-danger">*</span>
@@ -126,7 +40,6 @@
                            placeholder="Ví dụ: Nguyễn Văn A"
                            th:value="${fullName}" required>
                   </div>
-                  <!-- Email -->
                   <div class="mb-3">
                     <label for="email" class="form-label fw-semibold">
                       Email <span class="text-danger">*</span>
@@ -136,7 +49,6 @@
                            th:value="${teacherEmail}" required>
                     <div class="form-text">Email dùng để kích hoạt tài khoản.</div>
                   </div>
-                  <!-- Password -->
                   <div class="mb-4">
                     <label for="password" class="form-label fw-semibold">
                       Mật khẩu tạm thời <span class="text-danger">*</span>
@@ -149,7 +61,6 @@
                       </button>
                     </div>
                   </div>
-                  <!-- Buttons -->
                   <div class="d-flex gap-2 justify-content-end">
                     <a th:href="@{/admin/users}" class="btn btn-light">Hủy</a>
                     <button type="submit" class="btn btn-primary">
@@ -161,17 +72,13 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
 </div>
 
-<script th:src="@{/assets/libs/jquery/dist/jquery.min.js}"></script>
-<script th:src="@{/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
-<script th:src="@{/assets/js/sidebarmenu.js}"></script>
-<script th:src="@{/assets/js/app.min.js}"></script>
-<script th:src="@{/assets/libs/simplebar/dist/simplebar.js}"></script>
-<script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 <script>
   document.getElementById('togglePwd').addEventListener('click', function () {
     var inp = document.getElementById('password');

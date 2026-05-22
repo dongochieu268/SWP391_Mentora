@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${isEdit} ? 'Sửa học kỳ | Mentora' : 'Thêm học kỳ | Mentora'">Forms | Mentora</title>
+    <title>Quản lý học kỳ | Mentora</title>
     <link rel="shortcut icon" type="image/png" th:href="@{/assets/images/logos/favicon.png}" />
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}" />
     <base th:href="@{/}" />
@@ -16,7 +16,7 @@
      data-sidebar-position="fixed" data-header-position="fixed">
 
     <!-- Sidebar Start -->
-    <aside th:replace="~{admin/fragments/sidebar :: sidebar('semesters-new')}"></aside>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar('semesters')}"></aside>
     <!--  Sidebar End -->
     <!--  Main wrapper -->
     <div class="body-wrapper">
@@ -85,40 +85,48 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <h5 class="card-title fw-semibold mb-0"
-                                th:text="${isEdit} ? 'Cập nhật học kỳ' : 'Thêm học kỳ mới'">Forms</h5>
-                            <a class="btn btn-light border" th:href="@{/admin/semesters}">Quay lại danh sách</a>
+                            <h5 class="card-title fw-semibold mb-0">Quản lý học kỳ</h5>
+                            <a class="btn btn-primary" th:href="@{/admin/semesters/new}">
+                                <i class="ti ti-plus"></i> Thêm học kỳ
+                            </a>
                         </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <form method="post"
-                                      th:action="${isEdit} ? @{/admin/semesters/{id}(id=${semester.id})} : @{/admin/semesters}">
-                                    <div class="mb-3">
-                                        <label for="name" class="form-label">Tên học kỳ</label>
-                                        <input type="text" class="form-control" id="name" name="name"
-                                               th:value="${semester.name}" maxlength="100" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="startDate" class="form-label">Ngày bắt đầu</label>
-                                        <input type="date" class="form-control" id="startDate" name="startDate"
-                                               th:value="${semester.startDate}" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="endDate" class="form-label">Ngày kết thúc</label>
-                                        <input type="date" class="form-control" id="endDate" name="endDate"
-                                               th:value="${semester.endDate}" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="status" class="form-label">Trạng thái</label>
-                                        <select class="form-select" id="status" name="status">
-                                            <option value="ACTIVE" th:selected="${semester.status == 'ACTIVE'}">ACTIVE</option>
-                                            <option value="HIDDEN" th:selected="${semester.status == 'HIDDEN'}">HIDDEN</option>
-                                        </select>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary"
-                                            th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo học kỳ'">Submit</button>
-                                </form>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tên học kỳ</th>
+                                    <th>Bắt đầu</th>
+                                    <th>Kết thúc</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(semesters)}">
+                                    <td colspan="6" class="text-center text-muted py-4">Chưa có học kỳ nào.</td>
+                                </tr>
+                                <tr th:each="semester, stat : ${semesters}">
+                                    <td th:text="${stat.count}">1</td>
+                                    <td th:text="${semester.name}">Học kỳ 1</td>
+                                    <td th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')}">01/09/2025</td>
+                                    <td th:text="${#temporals.format(semester.endDate, 'dd/MM/yyyy')}">15/01/2026</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:if="${semester.status == 'ACTIVE'}">ACTIVE</span>
+                                        <span class="badge bg-secondary" th:if="${semester.status == 'HIDDEN'}">HIDDEN</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}">Sửa</a>
+                                        <form class="d-inline" method="post"
+                                              th:action="@{/admin/semesters/{id}/delete(id=${semester.id})}"
+                                              th:onsubmit="return confirm('Xóa học kỳ này?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

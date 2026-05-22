@@ -23,14 +23,14 @@ public class AdminSemesterController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("semesters", semesterService.findAll());
-        return "admin/semester/form";
+        return "admin/semester/list";
     }
 
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("semester", new Semester());
         model.addAttribute("isEdit", false);
-        return "admin/semester/index";
+        return "admin/semester/form";
     }
 
     @PostMapping
@@ -58,7 +58,7 @@ public class AdminSemesterController {
                 .map(semester -> {
                     model.addAttribute("semester", semester);
                     model.addAttribute("isEdit", true);
-                    return "admin/semester/index";
+                    return "admin/semester/form";
                 })
                 .orElseGet(() -> {
                     redirectAttributes.addFlashAttribute("error", "Không tìm thấy học kỳ.");

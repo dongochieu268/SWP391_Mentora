@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar(active)" class="left-sidebar">
+    <div>
+        <div class="brand-logo d-flex align-items-center justify-content-between">
+            <a th:href="@{/admin/semesters}" class="text-nowrap logo-img">
+                <img th:src="@{/assets/images/logos/logo.svg}" alt="Mentora" />
+            </a>
+            <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+                <i class="ti ti-x fs-6"></i>
+            </div>
+        </div>
+        <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+            <ul id="sidebarnav">
+                <li class="nav-small-cap">
+                    <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+                    <span class="hide-menu">Quản trị</span>
+                </li>
+                <li class="sidebar-item" th:classappend="${active == 'semesters'} ? 'selected' : ''">
+                    <a class="sidebar-link" th:href="@{/admin/semesters}" aria-expanded="false">
+                        <i class="ti ti-calendar"></i>
+                        <span class="hide-menu">Quản lý học kỳ</span>
+                    </a>
+                </li>
+                <li class="sidebar-item" th:classappend="${active == 'semesters-new'} ? 'selected' : ''">
+                    <a class="sidebar-link" th:href="@{/admin/semesters/new}" aria-expanded="false">
+                        <i class="ti ti-plus"></i>
+                        <span class="hide-menu">Thêm học kỳ</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>
+</body>
+</html>

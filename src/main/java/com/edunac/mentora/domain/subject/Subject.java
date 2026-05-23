@@ -1,4 +1,4 @@
-package com.edunac.mentora.models;
+package com.edunac.mentora.domain.subject;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

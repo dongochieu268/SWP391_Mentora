@@ -1,7 +1,7 @@
-package com.edunac.mentora.controllers.admin;
+package com.edunac.mentora.controller.admin.subject;
 
 import com.edunac.mentora.dto.SubjectForm;
-import com.edunac.mentora.services.SubjectService;
+import com.edunac.mentora.service.subject.SubjectService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,224 +1,192 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quản lý tài khoản | mentora</title>
-  <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
-  <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý tài khoản | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
 <body>
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
-  <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+    <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
 
-  <div class="body-wrapper">
-    <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
 
-    <div class="body-wrapper-inner">
-      <div class="container-fluid">
-        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-              <h5 class="card-title fw-semibold mb-0">UC06 — Quản lý tài khoản</h5>
-            </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold mb-4">UC06 — Quản lý tài khoản</h5>
 
-            <!-- Filter -->
-            <div class="row g-3 mb-4">
-              <div class="col-md-4">
-                <div class="input-group">
-                  <span class="input-group-text"><i class="ti ti-search"></i></span>
-                  <input type="text" class="form-control" placeholder="Tên hoặc email...">
+                        <!-- Filter form -->
+                        <form th:action="@{/admin/users}" method="get" class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ti ti-search"></i></span>
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="Tên hoặc email..."
+                                           th:value="${search}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="role">
+                                    <option value="" th:selected="${selectedRole == ''}">Tất cả vai trò</option>
+                                    <option value="ADMIN" th:selected="${selectedRole == 'ADMIN'}">ADMIN</option>
+                                    <option value="TEACHER" th:selected="${selectedRole == 'TEACHER'}">TEACHER</option>
+                                    <option value="STUDENT" th:selected="${selectedRole == 'STUDENT'}">STUDENT</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="status">
+                                    <option value="" th:selected="${selectedStatus == ''}">Tất cả trạng thái</option>
+                                    <option value="ACTIVE" th:selected="${selectedStatus == 'ACTIVE'}">ACTIVE</option>
+                                    <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">INACTIVE
+                                    </option>
+                                    <option value="BANNED" th:selected="${selectedStatus == 'BANNED'}">BANNED</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ti ti-filter me-1"></i> Lọc
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                    <th>Trạng thái</th>
+                                    <th>Email XN</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(users)}">
+                                    <td colspan="7" class="text-center text-muted py-4">Không tìm thấy tài khoản nào.
+                                    </td>
+                                </tr>
+                                <tr th:each="u, stat : ${users}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img th:src="'/assets/images/profile/user-' + ${u.id % 6 + 1} + '.jpg'"
+                                                 width="35" height="35" class="rounded-circle" alt="">
+                                            <span class="fw-semibold" th:text="${u.fullName}"></span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${u.email}"></td>
+                                    <td>
+                      <span th:switch="${u.role.name}">
+                        <span th:case="'ADMIN'" class="badge bg-danger">ADMIN</span>
+                        <span th:case="'TEACHER'" class="badge bg-warning text-dark">TEACHER</span>
+                        <span th:case="'STUDENT'" class="badge bg-info">STUDENT</span>
+                      </span>
+                                    </td>
+                                    <td>
+                      <span th:switch="${u.status}">
+                        <span th:case="'ACTIVE'" class="badge bg-success">ACTIVE</span>
+                        <span th:case="'INACTIVE'" class="badge bg-secondary">INACTIVE</span>
+                        <span th:case="'BANNED'" class="badge bg-danger">BANNED</span>
+                      </span>
+                                    </td>
+                                    <td>
+                                        <i th:class="${u.emailVerified} ? 'ti ti-circle-check text-success fs-5' : 'ti ti-circle-x text-danger fs-5'"></i>
+                                    </td>
+                                    <td class="text-end">
+                                        <!-- Admin: không thể thay đổi -->
+                                        <span th:if="${u.role.name == 'ADMIN'}">
+                        <button class="btn btn-sm btn-light" disabled title="Không thể thay đổi Admin">
+                          <i class="ti ti-lock"></i>
+                        </button>
+                      </span>
+                                        <!-- Non-admin: nút theo trạng thái hiện tại -->
+                                        <span th:unless="${u.role.name == 'ADMIN'}">
+                        <button th:if="${u.status != 'ACTIVE'}"
+                                class="btn btn-sm btn-outline-success me-1"
+                                data-bs-toggle="modal" data-bs-target="#modalStatus"
+                                th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="ACTIVE">
+                          <i class="ti ti-player-play"></i>
+                        </button>
+                        <button th:if="${u.status == 'ACTIVE'}"
+                                class="btn btn-sm btn-outline-warning me-1"
+                                data-bs-toggle="modal" data-bs-target="#modalStatus"
+                                th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="INACTIVE">
+                          <i class="ti ti-player-pause"></i>
+                        </button>
+                        <button th:if="${u.status != 'BANNED'}"
+                                class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#modalStatus"
+                                th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="BANNED">
+                          <i class="ti ti-ban"></i>
+                        </button>
+                      </span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+              <span class="text-muted small"
+                    th:text="'Hiển thị ' + ${#lists.size(users)} + ' tài khoản'"></span>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="col-md-3">
-                <select class="form-select">
-                  <option value="">Tất cả vai trò</option>
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="TEACHER">TEACHER</option>
-                  <option value="STUDENT">STUDENT</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <select class="form-select">
-                  <option value="">Tất cả trạng thái</option>
-                  <option value="ACTIVE">ACTIVE</option>
-                  <option value="INACTIVE">INACTIVE</option>
-                  <option value="BANNED">BANNED</option>
-                </select>
-              </div>
-              <div class="col-md-2">
-                <button class="btn btn-primary w-100">
-                  <i class="ti ti-filter me-1"></i> Lọc
-                </button>
-              </div>
-            </div>
 
-            <!-- Table -->
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>STT</th>
-                    <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>Vai trò</th>
-                    <th>Trạng thái</th>
-                    <th>Email XN</th>
-                    <th class="text-end">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-1.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <span class="fw-semibold">Admin</span>
-                      </div>
-                    </td>
-                    <td>admin@mentora.com</td>
-                    <td><span class="badge bg-danger">ADMIN</span></td>
-                    <td><span class="badge bg-success">ACTIVE</span></td>
-                    <td><i class="ti ti-circle-check text-success fs-5"></i></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-light" disabled title="Không thể thay đổi Admin">
-                        <i class="ti ti-lock"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-2.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <span class="fw-semibold">Nguyễn Văn A</span>
-                      </div>
-                    </td>
-                    <td>teacher.a@fpt.edu.vn</td>
-                    <td><span class="badge bg-warning text-dark">TEACHER</span></td>
-                    <td><span class="badge bg-success">ACTIVE</span></td>
-                    <td><i class="ti ti-circle-check text-success fs-5"></i></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-warning me-1"
-                              data-bs-toggle="modal" data-bs-target="#modalStatus"
-                              data-id="2" data-name="Nguyễn Văn A" data-action="INACTIVE">
-                        <i class="ti ti-player-pause"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger"
-                              data-bs-toggle="modal" data-bs-target="#modalStatus"
-                              data-id="2" data-name="Nguyễn Văn A" data-action="BANNED">
-                        <i class="ti ti-ban"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-3.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <span class="fw-semibold">Trần Thị B</span>
-                      </div>
-                    </td>
-                    <td>student.b@fpt.edu.vn</td>
-                    <td><span class="badge bg-info">STUDENT</span></td>
-                    <td><span class="badge bg-danger">BANNED</span></td>
-                    <td><i class="ti ti-circle-x text-danger fs-5"></i></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-success"
-                              data-bs-toggle="modal" data-bs-target="#modalStatus"
-                              data-id="3" data-name="Trần Thị B" data-action="ACTIVE">
-                        <i class="ti ti-player-play"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-4.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <span class="fw-semibold">Lê Văn C</span>
-                      </div>
-                    </td>
-                    <td>student.c@fpt.edu.vn</td>
-                    <td><span class="badge bg-info">STUDENT</span></td>
-                    <td><span class="badge bg-secondary">INACTIVE</span></td>
-                    <td><i class="ti ti-circle-x text-danger fs-5"></i></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-success me-1"
-                              data-bs-toggle="modal" data-bs-target="#modalStatus"
-                              data-id="4" data-name="Lê Văn C" data-action="ACTIVE">
-                        <i class="ti ti-player-play"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger"
-                              data-bs-toggle="modal" data-bs-target="#modalStatus"
-                              data-id="4" data-name="Lê Văn C" data-action="BANNED">
-                        <i class="ti ti-ban"></i>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
-
-            <div class="d-flex align-items-center justify-content-between mt-3">
-              <span class="text-muted small">Hiển thị 1–4 trong tổng số 4 tài khoản</span>
-              <nav>
-                <ul class="pagination pagination-sm mb-0">
-                  <li class="page-item disabled"><a class="page-link" href="#">«</a></li>
-                  <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item disabled"><a class="page-link" href="#">»</a></li>
-                </ul>
-              </nav>
-            </div>
-          </div>
         </div>
-
-      </div>
     </div>
-  </div>
 </div>
 
 <!-- Modal: đổi trạng thái -->
 <div class="modal fade" id="modalStatus" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Xác nhận thay đổi trạng thái</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        Bạn có chắc muốn đổi trạng thái tài khoản <strong id="modalName"></strong>
-        thành <span class="badge" id="modalBadge"></span>?
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-        <form id="formStatus" method="post">
-          <input type="hidden" name="status" id="modalStatusVal">
-          <button type="submit" class="btn btn-primary">Xác nhận</button>
-        </form>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận thay đổi trạng thái</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc muốn đổi trạng thái tài khoản <strong id="modalName"></strong>
+                thành <span class="badge" id="modalBadge"></span>?
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <form id="formStatus" method="post">
+                    <input type="hidden" name="status" id="modalStatusVal">
+                    <button type="submit" class="btn btn-primary" id="modalConfirmBtn">Xác nhận</button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 <script>
-  document.querySelectorAll('[data-bs-target="#modalStatus"]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var id = this.dataset.id, name = this.dataset.name, action = this.dataset.action;
-      document.getElementById('modalName').textContent = name;
-      document.getElementById('modalStatusVal').value = action;
-      document.getElementById('formStatus').action = '/admin/users/' + id + '/status';
-      var badge = document.getElementById('modalBadge');
-      badge.textContent = action;
-      badge.className = 'badge ' + (action === 'ACTIVE' ? 'bg-success' : action === 'INACTIVE' ? 'bg-secondary' : 'bg-danger');
+    document.querySelectorAll('[data-bs-target="#modalStatus"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id = this.dataset.id, name = this.dataset.name, action = this.dataset.action;
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalStatusVal').value = action;
+            document.getElementById('formStatus').action = '/admin/users/' + id + '/status';
+            var badge = document.getElementById('modalBadge');
+            badge.textContent = action;
+            badge.className = 'badge ' + (action === 'ACTIVE' ? 'bg-success' : action === 'INACTIVE' ? 'bg-secondary' : 'bg-danger');
+        });
     });
-  });
 </script>
 </body>
 </html>

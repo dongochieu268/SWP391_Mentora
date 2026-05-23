@@ -27,8 +27,8 @@
               <div class="card-body">
                 <h5 class="card-title fw-semibold mb-1">UC07 — Tạo tài khoản Giảng viên</h5>
                 <p class="text-muted mb-4">
-                  Tài khoản được tạo với <code>email_verified = 0</code>.
-                  Chỉ set thành <code>1</code> sau khi giảng viên xác nhận qua email kích hoạt.
+                  Tài khoản được tạo với trạng thái <code>ACTIVE</code> và <code>email_verified = 1</code> ngay lập tức.
+                  Giảng viên có thể đăng nhập bằng email và mật khẩu tạm thời được cấp.
                 </p>
 
                 <form th:action="@{/admin/create-teacher}" method="post">
@@ -64,7 +64,7 @@
                   <div class="d-flex gap-2 justify-content-end">
                     <a th:href="@{/admin/users}" class="btn btn-light">Hủy</a>
                     <button type="submit" class="btn btn-primary">
-                      <i class="ti ti-user-plus me-1"></i> Tạo & Gửi email
+                      <i class="ti ti-user-plus me-1"></i> Tạo tài khoản
                     </button>
                   </div>
                 </form>

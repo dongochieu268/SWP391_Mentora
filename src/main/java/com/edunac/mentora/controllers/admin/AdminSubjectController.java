@@ -100,6 +100,8 @@ public class AdminSubjectController {
         model.addAttribute("pageTitle", "Quản lý môn học");
         model.addAttribute("homeUrl", baseUrl);
         model.addAttribute("baseUrl", baseUrl);
+        model.addAttribute("sidebarActive", "subjects");
+        model.addAttribute("roleLabel", "Admin");
         model.addAttribute("subjects", subjectService.getAllSubjects());
         if (!model.containsAttribute("subjectForm")) {
             model.addAttribute("subjectForm", new SubjectForm());

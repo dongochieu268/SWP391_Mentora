@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${isEdit} ? 'Sửa học kỳ | Mentora' : 'Thêm học kỳ | Mentora'">Forms | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}" />
+</head>
+
+<body>
+<!--  Body Wrapper -->
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+     data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="card-title fw-semibold mb-0"
+                                th:text="${isEdit} ? 'Cập nhật học kỳ' : 'Thêm học kỳ mới'">Forms</h5>
+                            <a class="btn btn-light border" th:href="@{/admin/semesters}">Quay lại danh sách</a>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="post"
+                                      th:action="${isEdit} ? @{/admin/semesters/{id}(id=${semester.id})} : @{/admin/semesters}">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Tên học kỳ</label>
+                                        <input type="text" class="form-control" id="name" name="name"
+                                               th:value="${semester.name}" maxlength="100" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="startDate" class="form-label">Ngày bắt đầu</label>
+                                        <input type="date" class="form-control" id="startDate" name="startDate"
+                                               th:value="${semester.startDate}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="endDate" class="form-label">Ngày kết thúc</label>
+                                        <input type="date" class="form-control" id="endDate" name="endDate"
+                                               th:value="${semester.endDate}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label">Trạng thái</label>
+                                        <select class="form-select" id="status" name="status">
+                                            <option value="ACTIVE" th:selected="${semester.status == 'ACTIVE'}">ACTIVE</option>
+                                            <option value="HIDDEN" th:selected="${semester.status == 'HIDDEN'}">HIDDEN</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary"
+                                            th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo học kỳ'">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+
+</html>

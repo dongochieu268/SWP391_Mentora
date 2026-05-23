@@ -1,6 +1,5 @@
-package com.edunac.mentora.controller;
+package com.edunac.mentora.controller.admin;
 
-import com.edunac.mentora.domain.User;
 import com.edunac.mentora.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;

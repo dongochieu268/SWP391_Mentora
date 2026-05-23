@@ -1,9 +1,9 @@
-package com.edunac.mentora.services;
+package com.edunac.mentora.service.subject;
 
 import com.edunac.mentora.dto.SubjectForm;
-import com.edunac.mentora.models.Subject;
-import com.edunac.mentora.models.SubjectStatus;
-import com.edunac.mentora.repository.SubjectRepository;
+import com.edunac.mentora.domain.subject.Subject;
+import com.edunac.mentora.domain.subject.SubjectStatus;
+import com.edunac.mentora.repository.subject.SubjectRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

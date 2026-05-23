@@ -103,6 +103,7 @@ public class AdminSubjectController {
         model.addAttribute("homeUrl", baseUrl);
         model.addAttribute("baseUrl", baseUrl);
         model.addAttribute("activePage", "subjects");
+        model.addAttribute("sidebarType", "admin");
         model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("subjects", subjectService.getAllSubjects());
         if (!model.containsAttribute("subjectForm")) {

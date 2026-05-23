@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | mentora</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+  <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+  <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+
+  <div class="body-wrapper">
+    <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+    <div class="body-wrapper-inner">
+      <div class="container-fluid">
+
+        <h5 class="fw-semibold mb-4">Dashboard</h5>
+
+        <!-- Stats -->
+        <div class="row g-4 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-primary d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-users text-primary fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">133</h4>
+                  <p class="mb-0 text-muted">Tổng sinh viên</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-success d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-chalkboard text-success fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">12</h4>
+                  <p class="mb-0 text-muted">Giảng viên</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-warning d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-book text-warning fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">24</h4>
+                  <p class="mb-0 text-muted">Môn học</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card">
+              <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded bg-light-danger d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;">
+                  <i class="ti ti-ban text-danger fs-6"></i>
+                </div>
+                <div>
+                  <h4 class="fw-semibold mb-0">5</h4>
+                  <p class="mb-0 text-muted">TK bị cấm</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold mb-3">Thao tác nhanh</h5>
+            <div class="d-flex gap-3 flex-wrap">
+              <a th:href="@{/admin/users}" class="btn btn-outline-primary">
+                <i class="ti ti-users me-1"></i> Quản lý tài khoản
+              </a>
+              <a th:href="@{/admin/create-teacher}" class="btn btn-outline-success">
+                <i class="ti ti-user-plus me-1"></i> Tạo giảng viên
+              </a>
+              <a th:href="@{/admin/students}" class="btn btn-outline-warning">
+                <i class="ti ti-school me-1"></i> Quản lý sinh viên
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

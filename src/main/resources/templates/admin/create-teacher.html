@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tạo giảng viên | mentora</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+  <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+  <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+
+  <div class="body-wrapper">
+    <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+    <div class="body-wrapper-inner">
+      <div class="container-fluid">
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-6 col-md-8">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-1">UC07 — Tạo tài khoản Giảng viên</h5>
+                <p class="text-muted mb-4">
+                  Tài khoản được tạo với trạng thái <code>ACTIVE</code> và <code>email_verified = 1</code> ngay lập tức.
+                  Giảng viên có thể đăng nhập bằng email và mật khẩu tạm thời được cấp.
+                </p>
+
+                <form th:action="@{/admin/create-teacher}" method="post">
+                  <div class="mb-3">
+                    <label for="fullName" class="form-label fw-semibold">
+                      Họ và tên <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="fullName" name="fullName"
+                           placeholder="Ví dụ: Nguyễn Văn A"
+                           th:value="${fullName}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="email" class="form-label fw-semibold">
+                      Email <span class="text-danger">*</span>
+                    </label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           placeholder="Ví dụ: gv.nguyen@fpt.edu.vn"
+                           th:value="${teacherEmail}" required>
+                    <div class="form-text">Email dùng để kích hoạt tài khoản.</div>
+                  </div>
+                  <div class="mb-4">
+                    <label for="password" class="form-label fw-semibold">
+                      Mật khẩu tạm thời <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="password" name="password"
+                             placeholder="Nhập mật khẩu tạm thời" required>
+                      <button class="btn btn-outline-secondary" type="button" id="togglePwd">
+                        <i class="ti ti-eye" id="eyeIcon"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="d-flex gap-2 justify-content-end">
+                    <a th:href="@{/admin/users}" class="btn btn-light">Hủy</a>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="ti ti-user-plus me-1"></i> Tạo tài khoản
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+  document.getElementById('togglePwd').addEventListener('click', function () {
+    var inp = document.getElementById('password');
+    var ico = document.getElementById('eyeIcon');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      ico.className = 'ti ti-eye-off';
+    } else {
+      inp.type = 'password';
+      ico.className = 'ti ti-eye';
+    }
+  });
+</script>
+</body>
+</html>

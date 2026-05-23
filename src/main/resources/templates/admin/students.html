@@ -25,148 +25,91 @@
           <div class="card-body">
             <h5 class="card-title fw-semibold mb-4">UC08 — Quản lý Sinh viên</h5>
 
-            <!-- Filter -->
-            <div class="row g-3 mb-4">
+            <!-- Filter form -->
+            <form th:action="@{/admin/students}" method="get" class="row g-3 mb-4">
               <div class="col-md-5">
                 <div class="input-group">
                   <span class="input-group-text"><i class="ti ti-search"></i></span>
-                  <input type="text" class="form-control" placeholder="Tên hoặc email sinh viên...">
+                  <input type="text" class="form-control" name="search"
+                         placeholder="Tên hoặc email sinh viên..."
+                         th:value="${search}">
                 </div>
               </div>
               <div class="col-md-5">
                 <div class="btn-group w-100" role="group">
-                  <input type="radio" class="btn-check" name="statusFilter" id="filterAll" checked>
+                  <input type="radio" class="btn-check" name="status" id="filterAll"
+                         value="" th:checked="${selectedStatus == ''}">
                   <label class="btn btn-outline-secondary" for="filterAll">Tất cả</label>
-                  <input type="radio" class="btn-check" name="statusFilter" id="filterActive">
+
+                  <input type="radio" class="btn-check" name="status" id="filterActive"
+                         value="ACTIVE" th:checked="${selectedStatus == 'ACTIVE'}">
                   <label class="btn btn-outline-success" for="filterActive">ACTIVE</label>
-                  <input type="radio" class="btn-check" name="statusFilter" id="filterBanned">
+
+                  <input type="radio" class="btn-check" name="status" id="filterBanned"
+                         value="BANNED" th:checked="${selectedStatus == 'BANNED'}">
                   <label class="btn btn-outline-danger" for="filterBanned">BANNED</label>
                 </div>
               </div>
               <div class="col-md-2">
-                <button class="btn btn-primary w-100">
+                <button type="submit" class="btn btn-primary w-100">
                   <i class="ti ti-filter me-1"></i> Lọc
                 </button>
               </div>
-            </div>
+            </form>
 
             <!-- Table -->
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
                 <thead>
-                  <tr>
-                    <th>STT</th>
-                    <th>Sinh viên</th>
-                    <th>Email</th>
-                    <th>Ngày đăng ký</th>
-                    <th>Trạng thái</th>
-                    <th class="text-end">Thao tác</th>
-                  </tr>
+                <tr>
+                  <th>STT</th>
+                  <th>Sinh viên</th>
+                  <th>Email</th>
+                  <th>Trạng thái</th>
+                  <th class="text-end">Thao tác</th>
+                </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-3.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <div>
-                          <div class="fw-semibold">Trần Thị B</div>
-                          <small class="text-muted">SE173456</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>student.b@fpt.edu.vn</td>
-                    <td>10/01/2025</td>
-                    <td><span class="badge bg-success">ACTIVE</span></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-danger"
-                              data-bs-toggle="modal" data-bs-target="#modalSVStatus"
-                              data-id="1" data-name="Trần Thị B" data-action="BANNED">
-                        <i class="ti ti-ban me-1"></i> Cấm
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-4.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <div>
-                          <div class="fw-semibold">Lê Văn C</div>
-                          <small class="text-muted">SE173789</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>student.c@fpt.edu.vn</td>
-                    <td>12/01/2025</td>
-                    <td><span class="badge bg-success">ACTIVE</span></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-danger"
-                              data-bs-toggle="modal" data-bs-target="#modalSVStatus"
-                              data-id="2" data-name="Lê Văn C" data-action="BANNED">
-                        <i class="ti ti-ban me-1"></i> Cấm
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-5.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <div>
-                          <div class="fw-semibold text-muted">Phạm Thị D</div>
-                          <small class="text-muted">SE173001</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>student.d@fpt.edu.vn</td>
-                    <td>05/01/2025</td>
-                    <td><span class="badge bg-danger">BANNED</span></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-success"
-                              data-bs-toggle="modal" data-bs-target="#modalSVStatus"
-                              data-id="3" data-name="Phạm Thị D" data-action="ACTIVE">
-                        <i class="ti ti-player-play me-1"></i> Kích hoạt
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <img th:src="@{/assets/images/profile/user-6.jpg}" width="35" height="35" class="rounded-circle" alt="">
-                        <div>
-                          <div class="fw-semibold">Hoàng Văn E</div>
-                          <small class="text-muted">SE174123</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>student.e@fpt.edu.vn</td>
-                    <td>15/01/2025</td>
-                    <td><span class="badge bg-success">ACTIVE</span></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-danger"
-                              data-bs-toggle="modal" data-bs-target="#modalSVStatus"
-                              data-id="4" data-name="Hoàng Văn E" data-action="BANNED">
-                        <i class="ti ti-ban me-1"></i> Cấm
-                      </button>
-                    </td>
-                  </tr>
+                <tr th:if="${#lists.isEmpty(students)}">
+                  <td colspan="5" class="text-center text-muted py-4">Không tìm thấy sinh viên nào.</td>
+                </tr>
+                <tr th:each="s, stat : ${students}">
+                  <td th:text="${stat.count}"></td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <img th:src="'/assets/images/profile/user-' + ${s.id % 6 + 1} + '.jpg'"
+                           width="35" height="35" class="rounded-circle" alt="">
+                      <span class="fw-semibold" th:text="${s.fullName}"></span>
+                    </div>
+                  </td>
+                  <td th:text="${s.email}"></td>
+                  <td>
+                    <span th:if="${s.status == 'ACTIVE'}"   class="badge bg-success">ACTIVE</span>
+                    <span th:if="${s.status == 'BANNED'}"   class="badge bg-danger">BANNED</span>
+                    <span th:if="${s.status == 'INACTIVE'}" class="badge bg-secondary">INACTIVE</span>
+                  </td>
+                  <td class="text-end">
+                    <button th:if="${s.status == 'ACTIVE'}"
+                            class="btn btn-sm btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#modalSVStatus"
+                            th:data-id="${s.id}" th:data-name="${s.fullName}" data-action="BANNED">
+                      <i class="ti ti-ban me-1"></i> Cấm
+                    </button>
+                    <button th:if="${s.status != 'ACTIVE'}"
+                            class="btn btn-sm btn-outline-success"
+                            data-bs-toggle="modal" data-bs-target="#modalSVStatus"
+                            th:data-id="${s.id}" th:data-name="${s.fullName}" data-action="ACTIVE">
+                      <i class="ti ti-player-play me-1"></i> Kích hoạt
+                    </button>
+                  </td>
+                </tr>
                 </tbody>
               </table>
             </div>
 
-            <div class="d-flex align-items-center justify-content-between mt-3">
-              <span class="text-muted small">Hiển thị 1–4 trong tổng số 133 sinh viên</span>
-              <nav>
-                <ul class="pagination pagination-sm mb-0">
-                  <li class="page-item disabled"><a class="page-link" href="#">«</a></li>
-                  <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item"><a class="page-link" href="#">2</a></li>
-                  <li class="page-item"><a class="page-link" href="#">3</a></li>
-                  <li class="page-item"><a class="page-link" href="#">»</a></li>
-                </ul>
-              </nav>
+            <div class="mt-3">
+              <span class="text-muted small"
+                    th:text="'Hiển thị ' + ${#lists.size(students)} + ' sinh viên'"></span>
             </div>
           </div>
         </div>

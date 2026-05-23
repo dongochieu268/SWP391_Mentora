@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragment: adminSidebar(activePage)
+  Usage: <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+  activePage values: 'dashboard' | 'users' | 'create-teacher' | 'students'
+-->
+<aside th:fragment="adminSidebar(activePage)" class="left-sidebar">
+  <div>
+    <div class="brand-logo d-flex align-items-center justify-content-between">
+      <a th:href="@{/admin/dashboard}" class="text-nowrap logo-img">
+        <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
+      </a>
+      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+        <i class="ti ti-x fs-6"></i>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+      <ul id="sidebarnav">
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Admin</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/admin/dashboard}"
+             th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-home"></i>
+            <span class="hide-menu">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Quản lý người dùng</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/admin/users}"
+             th:classappend="${activePage == 'users'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-users"></i>
+            <span class="hide-menu">Quản lý TK (UC06)</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/admin/create-teacher}"
+             th:classappend="${activePage == 'create-teacher'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-user-plus"></i>
+            <span class="hide-menu">Tạo GV (UC07)</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/admin/students}"
+             th:classappend="${activePage == 'students'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-school"></i>
+            <span class="hide-menu">Quản lý SV (UC08)</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+</aside>
+
+</body>
+</html>

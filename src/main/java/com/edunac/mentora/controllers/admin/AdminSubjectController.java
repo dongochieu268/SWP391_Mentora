@@ -45,13 +45,11 @@ public class AdminSubjectController {
     public String saveSubject(
             @Valid @ModelAttribute("subjectForm") SubjectForm form,
             BindingResult bindingResult,
-            Model model,
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            populatePage(model, "/admin/subjects");
-            model.addAttribute("openModal", true);
-            return "subjects/manage";
+            redirectAttributes.addFlashAttribute("errorMessage", firstValidationError(bindingResult));
+            return "redirect:/admin/subjects";
         }
 
         try {
@@ -59,9 +57,8 @@ public class AdminSubjectController {
             redirectAttributes.addFlashAttribute("successMessage",
                     form.getId() == null ? "Đã thêm môn học mới!" : "Đã cập nhật môn học!");
         } catch (ResponseStatusException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", ex.getReason());
-            redirectAttributes.addFlashAttribute("subjectForm", form);
-            redirectAttributes.addFlashAttribute("openModal", true);
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    ex.getReason() != null ? ex.getReason() : "Không thể lưu môn học.");
         }
 
         return "redirect:/admin/subjects";
@@ -92,10 +89,16 @@ public class AdminSubjectController {
         return "redirect:/admin/subjects";
     }
 
+    private String firstValidationError(BindingResult bindingResult) {
+        return bindingResult.getFieldErrors().stream()
+                .map(err -> err.getDefaultMessage())
+                .findFirst()
+                .orElse("Dữ liệu không hợp lệ.");
+    }
+
     private void populatePage(Model model, String baseUrl) {
         model.addAttribute("pageTitle", "Quản lý môn học");
         model.addAttribute("homeUrl", baseUrl);
-        model.addAttribute("roleLabel", "Admin");
         model.addAttribute("baseUrl", baseUrl);
         model.addAttribute("subjects", subjectService.getAllSubjects());
         if (!model.containsAttribute("subjectForm")) {

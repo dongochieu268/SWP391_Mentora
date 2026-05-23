@@ -2,6 +2,7 @@ package com.edunac.mentora.controller.admin.semester;
 
 import com.edunac.mentora.domain.semester.Semester;
 import com.edunac.mentora.service.semester.SemesterService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,15 +22,19 @@ public class AdminSemesterController {
     }
 
     @GetMapping
-    public String list(Model model) {
+    public String list(HttpSession session, Model model) {
         model.addAttribute("semesters", semesterService.findAll());
+        model.addAttribute("activePage", "semesters");
+        model.addAttribute("user", session.getAttribute("loggedInUser"));
         return "admin/semester/list";
     }
 
     @GetMapping("/new")
-    public String createForm(Model model) {
+    public String createForm(HttpSession session, Model model) {
         model.addAttribute("semester", new Semester());
         model.addAttribute("isEdit", false);
+        model.addAttribute("activePage", "semesters");
+        model.addAttribute("user", session.getAttribute("loggedInUser"));
         return "admin/semester/form";
     }
 
@@ -53,11 +58,13 @@ public class AdminSemesterController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Integer id, Model model, RedirectAttributes redirectAttributes) {
+    public String editForm(@PathVariable Integer id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         return semesterService.findById(id)
                 .map(semester -> {
                     model.addAttribute("semester", semester);
                     model.addAttribute("isEdit", true);
+                    model.addAttribute("activePage", "semesters");
+                    model.addAttribute("user", session.getAttribute("loggedInUser"));
                     return "admin/semester/form";
                 })
                 .orElseGet(() -> {

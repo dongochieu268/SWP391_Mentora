@@ -100,6 +100,8 @@ public class LecturerSubjectController {
         model.addAttribute("pageTitle", "Quản lý môn học");
         model.addAttribute("homeUrl", baseUrl);
         model.addAttribute("baseUrl", baseUrl);
+        model.addAttribute("sidebarActive", "");
+        model.addAttribute("roleLabel", "Giảng viên");
         model.addAttribute("subjects", subjectService.getAllSubjects());
         if (!model.containsAttribute("subjectForm")) {
             model.addAttribute("subjectForm", new SubjectForm());

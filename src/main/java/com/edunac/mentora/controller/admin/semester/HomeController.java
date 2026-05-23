@@ -1,4 +1,4 @@
-package com.edunac.mentora.controller;
+package com.edunac.mentora.controller.admin.semester;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

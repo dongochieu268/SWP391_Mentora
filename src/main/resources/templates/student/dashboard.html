@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <!-- SIDEBAR -->
+    <aside class="left-sidebar">
+        <div>
+            <div class="brand-logo d-flex align-items-center justify-content-between">
+                <a th:href="@{/student/dashboard}" class="text-nowrap logo-img">
+                    <img th:src="@{/assets/images/logos/logo.svg}" alt="logo" width="180">
+                </a>
+                <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+                    <iconify-icon icon="solar:close-circle-line-duotone" class="fs-8"></iconify-icon>
+                </div>
+            </div>
+            <nav class="sidebar-nav scroll-sidebar" data-simplebar>
+                <ul id="sidebarnav">
+                    <li class="nav-small-cap">
+                        <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
+                        <span class="hide-menu">Student</span>
+                    </li>
+                    <li class="sidebar-item">
+                        <a class="sidebar-link active" th:href="@{/student/dashboard}" aria-expanded="false">
+                            <iconify-icon icon="solar:home-smile-angle-bold-duotone" class="fs-6"></iconify-icon>
+                            <span class="hide-menu">Dashboard</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="body-wrapper">
+        <!-- HEADER -->
+        <header class="app-header">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+                    <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-icon-hover" href="#" id="drop2" data-bs-toggle="dropdown" aria-expanded="false">
+                                <iconify-icon icon="solar:user-circle-bold-duotone" class="fs-6"></iconify-icon>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                                <div class="message-body">
+                                    <p class="mb-1 px-3 pt-2">
+                                        Xin chào, <strong th:text="${user.fullName}">Student</strong>
+                                    </p>
+                                    <a th:href="@{/logout}" class="btn btn-outline-primary mx-3 mt-2 d-block">Đăng xuất</a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+
+        <!-- CONTENT -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 mt-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Xin chào, <span th:text="${user.fullName}">Student</span>!</h4>
+                            <p class="card-text text-muted">Bạn đang đăng nhập với vai trò <strong>STUDENT</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/assets/libs/jquery/dist/jquery.min.js}"></script>
+<script th:src="@{/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/js/sidebarmenu.js}"></script>
+<script th:src="@{/assets/js/app.min.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+</body>
+</html>

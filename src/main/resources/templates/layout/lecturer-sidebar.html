@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragment: lecturerSidebar(activePage)
+  Usage: <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+  activePage values: 'dashboard' | 'subjects' | 'learning-paths'
+-->
+<aside th:fragment="lecturerSidebar(activePage)" class="left-sidebar">
+  <div>
+    <div class="brand-logo d-flex align-items-center justify-content-between">
+      <a th:href="@{/lecturer/dashboard}" class="text-nowrap logo-img">
+        <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
+      </a>
+      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+        <i class="ti ti-x fs-6"></i>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+      <ul id="sidebarnav">
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Giảng viên</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/lecturer/dashboard}"
+             th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-home"></i>
+            <span class="hide-menu">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Học thuật</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/lecturer/learning-paths}"
+             th:classappend="${activePage == 'learning-paths'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-route"></i>
+            <span class="hide-menu">Lộ trình học</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+</aside>
+
+</body>
+</html>

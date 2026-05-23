@@ -23,6 +23,10 @@ public class SubjectService {
         return subjectRepository.findAll();
     }
 
+    public List<Subject> getActiveSubjects() {
+        return subjectRepository.findByStatusOrderByNameAsc("ACTIVE");
+    }
+
     public Subject findById(Integer id) {
         return subjectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy môn học"));

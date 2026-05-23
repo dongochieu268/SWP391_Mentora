@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lộ trình học | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="card-title fw-semibold mb-0">Lộ trình học của tôi</h5>
+                            <a th:href="@{/lecturer/learning-paths/new}" class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i> Tạo lộ trình mới
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Môn học</th>
+                                    <th>Tên lộ trình</th>
+                                    <th>Mô tả</th>
+                                    <th>Ngày tạo</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(paths)}">
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        Chưa có lộ trình nào. <a th:href="@{/lecturer/learning-paths/new}">Tạo ngay</a>
+                                    </td>
+                                </tr>
+                                <tr th:each="p, stat : ${paths}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td>
+                                        <span class="badge bg-info text-dark" th:text="${p.subject.code}"></span>
+                                        <span th:text="${p.subject.name}"></span>
+                                    </td>
+                                    <td class="fw-semibold" th:text="${p.name}"></td>
+                                    <td>
+                                        <span th:if="${p.description == null}" class="text-muted">—</span>
+                                        <span th:unless="${p.description == null}"
+                                              th:text="${#strings.length(p.description) > 60 ? #strings.substring(p.description, 0, 60) + '...' : p.description}"></span>
+                                    </td>
+                                    <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
+                                    <td class="text-end">
+                                        <a th:href="@{/lecturer/learning-paths/{id}(id=${p.id})}"
+                                           class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="ti ti-list"></i> Xem node
+                                        </a>
+                                        <form th:action="@{/lecturer/learning-paths/{id}/delete(id=${p.id})}"
+                                              method="post" class="d-inline"
+                                              onsubmit="return confirm('Xóa lộ trình này và toàn bộ node?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="text-muted small"
+                                  th:text="'Hiển thị ' + ${#lists.size(paths)} + ' lộ trình'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' | Mentora'">Quản lý môn học | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${successMessage}" class="alert alert-success py-2" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-danger py-2" th:text="${errorMessage}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <h4 class="card-title mb-1" th:text="${pageTitle}">Quản lý môn học</h4>
+                            </div>
+                            <a th:href="${baseUrl + '?create=true'}" class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i> Thêm môn học
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle text-nowrap mb-0">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mã môn</th>
+                                    <th>Tên môn</th>
+                                    <th>Mô tả</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(subjects)}">
+                                    <td colspan="7" class="text-center text-muted py-4">Chưa có môn học nào.</td>
+                                </tr>
+                                <tr th:each="s : ${subjects}">
+                                    <td th:text="${s.id}">1</td>
+                                    <td><strong th:text="${s.code}">CODE</strong></td>
+                                    <td th:text="${s.name}">Name</td>
+                                    <td>
+                                        <span th:if="${s.description == null or #strings.isEmpty(s.description)}">-</span>
+                                        <span th:unless="${s.description == null or #strings.isEmpty(s.description)}"
+                                              th:text="${#strings.length(s.description) > 50 ? #strings.substring(s.description, 0, 50) + '...' : s.description}">Mô tả</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${s.status == 'ACTIVE'}" class="badge bg-success">ACTIVE</span>
+                                        <span th:unless="${s.status == 'ACTIVE'}" class="badge bg-secondary" th:text="${s.status}">HIDDEN</span>
+                                    </td>
+                                    <td th:text="${s.createdAt != null ? #temporals.format(s.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-1 justify-content-end flex-wrap">
+                                            <a th:href="${baseUrl + '?editId=' + s.id}" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                            <form th:if="${s.status == 'ACTIVE'}"
+                                                  th:action="${baseUrl + '/unpublish/' + s.id}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">Unpublish</button>
+                                            </form>
+                                            <form th:unless="${s.status == 'ACTIVE'}"
+                                                  th:action="${baseUrl + '/publish/' + s.id}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Publish</button>
+                                            </form>
+                                            <form th:action="${baseUrl + '/delete/' + s.id}" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa môn học này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="subjectModal" tabindex="-1"
+     th:classappend="${openModal} ? ' show' : ''"
+     th:style="${openModal} ? 'display: block;' : ''"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form th:action="${baseUrl + '/save'}" th:object="${subjectForm}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="${subjectForm.id != null} ? 'Sửa môn học' : 'Thêm môn học'">Thêm môn học</h5>
+                    <a th:href="${baseUrl}" class="btn-close" aria-label="Close"></a>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" th:field="*{id}"/>
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Mã môn <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="code" th:field="*{code}" maxlength="20" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tên môn <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" th:field="*{name}" maxlength="200" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="description" th:field="*{description}" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="mb-0">
+                        <label for="status" class="form-label">Trạng thái</label>
+                        <select class="form-select" id="status" th:field="*{status}">
+                            <option value="ACTIVE">ACTIVE (Đã xuất bản)</option>
+                            <option value="HIDDEN">HIDDEN (Ẩn)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a th:href="${baseUrl}" class="btn btn-light">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:if="${openModal}" class="modal-backdrop fade show"></div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

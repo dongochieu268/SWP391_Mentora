@@ -100,7 +100,7 @@ public class AuthController {
     private String redirectByRole(User user) {
         return switch (user.getRole().getName()) {
             case "ADMIN" -> "redirect:/admin/dashboard";
-            case "TEACHER" -> "redirect:/teacher/dashboard";
+            case "LECTURER" -> "redirect:/lecturer/dashboard";
             default -> "redirect:/student/dashboard";
         };
     }

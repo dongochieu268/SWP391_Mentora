@@ -39,7 +39,7 @@
                                 <select class="form-select" name="role">
                                     <option value="" th:selected="${selectedRole == ''}">Tất cả vai trò</option>
                                     <option value="ADMIN" th:selected="${selectedRole == 'ADMIN'}">ADMIN</option>
-                                    <option value="TEACHER" th:selected="${selectedRole == 'TEACHER'}">TEACHER</option>
+                                    <option value="LECTURER" th:selected="${selectedRole == 'LECTURER'}">LECTURER</option>
                                     <option value="STUDENT" th:selected="${selectedRole == 'STUDENT'}">STUDENT</option>
                                 </select>
                             </div>
@@ -91,7 +91,7 @@
                                     <td>
                       <span th:switch="${u.role.name}">
                         <span th:case="'ADMIN'" class="badge bg-danger">ADMIN</span>
-                        <span th:case="'TEACHER'" class="badge bg-warning text-dark">TEACHER</span>
+                        <span th:case="'LECTURER'" class="badge bg-warning text-dark">LECTURER</span>
                         <span th:case="'STUDENT'" class="badge bg-info">STUDENT</span>
                       </span>
                                     </td>

@@ -1,6 +1,5 @@
 package com.edunac.mentora.service;
 
-import com.edunac.mentora.domain.Role;
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.repository.RoleRepository;
 import com.edunac.mentora.repository.UserRepository;
@@ -13,12 +12,12 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final Role teacherRole;
+    private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
-        this.teacherRole = roleRepository.findByName("TEACHER").get();
+        this.roleRepository = roleRepository;
     }
 
     // UC06 — lấy tất cả user có filter
@@ -34,11 +33,15 @@ public class UserService {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email này đã được sử dụng.");
         }
+        var lecturerRole = roleRepository.findByName("LECTURER")
+                .orElseThrow(() -> new IllegalStateException(
+                        "Role LECTURER không tồn tại. Chạy: UPDATE roles SET name='LECTURER' WHERE name='TEACHER'"));
+
         User teacher = new User();
         teacher.setFullName(fullName);
         teacher.setEmail(email);
         teacher.setPassword(passwordEncoder.encode(password));
-        teacher.setRole(teacherRole);
+        teacher.setRole(lecturerRole);
         teacher.setStatus("ACTIVE");
         teacher.setEmailVerified(true);
         userRepository.save(teacher);

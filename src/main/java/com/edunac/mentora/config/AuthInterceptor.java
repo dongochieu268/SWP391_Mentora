@@ -25,12 +25,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         String path = request.getRequestURI();
         String role = user.getRole().getName();
 
-        // Chặn truy cập sai role
         if (path.startsWith("/admin") && !"ADMIN".equals(role)) {
             response.sendRedirect(dashboardByRole(role));
             return false;
         }
-        if (path.startsWith("/teacher") && !"TEACHER".equals(role)) {
+        if (path.startsWith("/lecturer") && !"LECTURER".equals(role)) {
             response.sendRedirect(dashboardByRole(role));
             return false;
         }
@@ -44,9 +43,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private String dashboardByRole(String role) {
         return switch (role) {
-            case "ADMIN" -> "/admin/dashboard";
-            case "TEACHER" -> "/teacher/dashboard";
-            default -> "/student/dashboard";
+            case "ADMIN"    -> "/admin/dashboard";
+            case "LECTURER" -> "/lecturer/dashboard";
+            default         -> "/student/dashboard";
         };
     }
 }

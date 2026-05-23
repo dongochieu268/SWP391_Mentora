@@ -16,10 +16,10 @@ public class DashboardController {
         return "admin/dashboard";
     }
 
-    @GetMapping("/teacher/dashboard")
-    public String teacherDashboard(HttpSession session, Model model) {
+    @GetMapping("/lecturer/dashboard")
+    public String lecturerDashboard(HttpSession session, Model model) {
         model.addAttribute("user", (User) session.getAttribute("loggedInUser"));
-        return "teacher/dashboard";
+        return "lecturer/dashboard";
     }
 
     @GetMapping("/student/dashboard")

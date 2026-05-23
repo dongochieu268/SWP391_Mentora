@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="nav" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid page-shell">
+        <a class="navbar-brand" th:href="@{/dashboard}">LMS Demo</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/dashboard}">Dashboard</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/courses}">Môn học</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/classes}">Lớp</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/paths}">Learning Path</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/in-class}">Trên lớp</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/projects}">Project</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/grading}">Chấm điểm</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/reviews}">Review</a></li>
+                <li class="nav-item" sec:authorize="hasRole('LECTURER')"><a class="nav-link" th:href="@{/lecturer/reports}">Báo cáo</a></li>
+                <li class="nav-item" sec:authorize="hasRole('STUDENT')"><a class="nav-link" th:href="@{/student/dashboard}">Học tập</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('TA','LECTURER')"><a class="nav-link" th:href="@{/templates/admin/requests}">Hỗ trợ</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('REVIEWER','LECTURER')"><a class="nav-link" th:href="@{/review/sessions}">Phản biện</a></li>
+            </ul>
+            <form th:action="@{/logout}" method="post" class="d-flex">
+                <span class="navbar-text me-3" sec:authentication="name"></span>
+                <button class="btn btn-outline-light btn-sm" type="submit">Đăng xuất</button>
+            </form>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

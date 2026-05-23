@@ -5,7 +5,7 @@
 <!--
   Fragment: adminSidebar(activePage)
   Usage: <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
-  activePage values: 'dashboard' | 'users' | 'create-teacher' | 'students'
+  activePage values: 'dashboard' | 'users' | 'create-teacher' | 'students' | 'subjects' | 'semesters'
 -->
 <aside th:fragment="adminSidebar(activePage)" class="left-sidebar">
   <div>
@@ -60,6 +60,27 @@
              th:classappend="${activePage == 'students'} ? ' active'" aria-expanded="false">
             <i class="ti ti-school"></i>
             <span class="hide-menu">Quản lý sinh viên</span>
+          </a>
+        </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Học thuật</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/admin/subjects}"
+             th:classappend="${activePage == 'subjects'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-book"></i>
+            <span class="hide-menu">Quản lý môn học</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/admin/semesters}"
+             th:classappend="${activePage == 'semesters'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-calendar"></i>
+            <span class="hide-menu">Quản lý học kỳ</span>
           </a>
         </li>
 

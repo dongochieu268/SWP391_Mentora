@@ -11,7 +11,10 @@
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
-    <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+    <aside th:if="${sidebarType == 'lecturer'}"
+           th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+    <aside th:unless="${sidebarType == 'lecturer'}"
+           th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
 
     <div class="body-wrapper">
         <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>

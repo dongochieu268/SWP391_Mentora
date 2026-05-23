@@ -22,19 +22,20 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        String path = request.getRequestURI();
+        String path = request.getServletPath();
         String role = user.getRole().getName();
+        String ctx = request.getContextPath();
 
         if (path.startsWith("/admin") && !"ADMIN".equals(role)) {
-            response.sendRedirect(dashboardByRole(role));
+            response.sendRedirect(ctx + dashboardByRole(role));
             return false;
         }
         if (path.startsWith("/lecturer") && !"LECTURER".equals(role)) {
-            response.sendRedirect(dashboardByRole(role));
+            response.sendRedirect(ctx + dashboardByRole(role));
             return false;
         }
         if (path.startsWith("/student") && !"STUDENT".equals(role)) {
-            response.sendRedirect(dashboardByRole(role));
+            response.sendRedirect(ctx + dashboardByRole(role));
             return false;
         }
 

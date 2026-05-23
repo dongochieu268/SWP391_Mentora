@@ -29,10 +29,10 @@ public class SemesterService {
     }
 
     public Semester create(String name, LocalDate startDate, LocalDate endDate, String status) {
-        validate(name, startDate, endDate, status);
+        String trimmedName = validateAndNormalize(name, startDate, endDate, status, null);
 
         Semester semester = new Semester();
-        semester.setName(name.trim());
+        semester.setName(trimmedName);
         semester.setStartDate(startDate);
         semester.setEndDate(endDate);
         semester.setStatus(status);
@@ -44,9 +44,9 @@ public class SemesterService {
         Semester semester = semesterRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học kỳ."));
 
-        validate(name, startDate, endDate, status);
+        String trimmedName = validateAndNormalize(name, startDate, endDate, status, id);
 
-        semester.setName(name.trim());
+        semester.setName(trimmedName);
         semester.setStartDate(startDate);
         semester.setEndDate(endDate);
         semester.setStatus(status);
@@ -66,7 +66,13 @@ public class SemesterService {
         }
     }
 
-    private void validate(String name, LocalDate startDate, LocalDate endDate, String status) {
+    private String validateAndNormalize(
+            String name,
+            LocalDate startDate,
+            LocalDate endDate,
+            String status,
+            Integer excludeId
+    ) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Tên học kỳ không được để trống.");
         }
@@ -82,5 +88,20 @@ public class SemesterService {
         if (status == null || !ALLOWED_STATUSES.contains(status)) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }
+
+        String trimmedName = name.trim();
+
+        boolean duplicateName = excludeId == null
+                ? semesterRepository.existsByNameIgnoreCase(trimmedName)
+                : semesterRepository.existsByNameIgnoreCaseAndIdNot(trimmedName, excludeId);
+        if (duplicateName) {
+            throw new IllegalArgumentException("Đã tồn tại học kỳ với tên \"" + trimmedName + "\".");
+        }
+
+        if (semesterRepository.existsOverlappingPeriod(startDate, endDate, excludeId)) {
+            throw new IllegalArgumentException("Khoảng thời gian trùng với học kỳ khác.");
+        }
+
+        return trimmedName;
     }
 }

@@ -111,6 +111,10 @@
                                            class="btn btn-sm btn-outline-primary me-1" title="Sửa node">
                                             <i class="ti ti-edit"></i>
                                         </a>
+                                        <a th:href="@{/lecturer/nodes/{nodeId}/contents(nodeId=${node.id})}"
+                                           class="btn btn-sm btn-outline-info me-1" title="Quản lý nội dung">
+                                            <i class="ti ti-files"></i>
+                                        </a>
                                         <form th:action="@{/lecturer/learning-paths/{id}/nodes/{nodeId}/delete(id=${path.id},nodeId=${node.id})}"
                                               method="post" class="d-inline"
                                               onsubmit="return confirm('Xóa node này?');">

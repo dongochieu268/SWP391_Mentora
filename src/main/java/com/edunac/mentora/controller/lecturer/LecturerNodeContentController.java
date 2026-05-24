@@ -29,14 +29,6 @@ public class LecturerNodeContentController {
         this.nodeContentService = nodeContentService;
     }
 
-    @GetMapping("/nodes")
-    public String nodesPage(HttpSession session, Model model) {
-        populateCommon(session, model, "nodes");
-        model.addAttribute("pageTitle", "Chọn node học tập");
-        model.addAttribute("nodes", learningNodeService.getAllNodes());
-        return "lecturer/learning/nodes";
-    }
-
     @GetMapping("/nodes/{nodeId}/contents")
     public String contentsPage(
             @PathVariable Integer nodeId,

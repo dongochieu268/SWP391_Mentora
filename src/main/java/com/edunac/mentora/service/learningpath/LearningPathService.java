@@ -1,13 +1,16 @@
-package com.edunac.mentora.service.learningpath;
+    package com.edunac.mentora.service.learningpath;
 
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.domain.subject.Subject;
+import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
+import com.edunac.mentora.repository.learning.NodeContentRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
+import com.edunac.mentora.service.learning.NodeContentStorageService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,13 +29,19 @@ public class LearningPathService {
     private final LearningPathRepository pathRepository;
     private final LearningNodeRepository nodeRepository;
     private final SubjectRepository subjectRepository;
+    private final NodeContentRepository nodeContentRepository;
+    private final NodeContentStorageService storageService;
 
     public LearningPathService(LearningPathRepository pathRepository,
                                 LearningNodeRepository nodeRepository,
-                                SubjectRepository subjectRepository) {
+                                SubjectRepository subjectRepository,
+                                NodeContentRepository nodeContentRepository,
+                                NodeContentStorageService storageService) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
+        this.nodeContentRepository = nodeContentRepository;
+        this.storageService = storageService;
     }
 
     // ===== LEARNING PATH =====
@@ -77,6 +86,8 @@ public class LearningPathService {
         // Clear prerequisite references first (self-referencing FK)
         nodes.forEach(n -> n.setPrerequisite(null));
         nodeRepository.saveAll(nodes);
+        // Delete contents of each node before deleting the node
+        nodes.forEach(n -> deleteContentsForNode(n.getId()));
         nodeRepository.deleteAll(nodes);
 
         try {
@@ -142,10 +153,17 @@ public class LearningPathService {
         dependents.forEach(n -> n.setPrerequisite(null));
         nodeRepository.saveAll(dependents);
 
+        deleteContentsForNode(nodeId);
         nodeRepository.delete(node);
     }
 
     // ===== PRIVATE HELPERS =====
+
+    private void deleteContentsForNode(Integer nodeId) {
+        List<NodeContent> contents = nodeContentRepository.findByNode_IdOrderByDisplayOrderAscIdAsc(nodeId);
+        contents.forEach(c -> storageService.deleteIfManaged(c.getContentUrl()));
+        nodeContentRepository.deleteAll(contents);
+    }
 
     private LearningPath findByIdAndOwner(Integer id, User requester) {
         LearningPath path = pathRepository.findById(id)

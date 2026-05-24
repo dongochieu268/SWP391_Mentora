@@ -1,12 +1,10 @@
 package com.edunac.mentora.service.learning;
 
 import com.edunac.mentora.domain.learningpath.LearningNode;
-import com.edunac.mentora.repository.learning.LearningNodeRepository;
+import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 public class LearningNodeService {
@@ -15,10 +13,6 @@ public class LearningNodeService {
 
     public LearningNodeService(LearningNodeRepository learningNodeRepository) {
         this.learningNodeRepository = learningNodeRepository;
-    }
-
-    public List<LearningNode> getAllNodes() {
-        return learningNodeRepository.findAllWithPathOrdered();
     }
 
     public LearningNode findById(Integer id) {

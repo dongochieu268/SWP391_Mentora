@@ -11,65 +11,10 @@
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
-    <!-- SIDEBAR -->
-    <aside class="left-sidebar">
-        <div>
-            <div class="brand-logo d-flex align-items-center justify-content-between">
-                <a th:href="@{/lecturer/dashboard}" class="text-nowrap logo-img">
-                    <img th:src="@{/assets/images/logos/logo.svg}" alt="logo" width="180">
-                </a>
-                <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-                    <i class="ti ti-x fs-6"></i>
-                </div>
-            </div>
-            <nav class="sidebar-nav scroll-sidebar" data-simplebar>
-                <ul id="sidebarnav">
-                    <li class="nav-small-cap">
-                        <span class="hide-menu">Giảng viên</span>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link active" th:href="@{/lecturer/dashboard}" aria-expanded="false">
-                            <i class="ti ti-home"></i>
-                            <span class="hide-menu">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" th:href="@{/lecturer/subjects}" aria-expanded="false">
-                            <i class="ti ti-book"></i>
-                            <span class="hide-menu">Môn học</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </aside>
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
 
-    <!-- MAIN WRAPPER -->
     <div class="body-wrapper">
-        <header class="app-header">
-            <nav class="navbar navbar-expand-lg navbar-light">
-                <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-                    <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link nav-icon-hover" href="#" id="drop2"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="ti ti-user-circle fs-6"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
-                                 aria-labelledby="drop2">
-                                <div class="message-body">
-                                    <p class="mb-1 px-3 pt-2">
-                                        Xin chào, <strong th:text="${user.fullName}">Giảng viên</strong>
-                                    </p>
-                                    <a th:href="@{/logout}"
-                                       class="btn btn-outline-primary mx-3 mt-2 d-block">Đăng xuất</a>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </header>
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
 
         <!-- CONTENT -->
         <div class="body-wrapper-inner">
@@ -85,10 +30,6 @@
     </div>
 </div>
 
-<script th:src="@{/assets/libs/jquery/dist/jquery.min.js}"></script>
-<script th:src="@{/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
-<script th:src="@{/assets/libs/simplebar/dist/simplebar.min.js}"></script>
-<script th:src="@{/assets/js/sidebarmenu.js}"></script>
-<script th:src="@{/assets/js/app.min.js}"></script>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 </body>
 </html>

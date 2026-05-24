@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragment: lecturerSidebar(activePage)
+  activePage: 'dashboard' | 'subjects' | 'nodes' | 'node-contents'
+-->
+<aside th:fragment="lecturerSidebar(activePage)" class="left-sidebar">
+    <div>
+        <div class="brand-logo d-flex align-items-center justify-content-between">
+            <a th:href="@{/lecturer/dashboard}" class="text-nowrap logo-img">
+                <img th:src="@{/assets/images/logos/logo.svg}" alt="logo" width="180">
+            </a>
+            <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+                <i class="ti ti-x fs-6"></i>
+            </div>
+        </div>
+        <nav class="sidebar-nav scroll-sidebar" data-simplebar>
+            <ul id="sidebarnav">
+                <li class="nav-small-cap">
+                    <span class="hide-menu">Giảng viên</span>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" th:href="@{/lecturer/dashboard}"
+                       th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
+                        <i class="ti ti-home"></i>
+                        <span class="hide-menu">Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" th:href="@{/lecturer/subjects}"
+                       th:classappend="${activePage == 'subjects'} ? ' active'" aria-expanded="false">
+                        <i class="ti ti-book"></i>
+                        <span class="hide-menu">Môn học</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" th:href="@{/lecturer/nodes}"
+                       th:classappend="${activePage == 'nodes' or activePage == 'node-contents'} ? ' active'"
+                       aria-expanded="false">
+                        <i class="ti ti-list-tree"></i>
+                        <span class="hide-menu">Nội dung node</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>
+
+</body>
+</html>

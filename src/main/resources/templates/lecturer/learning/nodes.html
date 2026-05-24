@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' | Mentora'">Chọn node | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-1" th:text="${pageTitle}">Chọn node học tập</h4>
+                        <p class="text-muted mb-4">Chọn một node để thêm hoặc quản lý nội dung (TEXT, VIDEO, FILE, LINK).</p>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Lộ trình</th>
+                                    <th>Môn học</th>
+                                    <th>Tiêu đề node</th>
+                                    <th>Thứ tự</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(nodes)}">
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        Chưa có node nào. Hãy tạo lộ trình và node trong cơ sở dữ liệu trước.
+                                    </td>
+                                </tr>
+                                <tr th:each="n : ${nodes}">
+                                    <td th:text="${n.id}">1</td>
+                                    <td th:text="${n.learningPath != null ? n.learningPath.name : '-'}">Path</td>
+                                    <td th:text="${n.learningPath != null and n.learningPath.subject != null ? n.learningPath.subject.name : '-'}">Subject</td>
+                                    <td><strong th:text="${n.title}">Node title</strong></td>
+                                    <td th:text="${n.nodeOrder}">1</td>
+                                    <td class="text-end">
+                                        <a th:href="@{/lecturer/nodes/{id}/contents(id=${n.id})}"
+                                           class="btn btn-sm btn-primary">
+                                            Quản lý nội dung
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

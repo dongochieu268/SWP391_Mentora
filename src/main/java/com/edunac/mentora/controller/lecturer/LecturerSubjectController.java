@@ -2,6 +2,7 @@ package com.edunac.mentora.controller.lecturer;
 
 import com.edunac.mentora.dto.SubjectForm;
 import com.edunac.mentora.service.subject.SubjectService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,9 +25,10 @@ public class LecturerSubjectController {
     public String subjectsPage(
             @RequestParam(required = false) Integer editId,
             @RequestParam(required = false) Boolean create,
+            HttpSession session,
             Model model
     ) {
-        populatePage(model, "/lecturer/subjects");
+        populatePage(model, "/lecturer/subjects", session);
 
         if (!model.containsAttribute("openModal")) {
             if (editId != null) {
@@ -96,12 +98,12 @@ public class LecturerSubjectController {
                 .orElse("Dữ liệu không hợp lệ.");
     }
 
-    private void populatePage(Model model, String baseUrl) {
+    private void populatePage(Model model, String baseUrl, HttpSession session) {
         model.addAttribute("pageTitle", "Quản lý môn học");
         model.addAttribute("homeUrl", baseUrl);
         model.addAttribute("baseUrl", baseUrl);
-        model.addAttribute("sidebarActive", "subjects");
-        model.addAttribute("roleLabel", "Giảng viên");
+        model.addAttribute("activePage", "subjects");
+        model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("subjects", subjectService.getAllSubjects());
         if (!model.containsAttribute("subjectForm")) {
             model.addAttribute("subjectForm", new SubjectForm());

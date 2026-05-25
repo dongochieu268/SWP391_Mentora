@@ -78,16 +78,21 @@ public class LecturerLearningPathController {
 
         if (!model.containsAttribute("nodeForm")) {
             if (editNode != null) {
-                nodes.stream().filter(n -> n.getId().equals(editNode)).findFirst().ifPresent(n -> {
-                    LearningNodeForm f = new LearningNodeForm();
-                    f.setId(n.getId());
-                    f.setTitle(n.getTitle());
-                    f.setDescription(n.getDescription());
-                    f.setPrerequisiteNodeId(n.getPrerequisite() != null ? n.getPrerequisite().getId() : null);
-                    model.addAttribute("nodeForm", f);
-                    model.addAttribute("editMode", true);
-                    model.addAttribute("openNodeModal", true);
-                });
+                for (LearningNode n : nodes) {
+                    if (n.getId().equals(editNode)) {
+                        LearningNodeForm f = new LearningNodeForm();
+                        f.setId(n.getId());
+                        f.setTitle(n.getTitle());
+                        f.setDescription(n.getDescription());
+                        if (n.getPrerequisite() != null) {
+                            f.setPrerequisiteNodeId(n.getPrerequisite().getId());
+                        }
+                        model.addAttribute("nodeForm", f);
+                        model.addAttribute("editMode", true);
+                        model.addAttribute("openNodeModal", true);
+                        break;
+                    }
+                }
             } else if (addAfter != null || Boolean.TRUE.equals(addEnd)) {
                 LearningNodeForm f = new LearningNodeForm();
                 f.setAfterNodeId(addAfter);

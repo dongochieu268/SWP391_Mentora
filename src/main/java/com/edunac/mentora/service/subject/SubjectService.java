@@ -4,6 +4,7 @@ import com.edunac.mentora.dto.SubjectForm;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.subject.SubjectStatus;
 import com.edunac.mentora.domain.subject.SubjectPrerequisite;
+import com.edunac.mentora.domain.subject.SubjectPrerequisiteKey;
 import com.edunac.mentora.repository.subject.SubjectRepository;
 import com.edunac.mentora.repository.subject.SubjectPrerequisiteRepository;
 import org.springframework.http.HttpStatus;
@@ -23,8 +24,6 @@ public class SubjectService {
         this.subjectRepository = subjectRepository;
         this.prerequisiteRepository = prerequisiteRepository;
     }
-
-
 
     public List<Subject> getAllSubjects() {
         return subjectRepository.findAll();
@@ -114,62 +113,51 @@ public class SubjectService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy môn học");
         }
 
-        if (prerequisiteRepository.existsByPrerequisiteId(id)) {
+        if (prerequisiteRepository.existsByPrerequisiteSubjectId(id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa: Môn này đang là tiên quyết của môn khác!");
         }
 
         prerequisiteRepository.deleteBySubjectId(id);
-
         subjectRepository.deleteById(id);
     }
 
-
-
-
-
     public List<Subject> getAvailablePrerequisites(Integer mainSubjectId) {
         List<Subject> all = subjectRepository.findAll();
-        // Lấy danh sách ID các môn đã là tiên quyết của mainSubjectId (để không chọn lại)
         List<Integer> existingPreIds = prerequisiteRepository.findBySubjectId(mainSubjectId)
-                .stream().map(SubjectPrerequisite::getPrerequisiteId).toList();
+                .stream().map(SubjectPrerequisite::getPrerequisiteSubjectId).toList();
 
         return all.stream()
-                .filter(s -> !s.getId().equals(mainSubjectId)) // Không được là chính nó
-                .filter(s -> !existingPreIds.contains(s.getId())) // Không được là môn đã thêm rồi
-                // Thêm logic mới: Không được là môn mà mainSubjectId đang là tiên quyết của nó (chặn vòng lặp A->B, B->A)
-                .filter(s -> !prerequisiteRepository.existsBySubjectIdAndPrerequisiteId(s.getId(), mainSubjectId))
+                .filter(s -> !s.getId().equals(mainSubjectId))
+                .filter(s -> !existingPreIds.contains(s.getId()))
+                .filter(s -> !prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(s.getId(), mainSubjectId))
                 .toList();
     }
 
     @Transactional
-    public void addPrerequisite(Integer subjectId, Integer prerequisiteId, String type) {
-        if (subjectId.equals(prerequisiteId)) {
+    public void addPrerequisite(Integer subjectId, Integer prerequisiteSubjectId) {
+        if (subjectId.equals(prerequisiteSubjectId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chọn chính mình làm tiên quyết!");
         }
 
-        boolean exists = prerequisiteRepository.existsBySubjectIdAndPrerequisiteId(subjectId, prerequisiteId);
-        if (exists) {
+        if (prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(subjectId, prerequisiteSubjectId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Môn này đã được thêm làm tiên quyết rồi!");
         }
 
         SubjectPrerequisite sp = new SubjectPrerequisite();
         sp.setSubjectId(subjectId);
-        sp.setPrerequisiteId(prerequisiteId);
-        sp.setRequirementType(type);
-
-
+        sp.setPrerequisiteSubjectId(prerequisiteSubjectId);
         prerequisiteRepository.save(sp);
     }
 
     @Transactional
-    public void removePrerequisite(Integer id) {
-        prerequisiteRepository.deleteById(id);
+    public void removePrerequisite(Integer subjectId, Integer prerequisiteSubjectId) {
+        SubjectPrerequisiteKey key = new SubjectPrerequisiteKey(subjectId, prerequisiteSubjectId);
+        prerequisiteRepository.deleteById(key);
     }
 
     public List<SubjectPrerequisite> getPrerequisites(Integer subjectId) {
         return prerequisiteRepository.findBySubjectId(subjectId);
     }
-
 
     private void validateCodeUnique(String code, Integer excludeId) {
         if (code == null || code.isBlank()) {

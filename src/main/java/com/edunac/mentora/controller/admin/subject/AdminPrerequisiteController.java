@@ -23,78 +23,36 @@ public class AdminPrerequisiteController {
 
         model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("activePage", "subjects");
-
-        // Môn chính
-        model.addAttribute("mainSubject",
-                subjectService.findById(subjectId));
-
-        // Danh sách môn có thể thêm làm prerequisite
-        model.addAttribute("allSubjects",
-                subjectService.getAvailablePrerequisites(subjectId));
-
-        // Danh sách prerequisite hiện tại
-        model.addAttribute("prerequisites",
-                subjectService.getPrerequisites(subjectId));
+        model.addAttribute("mainSubject", subjectService.findById(subjectId));
+        model.addAttribute("allSubjects", subjectService.getAvailablePrerequisites(subjectId));
+        model.addAttribute("prerequisites", subjectService.getPrerequisites(subjectId));
 
         return "subjects/prerequisite";
     }
 
     @PostMapping("/add")
     public String add(@PathVariable Integer subjectId,
-                      @RequestParam Integer prerequisiteId,
-                      @RequestParam String type,
+                      @RequestParam Integer prerequisiteSubjectId,
                       RedirectAttributes ra) {
-
         try {
-
-            subjectService.addPrerequisite(
-                    subjectId,
-                    prerequisiteId,
-                    type
-            );
-
-            ra.addFlashAttribute(
-                    "successMessage",
-                    "Đã thêm môn tiên quyết!"
-            );
-
+            subjectService.addPrerequisite(subjectId, prerequisiteSubjectId);
+            ra.addFlashAttribute("successMessage", "Đã thêm môn tiên quyết!");
         } catch (Exception e) {
-
-            ra.addFlashAttribute(
-                    "errorMessage",
-                    e.getMessage()
-            );
+            ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-
-        return "redirect:/admin/subjects/" +
-                subjectId +
-                "/prerequisites";
+        return "redirect:/admin/subjects/" + subjectId + "/prerequisites";
     }
 
-    @PostMapping("/delete/{id}")
+    @PostMapping("/delete/{prerequisiteSubjectId}")
     public String remove(@PathVariable Integer subjectId,
-                         @PathVariable("id") Integer id,
+                         @PathVariable Integer prerequisiteSubjectId,
                          RedirectAttributes ra) {
-
         try {
-
-            subjectService.removePrerequisite(id);
-
-            ra.addFlashAttribute(
-                    "successMessage",
-                    "Đã gỡ bỏ môn tiên quyết!"
-            );
-
+            subjectService.removePrerequisite(subjectId, prerequisiteSubjectId);
+            ra.addFlashAttribute("successMessage", "Đã gỡ bỏ môn tiên quyết!");
         } catch (Exception e) {
-
-            ra.addFlashAttribute(
-                    "errorMessage",
-                    e.getMessage()
-            );
+            ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-
-        return "redirect:/admin/subjects/" +
-                subjectId +
-                "/prerequisites";
+        return "redirect:/admin/subjects/" + subjectId + "/prerequisites";
     }
 }

@@ -3,9 +3,12 @@ package com.edunac.mentora.service.subject;
 import com.edunac.mentora.dto.SubjectForm;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.subject.SubjectStatus;
+import com.edunac.mentora.domain.subject.SubjectPrerequisite;
 import com.edunac.mentora.repository.subject.SubjectRepository;
+import com.edunac.mentora.repository.subject.SubjectPrerequisiteRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -14,10 +17,14 @@ import java.util.List;
 public class SubjectService {
 
     private final SubjectRepository subjectRepository;
+    private final SubjectPrerequisiteRepository prerequisiteRepository;
 
-    public SubjectService(SubjectRepository subjectRepository) {
+    public SubjectService(SubjectRepository subjectRepository, SubjectPrerequisiteRepository prerequisiteRepository) {
         this.subjectRepository = subjectRepository;
+        this.prerequisiteRepository = prerequisiteRepository;
     }
+
+
 
     public List<Subject> getAllSubjects() {
         return subjectRepository.findAll();
@@ -101,12 +108,68 @@ public class SubjectService {
         return subjectRepository.save(subject);
     }
 
+    @Transactional
     public void delete(Integer id) {
         if (!subjectRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy môn học");
         }
+
+        if (prerequisiteRepository.existsByPrerequisiteId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa: Môn này đang là tiên quyết của môn khác!");
+        }
+
+        prerequisiteRepository.deleteBySubjectId(id);
+
         subjectRepository.deleteById(id);
     }
+
+
+
+
+
+    public List<Subject> getAvailablePrerequisites(Integer mainSubjectId) {
+        List<Subject> all = subjectRepository.findAll();
+        // Lấy danh sách ID các môn đã là tiên quyết của mainSubjectId (để không chọn lại)
+        List<Integer> existingPreIds = prerequisiteRepository.findBySubjectId(mainSubjectId)
+                .stream().map(SubjectPrerequisite::getPrerequisiteId).toList();
+
+        return all.stream()
+                .filter(s -> !s.getId().equals(mainSubjectId)) // Không được là chính nó
+                .filter(s -> !existingPreIds.contains(s.getId())) // Không được là môn đã thêm rồi
+                // Thêm logic mới: Không được là môn mà mainSubjectId đang là tiên quyết của nó (chặn vòng lặp A->B, B->A)
+                .filter(s -> !prerequisiteRepository.existsBySubjectIdAndPrerequisiteId(s.getId(), mainSubjectId))
+                .toList();
+    }
+
+    @Transactional
+    public void addPrerequisite(Integer subjectId, Integer prerequisiteId, String type) {
+        if (subjectId.equals(prerequisiteId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chọn chính mình làm tiên quyết!");
+        }
+
+        boolean exists = prerequisiteRepository.existsBySubjectIdAndPrerequisiteId(subjectId, prerequisiteId);
+        if (exists) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Môn này đã được thêm làm tiên quyết rồi!");
+        }
+
+        SubjectPrerequisite sp = new SubjectPrerequisite();
+        sp.setSubjectId(subjectId);
+        sp.setPrerequisiteId(prerequisiteId);
+        sp.setRequirementType(type);
+
+
+        prerequisiteRepository.save(sp);
+    }
+
+    @Transactional
+    public void removePrerequisite(Integer id) {
+        prerequisiteRepository.deleteById(id);
+    }
+
+    public List<SubjectPrerequisite> getPrerequisites(Integer subjectId) {
+        return prerequisiteRepository.findBySubjectId(subjectId);
+    }
+
 
     private void validateCodeUnique(String code, Integer excludeId) {
         if (code == null || code.isBlank()) {

@@ -123,14 +123,20 @@ public class SubjectService {
 
     public List<Subject> getAvailablePrerequisites(Integer mainSubjectId) {
         List<Subject> all = subjectRepository.findAll();
-        List<Integer> existingPreIds = prerequisiteRepository.findBySubjectId(mainSubjectId)
-                .stream().map(SubjectPrerequisite::getPrerequisiteSubjectId).toList();
 
-        return all.stream()
-                .filter(s -> !s.getId().equals(mainSubjectId))
-                .filter(s -> !existingPreIds.contains(s.getId()))
-                .filter(s -> !prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(s.getId(), mainSubjectId))
-                .toList();
+        List<Integer> existingPreIds = new java.util.ArrayList<>();
+        for (SubjectPrerequisite sp : prerequisiteRepository.findBySubjectId(mainSubjectId)) {
+            existingPreIds.add(sp.getPrerequisiteSubjectId());
+        }
+
+        List<Subject> result = new java.util.ArrayList<>();
+        for (Subject s : all) {
+            if (s.getId().equals(mainSubjectId)) continue;
+            if (existingPreIds.contains(s.getId())) continue;
+            if (prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(s.getId(), mainSubjectId)) continue;
+            result.add(s);
+        }
+        return result;
     }
 
     @Transactional

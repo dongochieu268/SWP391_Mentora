@@ -28,7 +28,7 @@ public class Classroom {
     @JoinColumn(name = "learning_path_id", nullable = false)
     private LearningPath learningPath;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "teacher_id", nullable = false)
     private User teacher;
 
@@ -45,7 +45,7 @@ public class Classroom {
     @Column(name = "invite_code", length = 100)
     private String inviteCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 

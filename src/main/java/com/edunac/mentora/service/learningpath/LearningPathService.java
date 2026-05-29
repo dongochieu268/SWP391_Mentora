@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -83,11 +82,13 @@ public class LearningPathService {
         LearningPath path = findByIdAndOwner(id, requester);
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
-        // Clear prerequisite references first (self-referencing FK)
-        nodes.forEach(n -> n.setPrerequisite(null));
+        for (LearningNode n : nodes) {
+            n.setPrerequisite(null);
+        }
         nodeRepository.saveAll(nodes);
-        // Delete contents of each node before deleting the node
-        nodes.forEach(n -> deleteContentsForNode(n.getId()));
+        for (LearningNode n : nodes) {
+            deleteContentsForNode(n.getId());
+        }
         nodeRepository.deleteAll(nodes);
 
         try {
@@ -145,12 +146,15 @@ public class LearningPathService {
             throw new IllegalArgumentException("Node không thuộc lộ trình này.");
         }
 
-        // Remove this node as prerequisite from other nodes
-        List<LearningNode> dependents = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId)
-                .stream()
-                .filter(n -> n.getPrerequisite() != null && n.getPrerequisite().getId().equals(nodeId))
-                .collect(Collectors.toList());
-        dependents.forEach(n -> n.setPrerequisite(null));
+        List<LearningNode> dependents = new java.util.ArrayList<>();
+        for (LearningNode n : nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId)) {
+            if (n.getPrerequisite() != null && n.getPrerequisite().getId().equals(nodeId)) {
+                dependents.add(n);
+            }
+        }
+        for (LearningNode n : dependents) {
+            n.setPrerequisite(null);
+        }
         nodeRepository.saveAll(dependents);
 
         deleteContentsForNode(nodeId);
@@ -161,7 +165,9 @@ public class LearningPathService {
 
     private void deleteContentsForNode(Integer nodeId) {
         List<NodeContent> contents = nodeContentRepository.findByNode_IdOrderByDisplayOrderAscIdAsc(nodeId);
-        contents.forEach(c -> storageService.deleteIfManaged(c.getContentUrl()));
+        for (NodeContent c : contents) {
+            storageService.deleteIfManaged(c.getContentUrl());
+        }
         nodeContentRepository.deleteAll(contents);
     }
 

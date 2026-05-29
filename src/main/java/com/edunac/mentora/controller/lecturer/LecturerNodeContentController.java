@@ -110,10 +110,10 @@ public class LecturerNodeContentController {
     }
 
     private String firstValidationError(BindingResult bindingResult) {
-        return bindingResult.getFieldErrors().stream()
-                .map(err -> err.getDefaultMessage())
-                .findFirst()
-                .orElse("Dữ liệu không hợp lệ.");
+        if (!bindingResult.getFieldErrors().isEmpty()) {
+            return bindingResult.getFieldErrors().get(0).getDefaultMessage();
+        }
+        return "Dữ liệu không hợp lệ.";
     }
 
     private void populateCommon(HttpSession session, Model model, String activePage) {

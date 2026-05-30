@@ -13,4 +13,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Integer> {
     Optional<Classroom> findByIdAndTeacherId(Integer id, Integer teacherId);
 
     boolean existsByInviteCode(String inviteCode);
+
+    Optional<Classroom> findByInviteCode(String inviteCode);
 }

@@ -21,6 +21,7 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
+                <!-- Form tham gia lớp bằng mã mời -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title fw-semibold mb-3">Tham gia lớp học</h5>
@@ -35,6 +36,7 @@
                     </div>
                 </div>
 
+                <!-- Yêu cầu đang chờ duyệt -->
                 <div class="card mb-4" th:if="${!#lists.isEmpty(pendingRequests)}">
                     <div class="card-body">
                         <h5 class="card-title fw-semibold mb-3">
@@ -68,6 +70,7 @@
                     </div>
                 </div>
 
+                <!-- Danh sách lớp đã tham gia -->
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title fw-semibold mb-3">
@@ -83,12 +86,13 @@
                                     <th>Lộ trình</th>
                                     <th>Giảng viên</th>
                                     <th>Học kỳ</th>
+                                    <th>Vai trò</th>
                                     <th class="text-end">Thao tác</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr th:if="${#lists.isEmpty(myClassrooms)}">
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="8" class="text-center text-muted py-4">
                                         Bạn chưa tham gia lớp học nào. Nhập mã lớp ở trên để tham gia.
                                     </td>
                                 </tr>
@@ -102,6 +106,10 @@
                                     <td th:text="${m.classroom.learningPath.name}"></td>
                                     <td th:text="${m.classroom.teacher.fullName}"></td>
                                     <td th:text="${m.classroom.semester.name}"></td>
+                                    <td>
+                                        <span th:if="${m.roleInClass == 'TA'}" class="badge bg-primary">Trợ giảng</span>
+                                        <span th:unless="${m.roleInClass == 'TA'}" class="badge bg-secondary">Học sinh</span>
+                                    </td>
                                     <td class="text-end">
                                         <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
                                            class="btn btn-sm btn-primary">

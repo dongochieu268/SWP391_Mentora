@@ -26,6 +26,7 @@ public class DashboardController {
     @GetMapping("/student/dashboard")
     public String studentDashboard(HttpSession session, Model model) {
         model.addAttribute("user", (User) session.getAttribute("loggedInUser"));
+        model.addAttribute("activePage", "dashboard");
         return "student/dashboard";
     }
 }

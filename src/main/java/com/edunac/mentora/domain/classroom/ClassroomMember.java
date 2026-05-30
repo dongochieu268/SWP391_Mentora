@@ -35,10 +35,19 @@ public class ClassroomMember {
     @Column(name = "joined_at")
     private LocalDateTime joinedAt;
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     @PrePersist
     protected void onCreate() {
         if (joinedAt == null) {
             joinedAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = MemberStatus.PENDING.name();
+        }
+        if (roleInClass == null) {
+            roleInClass = MemberRole.STUDENT.name();
         }
     }
 }

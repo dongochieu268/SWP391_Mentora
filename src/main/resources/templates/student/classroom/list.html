@@ -87,11 +87,12 @@
                                     <th>Giảng viên</th>
                                     <th>Học kỳ</th>
                                     <th>Vai trò</th>
+                                    <th></th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr th:if="${#lists.isEmpty(myClassrooms)}">
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="8" class="text-center text-muted py-4">
                                         Bạn chưa tham gia lớp học nào. Nhập mã lớp ở trên để tham gia.
                                     </td>
                                 </tr>
@@ -108,6 +109,12 @@
                                     <td>
                                         <span th:if="${m.roleInClass == 'TA'}" class="badge bg-primary">Trợ giảng</span>
                                         <span th:unless="${m.roleInClass == 'TA'}" class="badge bg-secondary">Học sinh</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/student/classrooms/{id}/nodes(id=${m.classroom.id})}"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="ti ti-book me-1"></i>Vào học
+                                        </a>
                                     </td>
                                 </tr>
                                 </tbody>

@@ -27,4 +27,17 @@ public interface LearningNodeRepository extends JpaRepository<LearningNode, Inte
             WHERE n.id = :id
             """)
     Optional<LearningNode> findDetailById(@Param("id") Integer id);
+
+
+
+    @Query(value = "SELECT ln.* FROM learning_nodes ln " +
+            "INNER JOIN classroom_node_status cns ON ln.id = cns.node_id " +
+            "WHERE cns.classroom_id = :classroomId AND cns.status = 'VISIBLE' " +
+            "ORDER BY ln.node_order ASC", nativeQuery = true)
+    List<LearningNode> findVisibleNodesByClassroom(@Param("classroomId") Integer classroomId);
+
+    @Query(value = "SELECT COUNT(ln.id) FROM learning_nodes ln " +
+            "INNER JOIN classroom_node_status cns ON ln.id = cns.node_id " +
+            "WHERE cns.classroom_id = :classroomId AND cns.status = 'VISIBLE'", nativeQuery = true)
+    long countVisibleNodesByClassroom(@Param("classroomId") Integer classroomId);
 }

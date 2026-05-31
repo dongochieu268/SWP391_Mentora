@@ -54,7 +54,7 @@
                                          th:text="${content.title}"></div>
 
                                     <!-- TEXT -->
-                                    <div th:if="${content.contentType.name() == 'TEXT'}"
+                                    <div th:if="${content.contentType == 'TEXT'}"
                                          th:utext="${content.contentText}"
                                          style="line-height:1.8;font-size:15px;padding:16px;
                                                 background:#f8faff;border-left:3px solid #1d4ed8;

@@ -8,4 +8,6 @@ import java.util.List;
 public interface LearningPathRepository extends JpaRepository<LearningPath, Integer> {
 
     List<LearningPath> findByCreatedByIdOrderByCreatedAtDesc(Integer creatorId);
+
+    List<LearningPath> findByCreatedByIdAndSubjectIdOrderByCreatedAtDesc(Integer creatorId, Integer subjectId);
 }

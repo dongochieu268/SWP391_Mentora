@@ -3,14 +3,14 @@
 <body>
 
 <!--
-  Fragment: lecturerSidebar(activePage)
-  Usage: <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
-  activePage values: 'dashboard' | 'learning-paths' | 'classes'
+  Fragment: studentSidebar(activePage)
+  Usage: <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
+  activePage values: 'dashboard' | 'classrooms'
 -->
-<aside th:fragment="lecturerSidebar(activePage)" class="left-sidebar">
+<aside th:fragment="studentSidebar(activePage)" class="left-sidebar">
   <div>
     <div class="brand-logo d-flex align-items-center justify-content-between">
-      <a th:href="@{/lecturer/dashboard}" class="text-nowrap logo-img">
+      <a th:href="@{/student/dashboard}" class="text-nowrap logo-img">
         <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
       </a>
       <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
@@ -23,11 +23,11 @@
 
         <li class="nav-small-cap">
           <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Giảng viên</span>
+          <span class="hide-menu">Học sinh</span>
         </li>
 
         <li class="sidebar-item">
-          <a class="sidebar-link" th:href="@{/lecturer/dashboard}"
+          <a class="sidebar-link" th:href="@{/student/dashboard}"
              th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
             <i class="ti ti-home"></i>
             <span class="hide-menu">Dashboard</span>
@@ -36,22 +36,14 @@
 
         <li class="nav-small-cap">
           <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Học thuật</span>
+          <span class="hide-menu">Học tập</span>
         </li>
 
         <li class="sidebar-item">
-          <a class="sidebar-link" th:href="@{/lecturer/learning-paths}"
-             th:classappend="${activePage == 'learning-paths'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-route"></i>
-            <span class="hide-menu">Lộ trình học</span>
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a class="sidebar-link" th:href="@{/lecturer/classes}"
-             th:classappend="${activePage == 'classes'} ? ' active'" aria-expanded="false">
+          <a class="sidebar-link" th:href="@{/student/classrooms}"
+             th:classappend="${activePage == 'classrooms'} ? ' active'" aria-expanded="false">
             <i class="ti ti-school"></i>
-            <span class="hide-menu">Lớp học</span>
+            <span class="hide-menu">Lớp học của tôi</span>
           </a>
         </li>
 

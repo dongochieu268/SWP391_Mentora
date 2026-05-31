@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý thành viên | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-semibold mb-1" th:text="${classroom.name}"></h5>
+                        <p class="text-muted small mb-0">
+                            Mã mời: <code th:text="${classroom.inviteCode}"></code>
+                            &nbsp;|&nbsp; Môn: <span th:text="${classroom.subject.code + ' - ' + classroom.subject.name}"></span>
+                        </p>
+                    </div>
+                    <a th:href="@{/lecturer/classes}" class="btn btn-outline-secondary btn-sm">
+                        <i class="ti ti-arrow-left me-1"></i> Quay lại
+                    </a>
+                </div>
+
+                <!-- Yêu cầu chờ duyệt -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title fw-semibold mb-3">
+                            <i class="ti ti-clock text-warning me-1"></i>
+                            Yêu cầu chờ duyệt
+                            <span th:if="${!#lists.isEmpty(pendingMembers)}"
+                                  class="badge bg-warning text-dark ms-1"
+                                  th:text="${#lists.size(pendingMembers)}"></span>
+                        </h6>
+
+                        <div th:if="${#lists.isEmpty(pendingMembers)}" class="text-muted small">
+                            Không có yêu cầu nào đang chờ duyệt.
+                        </div>
+
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(pendingMembers)}">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Thời gian gửi</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="m, stat : ${pendingMembers}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td class="fw-semibold" th:text="${m.user.fullName}"></td>
+                                    <td th:text="${m.user.email}"></td>
+                                    <td th:text="${#temporals.format(m.joinedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td class="text-end">
+                                        <form th:action="@{/lecturer/classes/{cid}/members/{mid}/approve(cid=${classroom.id}, mid=${m.id})}"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success me-1">
+                                                <i class="ti ti-check"></i> Chấp nhận
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/lecturer/classes/{cid}/members/{mid}/reject(cid=${classroom.id}, mid=${m.id})}"
+                                              method="post" class="d-inline"
+                                              onsubmit="return confirm('Từ chối yêu cầu này?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="ti ti-x"></i> Từ chối
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách thành viên đã được duyệt -->
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title fw-semibold mb-3">
+                            <i class="ti ti-users text-success me-1"></i>
+                            Thành viên lớp
+                            <span class="badge bg-success ms-1" th:text="${#lists.size(activeMembers)}"></span>
+                        </h6>
+
+                        <div th:if="${#lists.isEmpty(activeMembers)}" class="text-muted small">
+                            Chưa có thành viên nào.
+                        </div>
+
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(activeMembers)}">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                    <th>Ngày tham gia</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="m, stat : ${activeMembers}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td class="fw-semibold" th:text="${m.user.fullName}"></td>
+                                    <td th:text="${m.user.email}"></td>
+                                    <td>
+                                        <span th:if="${m.roleInClass == 'TA'}" class="badge bg-primary">Trợ giảng (TA)</span>
+                                        <span th:unless="${m.roleInClass == 'TA'}" class="badge bg-secondary">Học sinh</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(m.joinedAt, 'dd/MM/yyyy')}"></td>
+                                    <td class="text-end">
+                                        <!-- Chỉ định TA -->
+                                        <form th:if="${m.roleInClass != 'TA'}"
+                                              th:action="@{/lecturer/classes/{cid}/members/{mid}/assign-ta(cid=${classroom.id}, mid=${m.id})}"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="ti ti-star"></i> Chỉ định TA
+                                            </button>
+                                        </form>
+                                        <!-- Thu hồi TA -->
+                                        <form th:if="${m.roleInClass == 'TA'}"
+                                              th:action="@{/lecturer/classes/{cid}/members/{mid}/revoke-ta(cid=${classroom.id}, mid=${m.id})}"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                <i class="ti ti-star-off"></i> Thu hồi TA
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

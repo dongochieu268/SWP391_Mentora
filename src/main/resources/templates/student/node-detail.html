@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${node.title} + ' | mentora'">Chi tiết bài học</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/student-sidebar :: studentSidebar('classrooms')}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb" style="font-size:13px;">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/student/classrooms}" class="text-decoration-none">Lớp học</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/student/classrooms/{id}/nodes(id=${classroomId})}"
+                               class="text-decoration-none">Lộ trình</a>
+                        </li>
+                        <li class="breadcrumb-item active" th:text="${node.title}">Bài học</li>
+                    </ol>
+                </nav>
+
+                <div class="row g-4">
+
+                    <!-- Cột trái: Nội dung bài học -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-bottom px-4 py-3">
+                                <h5 class="fw-bold mb-0" th:text="${node.title}">Tên bài học</h5>
+                            </div>
+                            <div class="card-body p-4">
+
+                                <div th:if="${#lists.isEmpty(node.contents)}"
+                                     class="text-center text-muted py-4">
+                                    Bài học này chưa có nội dung.
+                                </div>
+
+                                <div th:each="content : ${node.contents}" class="mb-4">
+
+                                    <div class="fw-semibold mb-2 text-primary" style="font-size:14px;"
+                                         th:text="${content.title}"></div>
+
+                                    <!-- TEXT -->
+                                    <div th:if="${content.contentType == 'TEXT'}"
+                                         th:utext="${content.contentText}"
+                                         style="line-height:1.8;font-size:15px;padding:16px;
+                                                background:#f8faff;border-left:3px solid #1d4ed8;
+                                                border-radius:6px;">
+                                    </div>
+
+                                    <!-- VIDEO -->
+                                    <div th:if="${content.contentType.name() == 'VIDEO'}"
+                                         class="ratio ratio-16x9 rounded overflow-hidden border">
+                                        <iframe th:src="${content.contentUrl}" allowfullscreen></iframe>
+                                    </div>
+
+                                    <!-- FILE -->
+                                    <div th:if="${content.contentType.name() == 'FILE'}"
+                                         class="d-flex align-items-center gap-3 p-3 rounded border"
+                                         style="background:#f8faff;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                             style="width:40px;height:40px;background:#dbeafe;">
+                                            <i class="ti ti-file-text fs-5 text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold" style="font-size:14px;"
+                                                 th:text="${content.title}">Tên file</div>
+                                            <div class="text-muted" style="font-size:12px;">Tài liệu đính kèm</div>
+                                        </div>
+                                        <a th:href="${content.contentUrl}" target="_blank"
+                                           class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="ti ti-download me-1"></i>Tải xuống
+                                        </a>
+                                    </div>
+
+                                    <!-- LINK -->
+                                    <div th:if="${content.contentType.name() == 'LINK'}"
+                                         class="d-flex align-items-center gap-3 p-3 rounded border"
+                                         style="background:#f8faff;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                             style="width:40px;height:40px;background:#dbeafe;">
+                                            <i class="ti ti-link fs-5 text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold" style="font-size:14px;"
+                                                 th:text="${content.title}">Liên kết</div>
+                                            <div class="text-muted" style="font-size:12px;"
+                                                 th:text="${content.contentUrl}"></div>
+                                        </div>
+                                        <a th:href="${content.contentUrl}" target="_blank"
+                                           class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="ti ti-external-link me-1"></i>Mở
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải: Tiến trình + Nút hoàn thành -->
+                    <div class="col-lg-4">
+
+                        <!-- Card tiến trình UC36 -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3">Tiến trình lộ trình</h6>
+
+                                <!-- Vòng tròn SVG -->
+                                <div class="text-center mb-3" style="position:relative;">
+                                    <svg viewBox="0 0 36 36" width="96" height="96"
+                                         style="display:block;margin:0 auto;">
+                                        <circle cx="18" cy="18" r="15.9"
+                                                fill="none" stroke="#eff6ff" stroke-width="3.2"/>
+                                        <circle cx="18" cy="18" r="15.9"
+                                                fill="none" stroke="#1d4ed8" stroke-width="3.2"
+                                                stroke-linecap="round"
+                                                stroke-dasharray="100"
+                                                th:attr="stroke-dashoffset=${100 - progress.progressPercent}"
+                                                transform="rotate(-90 18 18)"
+                                                id="progressCircle"/>
+                                    </svg>
+                                    <div id="percentText"
+                                         class="fw-bold text-primary"
+                                         style="font-size:15px;margin-top:4px;"
+                                         th:text="${progress.progressPercent} + '%'">0%</div>
+                                </div>
+
+                                <div class="text-center text-muted mb-3" style="font-size:13px;"
+                                     id="progressText"
+                                     th:text="${progress.completedNodes} + '/' + ${progress.totalNodes} + ' node hoàn thành'">
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between pt-2"
+                                     style="border-top:1px solid #f3f4f6;">
+                                    <span class="text-muted" style="font-size:13px;">Bài này</span>
+                                    <span id="nodeStatusBadge"
+                                          class="badge rounded-pill"
+                                          th:style="${progress.completed} ?
+                                              'background:#dcfce7;color:#166534;padding:4px 10px;' :
+                                              'background:#f3f4f6;color:#6b7280;padding:4px 10px;'"
+                                          th:text="${progress.completed} ? '✓ Hoàn thành' : 'Chưa hoàn thành'">
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UC34: Nút hoàn thành -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body p-4">
+                                <button id="btnComplete"
+                                        class="btn w-100 py-2 fw-semibold"
+                                        th:disabled="${progress.completed}"
+                                        th:data-classroom="${classroomId}"
+                                        th:data-node="${node.id}"
+                                        th:style="${progress.completed} ?
+                                            'background:#dcfce7;color:#166534;border:none;cursor:default;' :
+                                            'background:#1d4ed8;color:white;border:none;'">
+                                    <span id="btnLabel"
+                                          th:text="${progress.completed} ? '✓ Đã hoàn thành' : 'Đánh dấu hoàn thành'">
+                                    </span>
+                                    <span id="btnSpinner"
+                                          class="spinner-border spinner-border-sm d-none"
+                                          role="status"></span>
+                                </button>
+                                <div class="text-center text-muted mt-2" style="font-size:12px;">
+                                    Bấm khi bạn đã học xong nội dung này
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Điều hướng prev/next -->
+                        <div class="d-flex gap-2">
+                            <a th:if="${prevNodeId != null}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${prevNodeId})}"
+                               class="btn btn-sm btn-outline-secondary flex-fill">
+                                <i class="ti ti-arrow-left me-1"></i>Bài trước
+                            </a>
+                            <a th:if="${nextNodeId != null}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
+                               class="btn btn-sm flex-fill"
+                               style="background:#eff6ff;color:#1d4ed8;border:none;">
+                                Bài tiếp<i class="ti ti-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastBox" style="position:fixed;bottom:24px;right:24px;z-index:9999;"></div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+
+<script th:inline="javascript">
+    const btn = document.getElementById('btnComplete');
+
+    if (btn && !btn.disabled) {
+        btn.addEventListener('click', function () {
+            const classroomId = btn.dataset.classroom;
+            const nodeId      = btn.dataset.node;
+
+            btn.disabled = true;
+            document.getElementById('btnLabel').classList.add('d-none');
+            document.getElementById('btnSpinner').classList.remove('d-none');
+
+            fetch(`/student/classrooms/${classroomId}/nodes/${nodeId}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('server');
+                    return res.json();
+                })
+                .then(data => {
+                    btn.style.background = '#dcfce7';
+                    btn.style.color      = '#166534';
+                    document.getElementById('btnSpinner').classList.add('d-none');
+                    document.getElementById('btnLabel').classList.remove('d-none');
+                    document.getElementById('btnLabel').textContent = '✓ Đã hoàn thành';
+
+                    document.getElementById('progressCircle')
+                        .setAttribute('stroke-dashoffset', (100 - data.progressPercent).toString());
+                    document.getElementById('percentText').textContent = data.progressPercent + '%';
+                    document.getElementById('progressText').textContent =
+                        data.completedNodes + '/' + data.totalNodes + ' node hoàn thành';
+
+                    const badge = document.getElementById('nodeStatusBadge');
+                    badge.style.background = '#dcfce7';
+                    badge.style.color      = '#166534';
+                    badge.textContent      = '✓ Hoàn thành';
+
+                    showToast('Hoàn thành! Tiến trình: ' + data.progressPercent + '%', false);
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    document.getElementById('btnSpinner').classList.add('d-none');
+                    document.getElementById('btnLabel').classList.remove('d-none');
+                    showToast('Có lỗi xảy ra, vui lòng thử lại.', true);
+                });
+        });
+    }
+
+    function showToast(message, isError) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText =
+            'padding:12px 18px;border-radius:8px;color:white;font-size:14px;font-weight:500;' +
+            'box-shadow:0 4px 12px rgba(0,0,0,0.12);margin-top:8px;' +
+            'background:' + (isError ? '#dc2626' : '#1d4ed8') + ';';
+        document.getElementById('toastBox').appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import com.edunac.mentora.domain.classroom.Classroom;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
         uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "student_id", "learning_node_id"}))
 @Getter
 @Setter
+@NoArgsConstructor
 public class NodeProgress {
 
     @Id
@@ -37,4 +39,25 @@ public class NodeProgress {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    /** Tương thích code merge (StudentLearningController, NodeProgressService). */
+    public Integer getNodeId() {
+        return learningNode != null ? learningNode.getId() : null;
+    }
+
+    public Integer getStudentId() {
+        return student != null ? student.getId() : null;
+    }
+
+    public Integer getClassroomId() {
+        return classroom != null ? classroom.getId() : null;
+    }
+
+    public Boolean getIsCompleted() {
+        return completed;
+    }
+
+    public void setIsCompleted(Boolean value) {
+        this.completed = Boolean.TRUE.equals(value);
+    }
 }

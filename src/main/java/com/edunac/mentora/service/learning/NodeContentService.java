@@ -5,6 +5,7 @@ import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.dto.NodeContentForm;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
+import com.edunac.mentora.service.classroom.ClassroomNodeStatusService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,15 +19,18 @@ public class NodeContentService {
     private final NodeContentRepository nodeContentRepository;
     private final LearningNodeService learningNodeService;
     private final NodeContentStorageService storageService;
+    private final ClassroomNodeStatusService classroomNodeStatusService;
 
     public NodeContentService(
             NodeContentRepository nodeContentRepository,
             LearningNodeService learningNodeService,
-            NodeContentStorageService storageService
+            NodeContentStorageService storageService,
+            ClassroomNodeStatusService classroomNodeStatusService
     ) {
         this.nodeContentRepository = nodeContentRepository;
         this.learningNodeService = learningNodeService;
         this.storageService = storageService;
+        this.classroomNodeStatusService = classroomNodeStatusService;
     }
 
     public List<NodeContent> getByNodeId(Integer nodeId) {
@@ -87,6 +91,7 @@ public class NodeContentService {
         }
 
         nodeContentRepository.save(content);
+        classroomNodeStatusService.openNodeForPathClassrooms(node);
 
         if (previousUrl != null && content.getContentUrl() != null && !previousUrl.equals(content.getContentUrl())) {
             storageService.deleteIfManaged(previousUrl);

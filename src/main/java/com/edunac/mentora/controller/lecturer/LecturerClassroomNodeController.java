@@ -30,25 +30,10 @@ public class LecturerClassroomNodeController {
         User user = currentUser(session);
         Classroom classroom = classroomService.findForTeacher(classroomId, user);
         model.addAttribute("classroom", classroom);
-        model.addAttribute("learningPaths",
-                classroomService.findPathsForTeacherAndSubject(user, classroom.getSubject().getId()));
         model.addAttribute("nodes", nodeStatusService.getNodesWithStatus(classroomId, user));
         model.addAttribute("user", user);
         model.addAttribute("activePage", "classes");
         return "lecturer/class/nodes";
-    }
-
-    @PostMapping("/attach-path")
-    public String attachPath(@PathVariable Integer classroomId,
-                             @RequestParam Integer learningPathId,
-                             HttpSession session, RedirectAttributes ra) {
-        try {
-            classroomService.attachLearningPath(classroomId, learningPathId, currentUser(session));
-            ra.addFlashAttribute("success", "Đã gắn lộ trình học cho lớp.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/lecturer/classes/" + classroomId + "/nodes";
     }
 
     @PostMapping("/{nodeId}/toggle")

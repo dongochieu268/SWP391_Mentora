@@ -116,16 +116,6 @@ public class ClassroomService {
         return classroomRepository.save(classroom);
     }
 
-    public Classroom attachLearningPath(Integer classroomId, Integer learningPathId, User teacher) {
-        Classroom classroom = findForTeacher(classroomId, teacher);
-        if (learningPathId == null) {
-            throw new IllegalArgumentException("Vui lòng chọn lộ trình học.");
-        }
-        LearningPath path = loadOwnedPath(learningPathId, teacher, classroom.getSubject().getId());
-        classroom.setLearningPath(path);
-        return classroomRepository.save(classroom);
-    }
-
     public void delete(Integer id, User teacher) {
         Classroom classroom = findForTeacher(id, teacher);
         try {

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "node_progress",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "student_id", "learning_node_id"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "student_id", "node_id"}))
 @Getter
 @Setter
 public class NodeProgress {
@@ -29,7 +29,7 @@ public class NodeProgress {
     private User student;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "learning_node_id", nullable = false)
+    @JoinColumn(name = "node_id", nullable = false)
     private LearningNode learningNode;
 
     @Column(name = "is_completed", nullable = false)

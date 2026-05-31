@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "classroom_node_status",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "learning_node_id"}))
+
+        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "node_id"}))
 @Getter
 @Setter
 public class ClassroomNodeStatus {
@@ -23,13 +24,13 @@ public class ClassroomNodeStatus {
     private Classroom classroom;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "learning_node_id", nullable = false)
+    @JoinColumn(name = "node_id", nullable = false)
     private LearningNode learningNode;
 
     @Column(nullable = false, length = 20)
     private String status = NodeVisibilityStatus.HIDDEN.name();
 
-    @Column(name = "opened_at")
+    @Column(name = "updated_at")
     private LocalDateTime openedAt;
 
     @PrePersist

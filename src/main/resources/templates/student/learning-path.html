@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lộ trình học | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/student-sidebar :: studentSidebar('classrooms')}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <!-- Tiêu đề + breadcrumb -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1" th:text="${classroomName}">Lộ trình học</h5>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0" style="font-size:13px;">
+                                <li class="breadcrumb-item">
+                                    <a th:href="@{/student/classrooms}" class="text-decoration-none">Lớp học</a>
+                                </li>
+                                <li class="breadcrumb-item active">Lộ trình</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- UC36: Card tiến trình -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:48px;height:48px;background:#dbeafe;">
+                                    <i class="ti ti-chart-line fs-5 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold fs-5"
+                                         th:text="${completedCount} + '/' + ${totalNodes}">0/0</div>
+                                    <div class="text-muted" style="font-size:13px;">Node hoàn thành</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-9">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted" style="font-size:13px;">Tiến trình tổng thể</span>
+                                    <span class="fw-bold text-primary"
+                                          th:text="${percent} + '%'">0%</span>
+                                </div>
+                                <div class="progress rounded-pill" style="height:8px;background:#eff6ff;">
+                                    <div class="progress-bar rounded-pill bg-primary"
+                                         role="progressbar"
+                                         th:style="'width:' + ${percent} + '%'"
+                                         th:attr="aria-valuenow=${percent}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách Node -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom px-4 py-3">
+                        <h6 class="fw-bold mb-0">Danh sách bài học</h6>
+                    </div>
+                    <div class="card-body p-0">
+
+                        <div th:if="${#lists.isEmpty(nodes)}"
+                             class="text-center text-muted py-5">
+                            Chưa có bài học nào được mở trong lớp này.
+                        </div>
+
+                        <a th:each="node, stat : ${nodes}"
+                           th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${node.id})}"
+                           class="d-flex align-items-center gap-3 px-4 py-3 text-decoration-none text-dark node-row"
+                           style="border-bottom:1px solid #f3f4f6;">
+
+                            <!-- Số / dấu tick -->
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                                 style="width:36px;height:36px;font-size:13px;"
+                                 th:style="${completedMap[node.id]} ?
+                                     'width:36px;height:36px;font-size:13px;background:#1d4ed8;color:white;' :
+                                     'width:36px;height:36px;font-size:13px;background:#f3f4f6;color:#6b7280;'">
+                                <span th:if="${completedMap[node.id]}">✓</span>
+                                <span th:unless="${completedMap[node.id]}"
+                                      th:text="${stat.index + 1}">1</span>
+                            </div>
+
+                            <!-- Tên + mô tả -->
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" style="font-size:14px;"
+                                     th:text="${node.title}">Tên node</div>
+                                <div class="text-muted" style="font-size:13px;"
+                                     th:text="${node.description}"></div>
+                            </div>
+
+                            <!-- Badge -->
+                            <span class="badge rounded-pill"
+                                  th:style="${completedMap[node.id]} ?
+                                      'background:#dcfce7;color:#166534;padding:5px 12px;' :
+                                      'background:#f3f4f6;color:#6b7280;padding:5px 12px;'"
+                                  th:text="${completedMap[node.id]} ? 'Hoàn thành' : 'Chưa học'">
+                            </span>
+
+                            <i class="ti ti-chevron-right text-muted"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<style>
+    .node-row { transition: background 0.15s; }
+    .node-row:hover { background: #f8faff; }
+</style>
+</body>
+</html>

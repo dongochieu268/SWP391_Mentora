@@ -97,16 +97,14 @@
                                               class="text-muted" title="Đã khóa">
                                             <i class="ti ti-lock fs-4"></i>
                                         </span>
-                                        <a th:if="${item.state.name() == 'ACCESSIBLE'}"
-                                           th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id},nid=${item.node.id})}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Học node
-                                        </a>
-                                        <a th:if="${item.state.name() == 'COMPLETED'}"
-                                           th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id},nid=${item.node.id})}"
-                                           class="btn btn-sm btn-outline-success">
-                                            Xem lại
-                                        </a>
+                                        <span th:if="${item.state.name() == 'ACCESSIBLE'}"
+                                              class="text-primary" title="Có thể học">
+                                            <i class="ti ti-circle-check fs-4"></i>
+                                        </span>
+                                        <span th:if="${item.state.name() == 'COMPLETED'}"
+                                              class="text-success" title="Đã hoàn thành">
+                                            <i class="ti ti-circle-check-filled fs-4"></i>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

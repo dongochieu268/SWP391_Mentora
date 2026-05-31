@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${node.title} + ' | mentora'">Chi tiết bài học</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <div class="mb-4">
+                    <a th:href="@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}" class="text-muted small text-decoration-none">
+                        <i class="ti ti-arrow-left me-1"></i>Trở lại Lộ trình học
+                    </a>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-4">
+                                <h4 class="fw-bold mb-3" th:text="${node.title}">Tên bài học</h4>
+                                <div class="p-3 bg-light rounded text-dark mb-4" th:if="${node.description != null}" th:text="${node.description}">
+                                    Mô tả bài học...
+                                </div>
+
+                                <hr>
+                                <p class="text-muted small">
+                                    <i class="ti ti-info-circle"></i> Nội dung chi tiết của bài học sẽ được hiển thị ở đây.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0 mb-3">
+                            <div class="card-body p-4 text-center">
+                                <h6 class="fw-bold mb-3">Trạng thái bài học</h6>
+
+                                <div id="statusBadge" class="mb-4">
+                                    <span th:if="${progress.completed}" class="badge bg-success fs-3 py-2 px-3">
+                                        <i class="ti ti-check me-1"></i> Đã hoàn thành
+                                    </span>
+                                    <span th:unless="${progress.completed}" class="badge bg-warning text-dark fs-3 py-2 px-3">
+                                        <i class="ti ti-clock me-1"></i> Chưa hoàn thành
+                                    </span>
+                                </div>
+
+                                <button id="btnComplete"
+                                        class="btn w-100 py-2 fw-semibold"
+                                        th:classappend="${progress.completed ? 'btn-success disabled' : 'btn-primary'}"
+                                        th:disabled="${progress.completed}"
+                                        th:data-classroom="${classroomId}"
+                                        th:data-node="${node.id}">
+                                    <span id="btnText" th:text="${progress.completed ? 'Đã lưu tiến độ' : 'Đánh dấu hoàn thành'}"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a th:if="${prevNodeId != null}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${prevNodeId})}"
+                               class="btn btn-outline-secondary w-50">← Bài trước</a>
+
+                            <a th:if="${nextNodeId != null}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
+                               class="btn btn-outline-primary w-50 ms-auto">Bài tiếp →</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnComplete = document.getElementById('btnComplete');
+        if (btnComplete && !btnComplete.disabled) {
+            btnComplete.addEventListener('click', function() {
+                const cid = this.dataset.classroom;
+                const nid = this.dataset.node;
+                const csrf = document.querySelector('meta[name="_csrf"]').content;
+
+                // Đổi UI sang trạng thái loading
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+                this.disabled = true;
+
+                fetch(`/student/classrooms/${cid}/nodes/${nid}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // Cập nhật giao diện thành công
+                            document.getElementById('statusBadge').innerHTML = '<span class="badge bg-success fs-3 py-2 px-3"><i class="ti ti-check me-1"></i> Đã hoàn thành</span>';
+                            btnComplete.className = 'btn w-100 py-2 fw-semibold btn-success disabled';
+                            btnComplete.innerHTML = 'Đã lưu tiến độ';
+                        } else {
+                            alert("Có lỗi xảy ra. Vui lòng thử lại!");
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        alert("Lỗi kết nối máy chủ!");
+                        location.reload();
+                    });
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -26,7 +26,6 @@
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <h5 class="card-title fw-semibold mb-1">Quản lý lớp học</h5>
-                                <p class="text-muted small mb-0">Tạo lớp và gắn môn học, lộ trình, học kỳ.</p>
                             </div>
                             <a th:href="@{/lecturer/classes/new}" class="btn btn-primary">
                                 <i class="ti ti-plus me-1"></i> Tạo lớp mới
@@ -70,8 +69,12 @@
                                               th:text="${c.status}">CLOSE</span>
                                     </td>
                                     <td class="text-end">
+                                        <a th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}"
+                                           class="btn btn-sm btn-warning me-1">
+                                            <i class="ti ti-eye"></i> Ẩn/Hiện
+                                        </a>
                                         <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
-                                           class="btn btn-sm btn-outline-success me-1">
+                                           class="btn btn-sm btn-outline-success me-1"> 
                                             <i class="ti ti-users"></i> Thành viên
                                         </a>
                                         <a th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}"

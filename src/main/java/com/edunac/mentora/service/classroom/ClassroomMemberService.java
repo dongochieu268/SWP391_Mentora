@@ -1,11 +1,7 @@
 package com.edunac.mentora.service.classroom;
 
 import com.edunac.mentora.domain.User;
-import com.edunac.mentora.domain.classroom.Classroom;
-import com.edunac.mentora.domain.classroom.ClassroomMember;
-import com.edunac.mentora.domain.classroom.ClassroomStatus;
-import com.edunac.mentora.domain.classroom.MemberRole;
-import com.edunac.mentora.domain.classroom.MemberStatus;
+import com.edunac.mentora.domain.classroom.*;
 import com.edunac.mentora.repository.classroom.ClassroomMemberRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import org.springframework.stereotype.Service;
@@ -20,8 +16,10 @@ public class ClassroomMemberService {
     private final ClassroomMemberRepository memberRepository;
     private final ClassroomRepository classroomRepository;
 
-    public ClassroomMemberService(ClassroomMemberRepository memberRepository,
-                                  ClassroomRepository classroomRepository) {
+    public ClassroomMemberService(
+            ClassroomMemberRepository memberRepository,
+            ClassroomRepository classroomRepository
+    ) {
         this.memberRepository = memberRepository;
         this.classroomRepository = classroomRepository;
     }
@@ -106,6 +104,16 @@ public class ClassroomMemberService {
     public List<ClassroomMember> getMyPendingRequests(Integer studentId) {
         return memberRepository.findByUserIdAndStatusOrderByJoinedAtDesc(
                 studentId, MemberStatus.PENDING.name());
+    }
+
+    // UC33 - Kiểm tra sinh viên đã được duyệt trước khi xem lộ trình
+    public Classroom requireActiveMember(Integer classroomId, User student) {
+        ClassroomMember member = memberRepository
+                .findByClassroomIdAndUserIdAndStatus(
+                        classroomId, student.getId(), MemberStatus.ACTIVE.name())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Bạn chưa được duyệt vào lớp hoặc không có quyền xem lộ trình."));
+        return member.getClassroom();
     }
 
     private ClassroomMember findMemberInClass(Integer memberId, Integer classroomId) {

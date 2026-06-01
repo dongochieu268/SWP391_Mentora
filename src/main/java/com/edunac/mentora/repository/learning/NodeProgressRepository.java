@@ -11,6 +11,8 @@ public interface NodeProgressRepository extends JpaRepository<NodeProgress, Inte
 
     List<NodeProgress> findByClassroomIdAndStudentId(Integer classroomId, Integer studentId);
 
+    boolean existsByLearningNodeId(Integer nodeId);
+
     boolean existsByStudentIdAndLearningNodeIdAndClassroomIdAndCompletedTrue(Integer studentId, Integer learningNodeId, Integer classroomId);
 
     long countByStudentIdAndClassroomIdAndCompletedTrue(Integer studentId, Integer classroomId);

@@ -41,9 +41,13 @@ public class LecturerNodeContentController {
         User user = (User) session.getAttribute("loggedInUser");
         LearningNode node = learningNodeService.findByIdForOwner(nodeId, user);
         String baseUrl = "/lecturer/nodes/" + nodeId + "/contents";
+        String pathBackUrl = node.getLearningPath() != null
+                ? "/lecturer/learning-paths/" + node.getLearningPath().getId()
+                : "/lecturer/learning-paths";
         populateCommon(session, model, "node-contents");
         model.addAttribute("pageTitle", "Nội dung node");
         model.addAttribute("baseUrl", baseUrl);
+        model.addAttribute("pathBackUrl", pathBackUrl);
         model.addAttribute("node", node);
         model.addAttribute("contents", nodeContentService.getByNodeId(nodeId));
 

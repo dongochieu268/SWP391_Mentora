@@ -10,6 +10,5 @@ public interface ClassroomNodeStatusRepository extends JpaRepository<ClassroomNo
 
     List<ClassroomNodeStatus> findByClassroomId(Integer classroomId);
 
-    Optional<ClassroomNodeStatus> findByClassroomIdAndLearningNodeId(
-            Integer classroomId, Integer learningNodeId);
+    Optional<ClassroomNodeStatus> findByClassroomIdAndNodeId(Integer classroomId, Integer nodeId);
 }

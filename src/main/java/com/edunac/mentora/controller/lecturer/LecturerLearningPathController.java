@@ -68,7 +68,7 @@ public class LecturerLearningPathController {
                          @RequestParam(required = false) Integer editNode,
                          HttpSession session, Model model) {
         User user = currentUser(session);
-        LearningPath path = pathService.findById(id);
+        LearningPath path = pathService.findByIdAndOwner(id, user);
         List<LearningNode> nodes = pathService.getNodes(id);
 
         model.addAttribute("path", path);

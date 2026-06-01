@@ -17,4 +17,6 @@ public interface ClassroomMemberRepository extends JpaRepository<ClassroomMember
     Optional<ClassroomMember> findByIdAndClassroomId(Integer id, Integer classroomId);
 
     List<ClassroomMember> findByClassroomIdOrderByStatusAscJoinedAtAsc(Integer classroomId);
+
+    void deleteByClassroomId(Integer classroomId);
 }

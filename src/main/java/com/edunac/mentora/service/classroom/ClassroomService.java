@@ -98,21 +98,10 @@ public class ClassroomService {
         return classroomRepository.save(classroom);
     }
 
-    public Classroom update(Integer id, ClassroomForm form, User teacher) {
+    public Classroom updateStatus(Integer id, String status, User teacher) {
         Classroom classroom = findForTeacher(id, teacher);
-        validateName(form.getName());
-        String status = normalizeStatus(form.getStatus());
-
-        Subject subject = loadActiveSubject(form.getSubjectId());
-        LearningPath path = loadOwnedPath(form.getLearningPathId(), teacher, subject.getId());
-        Semester semester = loadActiveSemester(form.getSemesterId());
-
-        classroom.setSubject(subject);
-        classroom.setLearningPath(path);
-        classroom.setName(form.getName().trim());
-        classroom.setSemester(semester);
-        classroom.setStatus(status);
-
+        String normalized = normalizeStatus(status);
+        classroom.setStatus(normalized);
         return classroomRepository.save(classroom);
     }
 

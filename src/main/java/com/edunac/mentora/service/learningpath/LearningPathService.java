@@ -6,7 +6,9 @@ import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
+import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
+import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
@@ -30,17 +32,23 @@ public class LearningPathService {
     private final SubjectRepository subjectRepository;
     private final NodeContentRepository nodeContentRepository;
     private final NodeContentStorageService storageService;
+    private final NodeProgressRepository nodeProgressRepository;
+    private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
 
     public LearningPathService(LearningPathRepository pathRepository,
                                 LearningNodeRepository nodeRepository,
                                 SubjectRepository subjectRepository,
                                 NodeContentRepository nodeContentRepository,
-                                NodeContentStorageService storageService) {
+                                NodeContentStorageService storageService,
+                                NodeProgressRepository nodeProgressRepository,
+                                ClassroomNodeStatusRepository classroomNodeStatusRepository) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
         this.nodeContentRepository = nodeContentRepository;
         this.storageService = storageService;
+        this.nodeProgressRepository = nodeProgressRepository;
+        this.classroomNodeStatusRepository = classroomNodeStatusRepository;
     }
 
     // ===== LEARNING PATH =====
@@ -93,6 +101,7 @@ public class LearningPathService {
 
         try {
             pathRepository.delete(path);
+            pathRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new IllegalStateException("Không thể xóa lộ trình đang được sử dụng bởi lớp học.");
         }
@@ -157,6 +166,10 @@ public class LearningPathService {
         }
         nodeRepository.saveAll(dependents);
 
+        if (nodeProgressRepository.existsByLearningNodeId(nodeId)) {
+            throw new IllegalStateException("Không thể xóa node vì vẫn còn dữ liệu tiến trình học liên quan.");
+        }
+        classroomNodeStatusRepository.deleteByNodeId(nodeId);
         deleteContentsForNode(nodeId);
         nodeRepository.delete(node);
     }

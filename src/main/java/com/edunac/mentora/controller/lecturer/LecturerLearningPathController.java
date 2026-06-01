@@ -103,7 +103,7 @@ public class LecturerLearningPathController {
         }
 
         if (!model.containsAttribute("nodeForm")) {
-            model.addAttribute("nodeForm", new LearningNodeForm());
+            model.addAttribute("nodeForm", new LearningNodeForm()); 
         }
 
         return "lecturer/learning-path/detail";

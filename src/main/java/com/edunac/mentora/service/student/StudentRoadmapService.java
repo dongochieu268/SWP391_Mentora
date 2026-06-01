@@ -95,7 +95,7 @@ public class    StudentRoadmapService {
     private Map<Integer, String> loadVisibilityMap(Integer classroomId) {
         Map<Integer, String> map = new HashMap<>();
         for (ClassroomNodeStatus row : nodeStatusRepository.findByClassroomId(classroomId)) {
-            map.put(row.getLearningNode().getId(), row.getStatus());
+            map.put(row.getNode().getId(), row.getStatus());
         }
         return map;
     }

@@ -38,14 +38,17 @@
 
                         <form th:action="${isEdit} ? @{/lecturer/classes/{id}/edit(id=${form.id})} : @{/lecturer/classes}"
                               method="post">
-                            <div class="mb-3">
+
+                            <!-- ===== CHỈ HIỂN THỊ KHI TẠO MỚI (isEdit = false) ===== -->
+
+                            <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Tên lớp <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="name"
                                        th:value="${form.name}" maxlength="200" required
                                        placeholder="VD: SWP391 — Nhóm 01">
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Môn học <span class="text-danger">*</span></label>
                                 <select class="form-select" id="subjectId" name="subjectId" required>
                                     <option value="">-- Chọn môn học --</option>
@@ -57,7 +60,7 @@
                                 <div class="form-text text-muted">Chỉ môn học đang ACTIVE.</div>
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Lộ trình học <span class="text-danger">*</span></label>
                                 <select class="form-select" id="learningPathId" name="learningPathId" required>
                                     <option value="">-- Chọn lộ trình --</option>
@@ -72,7 +75,7 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Học kỳ <span class="text-danger">*</span></label>
                                 <select class="form-select" name="semesterId" required>
                                     <option value="">-- Chọn học kỳ --</option>
@@ -82,6 +85,8 @@
                                             th:selected="${form.semesterId != null and form.semesterId == sem.id}"></option>
                                 </select>
                             </div>
+
+                            <!-- ===== HIỂN THỊ Ở CẢ HAI MODE ===== -->
 
                             <div class="mb-3">
                                 <label class="form-label">Trạng thái lớp</label>
@@ -106,10 +111,11 @@
 </div>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 <script>
+    // Script lọc lộ trình theo môn học — chỉ cần thiết khi tạo mới
     (function () {
         const subjectSelect = document.getElementById('subjectId');
         const pathSelect = document.getElementById('learningPathId');
-        if (!subjectSelect || !pathSelect) return;
+        if (!subjectSelect || !pathSelect) return; // Khi isEdit=true, 2 element này không tồn tại → thoát sớm
 
         const allPaths = [];
         pathSelect.querySelectorAll('option[data-subject-id]').forEach(function (opt) {

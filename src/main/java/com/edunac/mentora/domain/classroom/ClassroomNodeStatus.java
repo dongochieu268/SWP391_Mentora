@@ -8,9 +8,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "classroom_node_status",
-
-        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "node_id"}))
+@Table(name = "classroom_node_status")
 @Getter
 @Setter
 public class ClassroomNodeStatus {
@@ -25,18 +23,20 @@ public class ClassroomNodeStatus {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "node_id", nullable = false)
-    private LearningNode learningNode;
+    private LearningNode node;
 
     @Column(nullable = false, length = 20)
     private String status = NodeVisibilityStatus.HIDDEN.name();
 
     @Column(name = "updated_at")
-    private LocalDateTime openedAt;
+    private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate() {
-        if (NodeVisibilityStatus.VISIBLE.name().equals(status) && openedAt == null) {
-            openedAt = LocalDateTime.now();
+    @PreUpdate
+    protected void onSave() {
+        updatedAt = LocalDateTime.now();
+        if (status == null || status.isBlank()) {
+            status = NodeVisibilityStatus.HIDDEN.name();
         }
     }
 }

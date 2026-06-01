@@ -11,7 +11,7 @@
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
-    <aside th:replace="~{layout/student-sidebar :: studentSidebar('dashboard')}"></aside>
+    <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
 
     <div class="body-wrapper">
         <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>

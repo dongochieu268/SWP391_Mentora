@@ -8,7 +8,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "classroom_members")
+@Table(name = "classroom_members",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "user_id"}))
 @Getter
 @Setter
 public class ClassroomMember {
@@ -39,8 +40,14 @@ public class ClassroomMember {
 
     @PrePersist
     protected void onCreate() {
-        if (joinedAt == null) joinedAt = LocalDateTime.now();
-        if (status == null) status = MemberStatus.PENDING.name();
-        if (roleInClass == null) roleInClass = MemberRole.STUDENT.name();
+        if (joinedAt == null) {
+            joinedAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = MemberStatus.PENDING.name();
+        }
+        if (roleInClass == null) {
+            roleInClass = MemberRole.STUDENT.name();
+        }
     }
 }

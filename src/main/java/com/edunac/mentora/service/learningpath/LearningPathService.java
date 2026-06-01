@@ -171,7 +171,7 @@ public class LearningPathService {
         nodeContentRepository.deleteAll(contents);
     }
 
-    private LearningPath findByIdAndOwner(Integer id, User requester) {
+    public LearningPath findByIdAndOwner(Integer id, User requester) {
         LearningPath path = pathRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lộ trình."));
         if (!path.getCreatedBy().getId().equals(requester.getId())) {

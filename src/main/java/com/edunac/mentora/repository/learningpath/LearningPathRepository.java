@@ -10,4 +10,8 @@ public interface LearningPathRepository extends JpaRepository<LearningPath, Inte
     List<LearningPath> findByCreatedByIdOrderByCreatedAtDesc(Integer creatorId);
 
     List<LearningPath> findByCreatedByIdAndSubjectIdOrderByCreatedAtDesc(Integer creatorId, Integer subjectId);
+
+    List<LearningPath> findByCreatedByIdAndStatusOrderByCreatedAtDesc(Integer creatorId, String status);
+
+    List<LearningPath> findByCreatedByIdAndSubjectIdAndStatusOrderByCreatedAtDesc(Integer creatorId, Integer subjectId, String status);
 }

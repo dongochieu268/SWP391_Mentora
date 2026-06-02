@@ -12,7 +12,6 @@ import java.util.Optional;
 @Repository
 public interface LearningNodeRepository extends JpaRepository<LearningNode, Integer> {
 
-
     List<LearningNode> findByLearningPathIdOrderByNodeOrderAsc(Integer learningPathId);
 
     @Query("""
@@ -31,8 +30,6 @@ public interface LearningNodeRepository extends JpaRepository<LearningNode, Inte
             """)
     Optional<LearningNode> findDetailById(@Param("id") Integer id);
 
-
-
     @Query(value = """
         SELECT ln.* FROM learning_nodes ln
         JOIN classroom_node_status cns ON cns.learning_node_id = ln.id
@@ -41,4 +38,12 @@ public interface LearningNodeRepository extends JpaRepository<LearningNode, Inte
         ORDER BY ln.node_order ASC
     """, nativeQuery = true)
     List<LearningNode> findVisibleNodesByClassroom(@Param("classroomId") Integer classroomId);
+
+    @Query(value = """
+        SELECT COUNT(ln.id) FROM learning_nodes ln
+        JOIN classroom_node_status cns ON cns.learning_node_id = ln.id
+        WHERE cns.classroom_id = :classroomId
+          AND cns.status = 'VISIBLE'
+    """, nativeQuery = true)
+    long countVisibleNodesByClassroom(@Param("classroomId") Integer classroomId);
 }

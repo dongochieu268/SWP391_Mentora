@@ -60,14 +60,16 @@
                         <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(roadmap.nodes)}">
                             <div class="list-group-item px-0 py-3 border-bottom"
                                  th:each="item, stat : ${roadmap.nodes}">
-                                <div class="d-flex align-items-start gap-3">
+                                <div class="d-flex align-items-center gap-3">
                                     <div class="flex-shrink-0 text-center" style="width: 36px;">
                                         <span class="badge rounded-circle bg-light text-dark border"
                                               th:text="${stat.count}"></span>
                                     </div>
+
                                     <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
                                             <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
+
                                             <span th:if="${item.state.name() == 'COMPLETED'}"
                                                   class="badge bg-success">Đã hoàn thành</span>
                                             <span th:if="${item.state.name() == 'ACCESSIBLE'}"
@@ -77,7 +79,7 @@
                                             <span th:if="${item.state.name() == 'HIDDEN'}"
                                                   class="badge bg-secondary">Chưa mở</span>
                                         </div>
-                                        <p class="text-muted small mb-2"
+                                        <p class="text-muted small mb-0"
                                            th:if="${item.node.description != null}"
                                            th:text="${item.node.description}"></p>
                                         <p class="small mb-0 text-warning"
@@ -92,19 +94,27 @@
                                             Giảng viên chưa mở nội dung này.
                                         </p>
                                     </div>
-                                    <div class="flex-shrink-0 text-end">
-                                        <span th:if="${item.locked}"
-                                              class="text-muted" title="Đã khóa">
-                                            <i class="ti ti-lock fs-4"></i>
-                                        </span>
-                                        <span th:if="${item.state.name() == 'ACCESSIBLE'}"
-                                              class="text-primary" title="Có thể học">
-                                            <i class="ti ti-circle-check fs-4"></i>
-                                        </span>
-                                        <span th:if="${item.state.name() == 'COMPLETED'}"
-                                              class="text-success" title="Đã hoàn thành">
-                                            <i class="ti ti-circle-check-filled fs-4"></i>
-                                        </span>
+
+                                    <div class="flex-shrink-0 text-end" style="min-width: 110px;">
+
+                                        <a th:if="${item.state.name() == 'ACCESSIBLE'}"
+                                           th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
+                                           class="btn btn-sm btn-primary fw-semibold px-3 d-inline-flex align-items-center">
+                                            <i class="ti ti-player-play me-1"></i> Vào học
+                                        </a>
+
+                                        <a th:if="${item.state.name() == 'COMPLETED'}"
+                                           th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
+                                           class="btn btn-sm btn-outline-success fw-semibold px-3 d-inline-flex align-items-center">
+                                            <i class="ti ti-refresh me-1"></i> Xem lại
+                                        </a>
+
+                                        <button th:if="${item.locked}"
+                                                class="btn btn-sm btn-light text-muted px-3 d-inline-flex align-items-center"
+                                                disabled>
+                                            <i class="ti ti-lock me-1"></i> Đang khóa
+                                        </button>
+
                                     </div>
                                 </div>
                             </div>

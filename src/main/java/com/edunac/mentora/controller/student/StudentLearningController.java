@@ -80,8 +80,10 @@ public class StudentLearningController {
         LearningNode node = learningNodeRepository.findById(nodeId)
                 .orElseThrow(() -> new RuntimeException("Node không tồn tại"));
 
-        List<LearningNode> allNodes = learningNodeRepository.findVisibleNodesByClassroom(classroomId);
+        NodeProgressResponse progress = nodeProgressService
+                .buildProgressResponse(currentUser.getId(), classroomId, nodeId);
 
+        List<LearningNode> allNodes = learningNodeRepository.findVisibleNodesByClassroom(classroomId);
         int currentIndex = -1;
         for (int i = 0; i < allNodes.size(); i++) {
             if (allNodes.get(i).getId().equals(nodeId)) {
@@ -94,17 +96,15 @@ public class StudentLearningController {
         Integer nextNodeId = currentIndex < allNodes.size() - 1
                 ? allNodes.get(currentIndex + 1).getId() : null;
 
-        NodeProgressResponse progress = nodeProgressService
-                .buildProgressResponse(currentUser.getId(), classroomId, nodeId);
-
         model.addAttribute("user", currentUser);
+        model.addAttribute("activePage", "classrooms");
         model.addAttribute("node", node);
         model.addAttribute("progress", progress);
         model.addAttribute("classroomId", classroomId);
         model.addAttribute("prevNodeId", prevNodeId);
         model.addAttribute("nextNodeId", nextNodeId);
 
-        return "student/node-detail";
+        return "student/learning/node-detail";
     }
 
     @PostMapping("/classrooms/{classroomId}/nodes/{nodeId}/complete")

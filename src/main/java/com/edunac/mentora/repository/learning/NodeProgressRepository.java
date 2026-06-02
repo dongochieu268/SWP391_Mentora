@@ -21,4 +21,6 @@ public interface NodeProgressRepository extends JpaRepository<NodeProgress, Inte
 
     boolean existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
             Integer studentId, Integer nodeId, Integer classroomId);
+
+    boolean existsByLearningNodeId(Integer nodeId);
 }

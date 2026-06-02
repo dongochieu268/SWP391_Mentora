@@ -6,7 +6,7 @@ import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
-import com.edunac.mentora.domain.classroom.ClassroomStatus;
+import com.edunac.mentora.domain.learningpath.LearningPathStatus;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -79,6 +81,7 @@ public class LearningPathService {
         path.setName(name.trim());
         path.setDescription(blankToNull(description));
         path.setCreatedBy(creator);
+        path.setStatus(LearningPathStatus.ACTIVE.name());
         return pathRepository.save(path);
     }
 
@@ -93,7 +96,7 @@ public class LearningPathService {
     public void delete(Integer id, User requester) {
         LearningPath path = findByIdAndOwner(id, requester);
         if (classroomRepository.existsByLearningPathId(id)) {
-            throw new IllegalStateException("Không thể xóa lộ trình đang được sử dụng bởi lớp học.");
+            throw new IllegalStateException("Không thể xóa lộ trình đã được lớp học sử dụng. Hãy lưu trữ lộ trình thay vì xóa.");
         }
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
@@ -116,7 +119,7 @@ public class LearningPathService {
 
     public LearningNode addNode(Integer pathId, LearningNodeForm form, User requester) {
         LearningPath path = findByIdAndOwner(pathId, requester);
-        guardNoOpenClassroom(pathId);
+        ensureStructureEditable(pathId);
         validateNodeTitle(form.getTitle());
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
@@ -136,7 +139,7 @@ public class LearningPathService {
 
     public LearningNode updateNode(Integer pathId, Integer nodeId, LearningNodeForm form, User requester) {
         findByIdAndOwner(pathId, requester);
-        guardNoOpenClassroom(pathId);
+        ensureStructureEditable(pathId);
         LearningNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
         if (!node.getLearningPath().getId().equals(pathId)) {
@@ -152,7 +155,7 @@ public class LearningPathService {
 
     public void deleteNode(Integer pathId, Integer nodeId, User requester) {
         findByIdAndOwner(pathId, requester);
-        guardNoOpenClassroom(pathId);
+        ensureStructureEditable(pathId);
         LearningNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
         if (!node.getLearningPath().getId().equals(pathId)) {
@@ -292,9 +295,61 @@ public class LearningPathService {
         return (s == null || s.isBlank()) ? null : s.trim();
     }
 
-    private void guardNoOpenClassroom(Integer pathId) {
-        if (classroomRepository.existsByLearningPathIdAndStatus(pathId, ClassroomStatus.OPEN.name())) {
-            throw new IllegalStateException("Lộ trình đang có lớp học đang mở, không thể thay đổi cấu trúc.");
+    // ===== ARCHIVE / UNARCHIVE / CLONE =====
+
+    public LearningPath archive(Integer id, User requester) {
+        LearningPath path = findByIdAndOwner(id, requester);
+        path.setStatus(LearningPathStatus.ARCHIVED.name());
+        return pathRepository.save(path);
+    }
+
+    public LearningPath unarchive(Integer id, User requester) {
+        LearningPath path = findByIdAndOwner(id, requester);
+        path.setStatus(LearningPathStatus.ACTIVE.name());
+        return pathRepository.save(path);
+    }
+
+    public boolean hasClassroom(Integer pathId) {
+        return classroomRepository.existsByLearningPathId(pathId);
+    }
+
+    public LearningPath clonePath(Integer id, User requester) {
+        LearningPath source = findByIdAndOwner(id, requester);
+
+        LearningPath copy = new LearningPath();
+        copy.setSubject(source.getSubject());
+        copy.setName(source.getName() + " - Bản sao");
+        copy.setDescription(source.getDescription());
+        copy.setCreatedBy(requester);
+        copy.setStatus(LearningPathStatus.ACTIVE.name());
+        LearningPath savedPath = pathRepository.save(copy);
+
+        List<LearningNode> sourceNodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
+        Map<Integer, LearningNode> nodeMap = new HashMap<>();
+
+        for (LearningNode oldNode : sourceNodes) {
+            LearningNode newNode = new LearningNode();
+            newNode.setLearningPath(savedPath);
+            newNode.setTitle(oldNode.getTitle());
+            newNode.setDescription(oldNode.getDescription());
+            newNode.setNodeOrder(oldNode.getNodeOrder());
+            nodeMap.put(oldNode.getId(), nodeRepository.save(newNode));
+        }
+
+        for (LearningNode oldNode : sourceNodes) {
+            if (oldNode.getPrerequisite() != null) {
+                LearningNode clonedNode = nodeMap.get(oldNode.getId());
+                clonedNode.setPrerequisite(nodeMap.get(oldNode.getPrerequisite().getId()));
+                nodeRepository.save(clonedNode);
+            }
+        }
+
+        return savedPath;
+    }
+
+    private void ensureStructureEditable(Integer pathId) {
+        if (classroomRepository.existsByLearningPathId(pathId)) {
+            throw new IllegalStateException("Cấu trúc lộ trình đã bị khóa vì đang được lớp học sử dụng.");
         }
     }
 }

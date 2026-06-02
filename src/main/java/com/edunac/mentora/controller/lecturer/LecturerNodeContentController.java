@@ -1,5 +1,6 @@
 package com.edunac.mentora.controller.lecturer;
 
+import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.dto.NodeContentForm;
 import com.edunac.mentora.service.learning.LearningNodeService;
@@ -37,11 +38,16 @@ public class LecturerNodeContentController {
             HttpSession session,
             Model model
     ) {
-        LearningNode node = learningNodeService.findById(nodeId);
+        User user = (User) session.getAttribute("loggedInUser");
+        LearningNode node = learningNodeService.findByIdForOwner(nodeId, user);
         String baseUrl = "/lecturer/nodes/" + nodeId + "/contents";
+        String pathBackUrl = node.getLearningPath() != null
+                ? "/lecturer/learning-paths/" + node.getLearningPath().getId()
+                : "/lecturer/learning-paths";
         populateCommon(session, model, "node-contents");
         model.addAttribute("pageTitle", "Nội dung node");
         model.addAttribute("baseUrl", baseUrl);
+        model.addAttribute("pathBackUrl", pathBackUrl);
         model.addAttribute("node", node);
         model.addAttribute("contents", nodeContentService.getByNodeId(nodeId));
 
@@ -73,8 +79,11 @@ public class LecturerNodeContentController {
             @Valid @ModelAttribute("contentForm") NodeContentForm form,
             BindingResult bindingResult,
             @RequestParam(value = "mediaFile", required = false) MultipartFile mediaFile,
+            HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
+        User user = (User) session.getAttribute("loggedInUser");
+        learningNodeService.findByIdForOwner(nodeId, user);
         form.setNodeId(nodeId);
 
         if (bindingResult.hasErrors()) {
@@ -98,8 +107,11 @@ public class LecturerNodeContentController {
     public String deleteContent(
             @PathVariable Integer nodeId,
             @PathVariable Integer contentId,
+            HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
+        User user = (User) session.getAttribute("loggedInUser");
+        learningNodeService.findByIdForOwner(nodeId, user);
         try {
             nodeContentService.delete(contentId, nodeId);
             redirectAttributes.addFlashAttribute("successMessage", "Đã xóa nội dung.");

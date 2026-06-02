@@ -6,14 +6,15 @@ import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
+import com.edunac.mentora.domain.classroom.ClassroomStatus;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
+import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
 import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
 import com.edunac.mentora.service.learning.NodeContentStorageService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class LearningPathService {
     private final NodeContentStorageService storageService;
     private final NodeProgressRepository nodeProgressRepository;
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
+    private final ClassroomRepository classroomRepository;
 
     public LearningPathService(LearningPathRepository pathRepository,
                                 LearningNodeRepository nodeRepository,
@@ -41,7 +43,8 @@ public class LearningPathService {
                                 NodeContentRepository nodeContentRepository,
                                 NodeContentStorageService storageService,
                                 NodeProgressRepository nodeProgressRepository,
-                                ClassroomNodeStatusRepository classroomNodeStatusRepository) {
+                                ClassroomNodeStatusRepository classroomNodeStatusRepository,
+                                ClassroomRepository classroomRepository) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
@@ -49,6 +52,7 @@ public class LearningPathService {
         this.storageService = storageService;
         this.nodeProgressRepository = nodeProgressRepository;
         this.classroomNodeStatusRepository = classroomNodeStatusRepository;
+        this.classroomRepository = classroomRepository;
     }
 
     // ===== LEARNING PATH =====
@@ -88,6 +92,9 @@ public class LearningPathService {
 
     public void delete(Integer id, User requester) {
         LearningPath path = findByIdAndOwner(id, requester);
+        if (classroomRepository.existsByLearningPathId(id)) {
+            throw new IllegalStateException("Không thể xóa lộ trình đang được sử dụng bởi lớp học.");
+        }
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
         for (LearningNode n : nodes) {
@@ -98,13 +105,7 @@ public class LearningPathService {
             deleteContentsForNode(n.getId());
         }
         nodeRepository.deleteAll(nodes);
-
-        try {
-            pathRepository.delete(path);
-            pathRepository.flush();
-        } catch (DataIntegrityViolationException ex) {
-            throw new IllegalStateException("Không thể xóa lộ trình đang được sử dụng bởi lớp học.");
-        }
+        pathRepository.delete(path);
     }
 
     // ===== LEARNING NODE =====
@@ -115,6 +116,7 @@ public class LearningPathService {
 
     public LearningNode addNode(Integer pathId, LearningNodeForm form, User requester) {
         LearningPath path = findByIdAndOwner(pathId, requester);
+        guardNoOpenClassroom(pathId);
         validateNodeTitle(form.getTitle());
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
@@ -134,6 +136,7 @@ public class LearningPathService {
 
     public LearningNode updateNode(Integer pathId, Integer nodeId, LearningNodeForm form, User requester) {
         findByIdAndOwner(pathId, requester);
+        guardNoOpenClassroom(pathId);
         LearningNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
         if (!node.getLearningPath().getId().equals(pathId)) {
@@ -149,6 +152,7 @@ public class LearningPathService {
 
     public void deleteNode(Integer pathId, Integer nodeId, User requester) {
         findByIdAndOwner(pathId, requester);
+        guardNoOpenClassroom(pathId);
         LearningNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
         if (!node.getLearningPath().getId().equals(pathId)) {
@@ -178,10 +182,11 @@ public class LearningPathService {
 
     private void deleteContentsForNode(Integer nodeId) {
         List<NodeContent> contents = nodeContentRepository.findByNode_IdOrderByDisplayOrderAscIdAsc(nodeId);
+        nodeContentRepository.deleteAll(contents);
+        nodeContentRepository.flush();
         for (NodeContent c : contents) {
             storageService.deleteIfManaged(c.getContentUrl());
         }
-        nodeContentRepository.deleteAll(contents);
     }
 
     public LearningPath findByIdAndOwner(Integer id, User requester) {
@@ -218,7 +223,23 @@ public class LearningPathService {
         if (!prereq.getLearningPath().getId().equals(pathId)) {
             throw new IllegalArgumentException("Node tiên quyết phải thuộc cùng lộ trình.");
         }
+        if (excludeId != null) {
+            guardNoCycle(excludeId, prereqId);
+        }
         node.setPrerequisite(prereq);
+    }
+
+    private void guardNoCycle(Integer nodeId, Integer proposedPrereqId) {
+        java.util.Set<Integer> visited = new java.util.HashSet<>();
+        Integer cursor = proposedPrereqId;
+        while (cursor != null && visited.add(cursor)) {
+            if (cursor.equals(nodeId)) {
+                throw new IllegalArgumentException("Không thể đặt tiên quyết vì sẽ tạo vòng lặp phụ thuộc.");
+            }
+            LearningNode n = nodeRepository.findById(cursor).orElse(null);
+            if (n == null) break;
+            cursor = (n.getPrerequisite() != null) ? n.getPrerequisite().getId() : null;
+        }
     }
 
     /**
@@ -269,5 +290,11 @@ public class LearningPathService {
 
     private String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s.trim();
+    }
+
+    private void guardNoOpenClassroom(Integer pathId) {
+        if (classroomRepository.existsByLearningPathIdAndStatus(pathId, ClassroomStatus.OPEN.name())) {
+            throw new IllegalStateException("Lộ trình đang có lớp học đang mở, không thể thay đổi cấu trúc.");
+        }
     }
 }

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/lecturer/learning-paths")
@@ -30,7 +32,13 @@ public class LecturerLearningPathController {
     @GetMapping
     public String list(HttpSession session, Model model) {
         User user = currentUser(session);
-        model.addAttribute("paths", pathService.findByCreator(user));
+        List<LearningPath> paths = pathService.findByCreator(user);
+        Set<Integer> withClassroom = paths.stream()
+                .filter(p -> pathService.hasClassroom(p.getId()))
+                .map(LearningPath::getId)
+                .collect(Collectors.toSet());
+        model.addAttribute("paths", paths);
+        model.addAttribute("pathsWithClassroom", withClassroom);
         model.addAttribute("user", user);
         model.addAttribute("activePage", "learning-paths");
         return "lecturer/learning-path/list";
@@ -73,6 +81,7 @@ public class LecturerLearningPathController {
 
         model.addAttribute("path", path);
         model.addAttribute("nodes", nodes);
+        model.addAttribute("hasClassroom", pathService.hasClassroom(id));
         model.addAttribute("user", user);
         model.addAttribute("activePage", "learning-paths");
 
@@ -169,6 +178,40 @@ public class LecturerLearningPathController {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/lecturer/learning-paths/" + id;
+    }
+
+    @PostMapping("/{id}/archive")
+    public String archive(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
+        try {
+            pathService.archive(id, currentUser(session));
+            ra.addFlashAttribute("success", "Đã lưu trữ lộ trình.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/learning-paths";
+    }
+
+    @PostMapping("/{id}/unarchive")
+    public String unarchive(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
+        try {
+            pathService.unarchive(id, currentUser(session));
+            ra.addFlashAttribute("success", "Đã khôi phục lộ trình.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/learning-paths";
+    }
+
+    @PostMapping("/{id}/clone")
+    public String clone(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
+        try {
+            LearningPath cloned = pathService.clonePath(id, currentUser(session));
+            ra.addFlashAttribute("success", "Đã clone lộ trình thành công.");
+            return "redirect:/lecturer/learning-paths/" + cloned.getId();
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/lecturer/learning-paths";
+        }
     }
 
     private User currentUser(HttpSession session) {

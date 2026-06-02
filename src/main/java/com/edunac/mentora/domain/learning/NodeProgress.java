@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "node_progress",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "student_id", "learning_node_id"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "student_id", "node_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,7 +40,6 @@ public class NodeProgress {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    /** Tương thích code merge (StudentLearningController, NodeProgressService). */
     public Integer getNodeId() {
         return learningNode != null ? learningNode.getId() : null;
     }

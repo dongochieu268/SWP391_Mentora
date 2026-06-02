@@ -78,17 +78,15 @@ public class LecturerClassroomController {
 
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Integer id,
-                         @ModelAttribute ClassroomForm form,
+                         @RequestParam String status,
                          HttpSession session,
                          RedirectAttributes ra) {
         try {
-            classroomService.update(id, form, currentUser(session));
+            classroomService.updateStatus(id, status, currentUser(session));
             ra.addFlashAttribute("success", "Đã cập nhật lớp học.");
             return "redirect:/lecturer/classes";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
-            form.setId(id);
-            ra.addFlashAttribute("form", form);
             return "redirect:/lecturer/classes/" + id + "/edit";
         }
     }

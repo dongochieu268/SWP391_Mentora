@@ -140,6 +140,22 @@ public class LecturerAssessmentController {
         return "redirect:/lecturer/assessments/" + id;
     }
 
+    @PostMapping("/{id}/clone")
+    public String cloneAssessment(
+            @PathVariable Integer id,
+            HttpSession session,
+            RedirectAttributes ra
+    ) {
+        try {
+            Assessment cloned = assessmentService.cloneAssessment(id, currentUser(session));
+            ra.addFlashAttribute("success", "Đã clone bài test thành bản DRAFT mới.");
+            return "redirect:/lecturer/assessments/" + cloned.getId();
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/lecturer/assessments/" + id;
+        }
+    }
+
     private void addCommonModel(Model model, User user) {
         model.addAttribute("user", user);
         model.addAttribute("activePage", "assessments");

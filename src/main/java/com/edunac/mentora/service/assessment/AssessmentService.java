@@ -117,6 +117,44 @@ public class AssessmentService {
         return assessmentRepository.save(assessment);
     }
 
+    public Assessment cloneAssessment(Integer assessmentId, User requester) {
+        Assessment original = findByIdAndOwner(assessmentId, requester);
+
+        Assessment clone = new Assessment();
+        clone.setTitle(cloneTitle(original.getTitle()));
+        clone.setDescription(original.getDescription());
+        clone.setType(original.getType());
+        clone.setDeliveryMode(original.getDeliveryMode());
+        clone.setDurationMinutes(original.getDurationMinutes());
+        clone.setTotalScore(original.getTotalScore());
+        clone.setStatus(AssessmentStatus.DRAFT.name());
+        clone.setCreatedBy(requester);
+        Assessment savedClone = assessmentRepository.save(clone);
+
+        List<Question> questions = questionRepository.findByAssessment_IdOrderByIdAsc(original.getId());
+        for (Question question : questions) {
+            Question clonedQuestion = new Question();
+            clonedQuestion.setAssessment(savedClone);
+            clonedQuestion.setContent(question.getContent());
+            clonedQuestion.setDifficulty(question.getDifficulty());
+            clonedQuestion.setQuestionType(question.getQuestionType());
+            clonedQuestion.setScore(question.getScore());
+            Question savedQuestion = questionRepository.save(clonedQuestion);
+
+            List<QuestionOption> clonedOptions = new ArrayList<>();
+            for (QuestionOption option : optionRepository.findByQuestion_IdOrderByIdAsc(question.getId())) {
+                QuestionOption clonedOption = new QuestionOption();
+                clonedOption.setQuestion(savedQuestion);
+                clonedOption.setContent(option.getContent());
+                clonedOption.setCorrect(option.isCorrect());
+                clonedOptions.add(clonedOption);
+            }
+            optionRepository.saveAll(clonedOptions);
+        }
+
+        return savedClone;
+    }
+
     @Transactional(readOnly = true)
     public List<Question> findQuestions(Integer assessmentId) {
         return questionRepository.findByAssessment_IdOrderByIdAsc(assessmentId);
@@ -276,5 +314,17 @@ public class AssessmentService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String cloneTitle(String originalTitle) {
+        String suffix = " (Clone)";
+        String baseTitle = originalTitle == null || originalTitle.isBlank()
+                ? "Untitled assessment"
+                : originalTitle.trim();
+        int maxBaseLength = 200 - suffix.length();
+        if (baseTitle.length() > maxBaseLength) {
+            baseTitle = baseTitle.substring(0, maxBaseLength).trim();
+        }
+        return baseTitle + suffix;
     }
 }

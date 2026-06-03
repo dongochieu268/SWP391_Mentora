@@ -10,7 +10,6 @@ import com.edunac.mentora.dto.StudentRoadmapNodeState;
 import com.edunac.mentora.dto.StudentRoadmapNodeView;
 import com.edunac.mentora.dto.StudentRoadmapView;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
-import com.edunac.mentora.repository.learning.NodeContentRepository;
 import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.service.classroom.ClassroomMemberService;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,20 +28,17 @@ public class    StudentRoadmapService {
     private final LearningNodeRepository nodeRepository;
     private final ClassroomNodeStatusRepository nodeStatusRepository;
     private final NodeProgressRepository progressRepository;
-    private final NodeContentRepository nodeContentRepository;
 
     public StudentRoadmapService(
             ClassroomMemberService memberService,
             LearningNodeRepository nodeRepository,
             ClassroomNodeStatusRepository nodeStatusRepository,
-            NodeProgressRepository progressRepository,
-            NodeContentRepository nodeContentRepository
+            NodeProgressRepository progressRepository
     ) {
         this.memberService = memberService;
         this.nodeRepository = nodeRepository;
         this.nodeStatusRepository = nodeStatusRepository;
         this.progressRepository = progressRepository;
-        this.nodeContentRepository = nodeContentRepository;
     }
 
     /**
@@ -56,14 +51,13 @@ public class    StudentRoadmapService {
         List<LearningNode> pathNodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
         Map<Integer, String> visibilityByNodeId = loadVisibilityMap(classroomId);
         Map<Integer, Boolean> completedByNodeId = loadCompletionMap(classroomId, student.getId());
-        Set<Integer> nodesWithContent = nodeContentRepository.findNodeIdsWithContentByPathId(pathId);
 
         int visibleCount = 0;
         int completedVisibleCount = 0;
 
         List<StudentRoadmapNodeView> nodeViews = pathNodes.stream()
                 .map(node -> {
-                    boolean visible = isVisible(node.getId(), visibilityByNodeId, nodesWithContent);
+                    boolean visible = isVisible(node.getId(), visibilityByNodeId);
                     boolean prereqMet = isPrerequisiteMet(node, completedByNodeId);
                     boolean completed = Boolean.TRUE.equals(completedByNodeId.get(node.getId()));
 
@@ -76,7 +70,7 @@ public class    StudentRoadmapService {
                 .toList();
 
         for (StudentRoadmapNodeView view : nodeViews) {
-            if (isVisible(view.getNode().getId(), visibilityByNodeId, nodesWithContent)) {
+            if (isVisible(view.getNode().getId(), visibilityByNodeId)) {
                 visibleCount++;
                 if (view.getState() == StudentRoadmapNodeState.COMPLETED) {
                     completedVisibleCount++;
@@ -108,20 +102,9 @@ public class    StudentRoadmapService {
         return map;
     }
 
-    private boolean isVisible(
-            Integer nodeId,
-            Map<Integer, String> visibilityByNodeId,
-            Set<Integer> nodesWithContent
-    ) {
+    private boolean isVisible(Integer nodeId, Map<Integer, String> visibilityByNodeId) {
         String status = visibilityByNodeId.get(nodeId);
-        if (NodeVisibilityStatus.HIDDEN.name().equals(status)) {
-            return false;
-        }
-        if (NodeVisibilityStatus.VISIBLE.name().equals(status)) {
-            return true;
-        }
-        // GV đã upload nội dung nhưng chưa có dòng classroom_node_status
-        return nodesWithContent.contains(nodeId);
+        return NodeVisibilityStatus.VISIBLE.name().equals(status);
     }
 
     private boolean isPrerequisiteMet(LearningNode node, Map<Integer, Boolean> completedByNodeId) {

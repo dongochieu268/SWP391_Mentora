@@ -4,6 +4,7 @@ import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.classroom.Classroom;
 import com.edunac.mentora.domain.classroom.ClassroomStatus;
 import com.edunac.mentora.domain.learningpath.LearningPath;
+import com.edunac.mentora.domain.learningpath.LearningPathStatus;
 import com.edunac.mentora.domain.semester.Semester;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.dto.ClassroomForm;
@@ -53,11 +54,12 @@ public class ClassroomService {
     }
 
     public List<LearningPath> findPathsForTeacherAndSubject(User teacher, Integer subjectId) {
+        String active = LearningPathStatus.ACTIVE.name();
         if (subjectId == null) {
-            return learningPathRepository.findByCreatedByIdOrderByCreatedAtDesc(teacher.getId());
+            return learningPathRepository.findByCreatedByIdAndStatusOrderByCreatedAtDesc(teacher.getId(), active);
         }
-        return learningPathRepository.findByCreatedByIdAndSubjectIdOrderByCreatedAtDesc(
-                teacher.getId(), subjectId);
+        return learningPathRepository.findByCreatedByIdAndSubjectIdAndStatusOrderByCreatedAtDesc(
+                teacher.getId(), subjectId, active);
     }
 
     public Classroom findForTeacher(Integer id, User teacher) {
@@ -132,6 +134,9 @@ public class ClassroomService {
         }
         if (!path.getSubject().getId().equals(subjectId)) {
             throw new IllegalArgumentException("Lộ trình không thuộc môn học đã chọn.");
+        }
+        if (LearningPathStatus.ARCHIVED.name().equals(path.getStatus())) {
+            throw new IllegalArgumentException("Lộ trình đã được lưu trữ, không thể dùng cho lớp mới.");
         }
         return path;
     }

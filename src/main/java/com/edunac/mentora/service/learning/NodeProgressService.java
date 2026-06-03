@@ -2,14 +2,20 @@ package com.edunac.mentora.service.learning;
 
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.classroom.Classroom;
+import com.edunac.mentora.domain.classroom.ClassroomNodeStatus;
+import com.edunac.mentora.domain.classroom.NodeVisibilityStatus;
 import com.edunac.mentora.domain.learning.NodeProgress;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.dto.NodeProgressResponse;
+import com.edunac.mentora.repository.classroom.ClassroomMemberRepository;
+import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,9 +26,27 @@ public class NodeProgressService {
 
     private final NodeProgressRepository nodeProgressRepository;
     private final LearningNodeRepository learningNodeRepository;
+    private final ClassroomMemberRepository classroomMemberRepository;
+    private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
 
     @Transactional
     public NodeProgressResponse markNodeCompleted(Integer studentId, Integer nodeId, Integer classroomId) {
+        ensureActiveMember(studentId, classroomId);
+        ensureNodeVisible(nodeId, classroomId);
+
+        LearningNode node = learningNodeRepository.findById(nodeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Node không tồn tại"));
+
+        if (node.getPrerequisite() != null) {
+            boolean prereqDone = nodeProgressRepository
+                    .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
+                            studentId, node.getPrerequisite().getId(), classroomId);
+            if (!prereqDone) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Bạn cần hoàn thành node tiên quyết trước: " + node.getPrerequisite().getTitle());
+            }
+        }
+
         NodeProgress progress = nodeProgressRepository
                 .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
                 .orElseGet(() -> createProgress(studentId, nodeId, classroomId));
@@ -38,35 +62,62 @@ public class NodeProgressService {
 
     @Transactional(readOnly = true)
     public NodeProgressResponse buildProgressResponse(Integer studentId, Integer classroomId, Integer nodeId) {
-        List<LearningNode> visibleNodes = learningNodeRepository.findVisibleNodesByClassroom(classroomId);
-        int totalNodes = visibleNodes.size();
+        ensureActiveMember(studentId, classroomId);
 
-        long completedNodes = nodeProgressRepository
-                .countByStudent_IdAndClassroom_IdAndCompletedTrue(studentId, classroomId);
+        long totalNodes = learningNodeRepository.countVisibleNodesByClassroom(classroomId);
+        long completedNodes = nodeProgressRepository.countValidCompletedNodes(studentId, classroomId);
+        completedNodes = Math.min(completedNodes, totalNodes);
 
         double percent = totalNodes == 0 ? 0.0
                 : Math.round(completedNodes * 100.0 / totalNodes * 10.0) / 10.0;
 
         LearningNode currentNode = learningNodeRepository.findById(nodeId)
-                .orElseThrow(() -> new RuntimeException("Node không tồn tại: " + nodeId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Node không tồn tại"));
 
         boolean isCompleted = nodeProgressRepository
                 .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
                         studentId, nodeId, classroomId);
 
+        boolean prerequisiteMet = true;
+        if (currentNode.getPrerequisite() != null) {
+            prerequisiteMet = nodeProgressRepository
+                    .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
+                            studentId, currentNode.getPrerequisite().getId(), classroomId);
+        }
+
         return NodeProgressResponse.builder()
                 .nodeId(nodeId)
                 .nodeTitle(currentNode.getTitle())
                 .completed(isCompleted)
-                .totalNodes(totalNodes)
+                .totalNodes((int) totalNodes)
                 .completedNodes((int) completedNodes)
                 .progressPercent(percent)
+                .prerequisiteMet(prerequisiteMet)
                 .build();
     }
 
     @Transactional(readOnly = true)
     public List<NodeProgress> getProgressByStudentAndClassroom(Integer studentId, Integer classroomId) {
         return nodeProgressRepository.findByStudent_IdAndClassroom_Id(studentId, classroomId);
+    }
+
+    private void ensureActiveMember(Integer studentId, Integer classroomId) {
+        boolean isMember = classroomMemberRepository
+                .existsByClassroomIdAndUserIdAndStatus(classroomId, studentId, "ACTIVE");
+        if (!isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không phải thành viên của lớp này");
+        }
+    }
+
+    private void ensureNodeVisible(Integer nodeId, Integer classroomId) {
+        ClassroomNodeStatus nodeStatus = classroomNodeStatusRepository
+                .findByClassroomIdAndNodeId(classroomId, nodeId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Node không tồn tại trong lớp này"));
+
+        if (!NodeVisibilityStatus.VISIBLE.name().equals(nodeStatus.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Node này chưa được mở");
+        }
     }
 
     private NodeProgress createProgress(Integer studentId, Integer nodeId, Integer classroomId) {

@@ -8,7 +8,13 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "classroom_node_status")
+@Table(
+        name = "classroom_node_status",
+        uniqueConstraints = @UniqueConstraint(
+                name = "UQ_classroom_node_status",
+                columnNames = {"classroom_id", "node_id"}
+        )
+)
 @Getter
 @Setter
 public class ClassroomNodeStatus {

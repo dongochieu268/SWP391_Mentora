@@ -46,6 +46,14 @@
                                             <i class="ti ti-upload me-1"></i> Publish
                                         </button>
                                     </form>
+                                    <form th:unless="${canEdit}"
+                                          th:action="@{/lecturer/assessments/{id}/clone(id=${assessment.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('Clone bài test này thành bản DRAFT mới?');">
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                            <i class="ti ti-copy me-1"></i> Clone
+                                        </button>
+                                    </form>
                                 </div>
 
                                 <form th:if="${canEdit}"

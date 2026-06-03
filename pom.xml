@@ -31,17 +31,16 @@
     </properties>
     <dependencies>
 
-        <!-- WEB (MVC + Thymeleaf, không dùng REST/JSON) -->
+        <!-- WEB (MVC + Thymeleaf) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>4.0.6</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-json</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+
+        <!-- JSON: bắt buộc để @ResponseBody serialize NodeProgressResponse -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- THYMELEAF -->

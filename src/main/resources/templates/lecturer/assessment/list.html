@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bài test | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <h5 class="card-title fw-semibold mb-1">Bài test của tôi</h5>
+                                <p class="text-muted small mb-0">Tạo bài test trắc nghiệm để dùng cho điểm phân nhánh.</p>
+                            </div>
+                            <a th:href="@{/lecturer/assessments/new}" class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i> Tạo bài test
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tên bài test</th>
+                                    <th>Loại</th>
+                                    <th>Hình thức</th>
+                                    <th>Tổng điểm</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(assessments)}">
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        Chưa có bài test nào. <a th:href="@{/lecturer/assessments/new}">Tạo ngay</a>
+                                    </td>
+                                </tr>
+                                <tr th:each="a, stat : ${assessments}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${a.title}"></div>
+                                        <div class="text-muted small"
+                                             th:if="${a.description != null}"
+                                             th:text="${#strings.length(a.description) > 80 ? #strings.substring(a.description, 0, 80) + '...' : a.description}"></div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border" th:text="${a.type}"></span></td>
+                                    <td th:text="${a.deliveryMode}"></td>
+                                    <td th:text="${a.totalScore}"></td>
+                                    <td>
+                                        <span th:if="${a.status == 'DRAFT'}" class="badge bg-warning text-dark">DRAFT</span>
+                                        <span th:if="${a.status == 'PUBLISHED'}" class="badge bg-success">PUBLISHED</span>
+                                        <span th:if="${a.status == 'ARCHIVED'}" class="badge bg-secondary">ARCHIVED</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{/lecturer/assessments/{id}(id=${a.id})}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="ti ti-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

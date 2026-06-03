@@ -19,6 +19,8 @@ public interface ClassroomMemberRepository extends JpaRepository<ClassroomMember
 
     boolean existsByClassroomId(Integer classroomId);
 
+    boolean existsByClassroomIdAndUserIdAndStatus(Integer classroomId, Integer userId, String status);
+
     Optional<ClassroomMember> findByIdAndClassroomId(Integer id, Integer classroomId);
 
     Optional<ClassroomMember> findByClassroomIdAndUserIdAndStatus(

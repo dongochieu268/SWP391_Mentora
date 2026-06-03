@@ -16,4 +16,5 @@ public class NodeProgressResponse {
     private int totalNodes;
     private int completedNodes;
     private double progressPercent;
+    private boolean prerequisiteMet;
 }

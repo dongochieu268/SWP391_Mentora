@@ -102,7 +102,7 @@ public class    StudentRoadmapService {
 
     private Map<Integer, Boolean> loadCompletionMap(Integer classroomId, Integer studentId) {
         Map<Integer, Boolean> map = new HashMap<>();
-        for (NodeProgress progress : progressRepository.findByClassroomIdAndStudentId(classroomId, studentId)) {
+        for (NodeProgress progress : progressRepository.findByClassroom_IdAndStudent_Id(classroomId, studentId)) {
             map.put(progress.getLearningNode().getId(), progress.isCompleted());
         }
         return map;

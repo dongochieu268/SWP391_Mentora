@@ -1,11 +1,14 @@
 package com.edunac.mentora.domain.learningpath;
 
+import com.edunac.mentora.domain.learning.NodeContent;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "learning_nodes")
@@ -33,6 +36,10 @@ public class LearningNode {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "prerequisite_node_id")
     private LearningNode prerequisite;
+
+    @OneToMany(mappedBy = "node", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OrderBy("displayOrder ASC")
+    private List<NodeContent> contents = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

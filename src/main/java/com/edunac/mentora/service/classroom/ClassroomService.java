@@ -8,11 +8,12 @@ import com.edunac.mentora.domain.learningpath.LearningPathStatus;
 import com.edunac.mentora.domain.semester.Semester;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.dto.ClassroomForm;
+import com.edunac.mentora.repository.classroom.ClassroomMemberRepository;
+import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.semester.SemesterRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,18 +36,24 @@ public class ClassroomService {
     private final SubjectRepository subjectRepository;
     private final LearningPathRepository learningPathRepository;
     private final SemesterRepository semesterRepository;
+    private final ClassroomMemberRepository classroomMemberRepository;
+    private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
     private final SecureRandom random = new SecureRandom();
 
     public ClassroomService(
             ClassroomRepository classroomRepository,
             SubjectRepository subjectRepository,
             LearningPathRepository learningPathRepository,
-            SemesterRepository semesterRepository
+            SemesterRepository semesterRepository,
+            ClassroomMemberRepository classroomMemberRepository,
+            ClassroomNodeStatusRepository classroomNodeStatusRepository
     ) {
         this.classroomRepository = classroomRepository;
         this.subjectRepository = subjectRepository;
         this.learningPathRepository = learningPathRepository;
         this.semesterRepository = semesterRepository;
+        this.classroomMemberRepository = classroomMemberRepository;
+        this.classroomNodeStatusRepository = classroomNodeStatusRepository;
     }
 
     public List<Classroom> findByTeacher(User teacher) {
@@ -109,12 +116,13 @@ public class ClassroomService {
 
     public void delete(Integer id, User teacher) {
         Classroom classroom = findForTeacher(id, teacher);
-        try {
-            classroomRepository.delete(classroom);
-        } catch (DataIntegrityViolationException ex) {
-            throw new IllegalStateException(
-                    "Không thể xóa lớp đang có sinh viên hoặc dữ liệu liên quan.");
+
+        if (classroomMemberRepository.existsByClassroomId(id)) {
+            throw new IllegalStateException("Không thể xóa lớp đang có sinh viên.");
         }
+
+        classroomNodeStatusRepository.deleteByClassroomId(id);
+        classroomRepository.delete(classroom);
     }
 
     private Subject loadActiveSubject(Integer subjectId) {

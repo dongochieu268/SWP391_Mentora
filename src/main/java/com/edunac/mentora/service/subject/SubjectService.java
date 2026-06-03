@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SubjectService {
@@ -20,7 +20,8 @@ public class SubjectService {
     private final SubjectRepository subjectRepository;
     private final SubjectPrerequisiteRepository prerequisiteRepository;
 
-    public SubjectService(SubjectRepository subjectRepository, SubjectPrerequisiteRepository prerequisiteRepository) {
+    public SubjectService(SubjectRepository subjectRepository,
+                          SubjectPrerequisiteRepository prerequisiteRepository) {
         this.subjectRepository = subjectRepository;
         this.prerequisiteRepository = prerequisiteRepository;
     }
@@ -35,7 +36,8 @@ public class SubjectService {
 
     public Subject findById(Integer id) {
         return subjectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy môn học"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy môn học"));
     }
 
     public void saveForm(SubjectForm form) {
@@ -112,28 +114,34 @@ public class SubjectService {
         if (!subjectRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy môn học");
         }
-
         if (prerequisiteRepository.existsByPrerequisiteSubjectId(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa: Môn này đang là tiên quyết của môn khác!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Không thể xóa: Môn này đang là tiên quyết của môn khác!");
         }
-
         prerequisiteRepository.deleteBySubjectId(id);
         subjectRepository.deleteById(id);
     }
 
+
     public List<Subject> getAvailablePrerequisites(Integer mainSubjectId) {
         List<Subject> all = subjectRepository.findAll();
 
-        List<Integer> existingPreIds = new java.util.ArrayList<>();
+        Set<Integer> alreadyPrereqIds = new HashSet<>();
         for (SubjectPrerequisite sp : prerequisiteRepository.findBySubjectId(mainSubjectId)) {
-            existingPreIds.add(sp.getPrerequisiteSubjectId());
+            alreadyPrereqIds.add(sp.getPrerequisiteSubjectId());
         }
 
-        List<Subject> result = new java.util.ArrayList<>();
+
+        Map<Integer, List<Integer>> graph = buildPrerequisiteGraph();
+
+        List<Subject> result = new ArrayList<>();
         for (Subject s : all) {
             if (s.getId().equals(mainSubjectId)) continue;
-            if (existingPreIds.contains(s.getId())) continue;
-            if (prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(s.getId(), mainSubjectId)) continue;
+            if (alreadyPrereqIds.contains(s.getId())) continue;
+
+
+            if (wouldCreateCycle(graph, mainSubjectId, s.getId())) continue;
+
             result.add(s);
         }
         return result;
@@ -142,11 +150,21 @@ public class SubjectService {
     @Transactional
     public void addPrerequisite(Integer subjectId, Integer prerequisiteSubjectId) {
         if (subjectId.equals(prerequisiteSubjectId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chọn chính mình làm tiên quyết!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Không thể chọn chính mình làm tiên quyết!");
         }
 
-        if (prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(subjectId, prerequisiteSubjectId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Môn này đã được thêm làm tiên quyết rồi!");
+        if (prerequisiteRepository.existsBySubjectIdAndPrerequisiteSubjectId(
+                subjectId, prerequisiteSubjectId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Môn này đã được thêm làm tiên quyết rồi!");
+        }
+
+        // Kiểm tra vòng lặp trước khi lưu
+        Map<Integer, List<Integer>> graph = buildPrerequisiteGraph();
+        if (wouldCreateCycle(graph, subjectId, prerequisiteSubjectId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Không thể thêm: sẽ tạo vòng lặp tiên quyết!");
         }
 
         SubjectPrerequisite sp = new SubjectPrerequisite();
@@ -165,9 +183,53 @@ public class SubjectService {
         return prerequisiteRepository.findBySubjectId(subjectId);
     }
 
+
+    private Map<Integer, List<Integer>> buildPrerequisiteGraph() {
+        Map<Integer, List<Integer>> graph = new HashMap<>();
+        for (SubjectPrerequisite sp : prerequisiteRepository.findAll()) {
+            graph.computeIfAbsent(sp.getSubjectId(), k -> new ArrayList<>())
+                    .add(sp.getPrerequisiteSubjectId());
+        }
+        return graph;
+    }
+
+
+    private boolean wouldCreateCycle(Map<Integer, List<Integer>> graph,
+                                     Integer subjectId,
+                                     Integer prerequisiteId) {
+
+        Set<Integer> visited = new HashSet<>();
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(prerequisiteId);
+
+        while (!stack.isEmpty()) {
+            Integer current = stack.pop();
+            if (current.equals(subjectId)) {
+                return true; // Tìm thấy vòng lặp
+            }
+            if (visited.contains(current)) {
+                continue;
+            }
+            visited.add(current);
+
+            List<Integer> prereqs = graph.getOrDefault(current, Collections.emptyList());
+            for (Integer prereq : prereqs) {
+                if (!visited.contains(prereq)) {
+                    stack.push(prereq);
+                }
+            }
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
     private void validateCodeUnique(String code, Integer excludeId) {
         if (code == null || code.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã môn không được để trống");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Mã môn không được để trống");
         }
         boolean exists = excludeId == null
                 ? subjectRepository.existsByCode(code.trim())
@@ -181,7 +243,8 @@ public class SubjectService {
         try {
             SubjectStatus.valueOf(status);
         } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái phải là ACTIVE hoặc HIDDEN");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Trạng thái phải là ACTIVE hoặc HIDDEN");
         }
     }
 

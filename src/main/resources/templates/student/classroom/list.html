@@ -112,8 +112,12 @@
                                     </td>
                                     <td class="text-end">
                                         <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
+                                           class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="ti ti-route me-1"></i> Lộ trình
+                                        </a>
+                                        <a th:href="@{/student/classrooms/{id}/nodes(id=${m.classroom.id})}"
                                            class="btn btn-sm btn-primary">
-                                            <i class="ti ti-route me-1"></i> Xem lộ trình
+                                            <i class="ti ti-book me-1"></i> Vào học
                                         </a>
                                     </td>
                                 </tr>

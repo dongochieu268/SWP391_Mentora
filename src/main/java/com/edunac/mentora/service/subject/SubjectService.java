@@ -5,6 +5,7 @@ import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.subject.SubjectStatus;
 import com.edunac.mentora.domain.subject.SubjectPrerequisite;
 import com.edunac.mentora.domain.subject.SubjectPrerequisiteKey;
+import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
 import com.edunac.mentora.repository.subject.SubjectPrerequisiteRepository;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,14 @@ public class SubjectService {
 
     private final SubjectRepository subjectRepository;
     private final SubjectPrerequisiteRepository prerequisiteRepository;
+    private final ClassroomRepository classroomRepository;
 
-    public SubjectService(SubjectRepository subjectRepository, SubjectPrerequisiteRepository prerequisiteRepository) {
+    public SubjectService(SubjectRepository subjectRepository,
+                          SubjectPrerequisiteRepository prerequisiteRepository,
+                          ClassroomRepository classroomRepository) {
         this.subjectRepository = subjectRepository;
         this.prerequisiteRepository = prerequisiteRepository;
+        this.classroomRepository = classroomRepository;
     }
 
     public List<Subject> getAllSubjects() {
@@ -107,6 +112,7 @@ public class SubjectService {
         return subjectRepository.save(subject);
     }
 
+
     @Transactional
     public void delete(Integer id) {
         if (!subjectRepository.existsById(id)) {
@@ -114,7 +120,13 @@ public class SubjectService {
         }
 
         if (prerequisiteRepository.existsByPrerequisiteSubjectId(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa: Môn này đang là tiên quyết của môn khác!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Không thể xóa: Môn này đang là tiên quyết của môn khác!");
+        }
+
+        if (!classroomRepository.findByLearningPath_SubjectId(id).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Không thể xóa: Môn học đang có lớp học sử dụng!");
         }
 
         prerequisiteRepository.deleteBySubjectId(id);

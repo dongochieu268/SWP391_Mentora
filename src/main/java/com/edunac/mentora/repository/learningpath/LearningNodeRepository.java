@@ -32,7 +32,7 @@ public interface LearningNodeRepository extends JpaRepository<LearningNode, Inte
 
     @Query(value = """
         SELECT ln.* FROM learning_nodes ln
-        JOIN classroom_node_status cns ON cns.learning_node_id = ln.id
+        JOIN classroom_node_status cns ON cns.node_id = ln.id
         WHERE cns.classroom_id = :classroomId
           AND cns.status = 'VISIBLE'
         ORDER BY ln.node_order ASC
@@ -41,7 +41,7 @@ public interface LearningNodeRepository extends JpaRepository<LearningNode, Inte
 
     @Query(value = """
         SELECT COUNT(ln.id) FROM learning_nodes ln
-        JOIN classroom_node_status cns ON cns.learning_node_id = ln.id
+        JOIN classroom_node_status cns ON cns.node_id = ln.id
         WHERE cns.classroom_id = :classroomId
           AND cns.status = 'VISIBLE'
     """, nativeQuery = true)

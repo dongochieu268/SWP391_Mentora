@@ -49,9 +49,71 @@
                                 </div>
 
                                 <hr>
-                                <p class="text-muted small">
-                                    <i class="ti ti-info-circle"></i> Nội dung chi tiết của bài học sẽ được hiển thị ở đây.
-                                </p>
+
+                                <div th:if="${#lists.isEmpty(contents)}"
+                                     class="text-center text-muted py-4">
+                                    Bài học này chưa có nội dung.
+                                </div>
+
+                                <div th:each="content : ${contents}" class="mb-4">
+                                    <div class="fw-semibold mb-2 text-primary"
+                                         style="font-size:14px;"
+                                         th:if="${content.title != null and !content.title.isBlank()}"
+                                         th:text="${content.title}">
+                                        Tiêu đề nội dung
+                                    </div>
+
+                                    <div th:if="${content.contentType == 'TEXT'}"
+                                         th:utext="${content.contentText}"
+                                         style="line-height:1.8;font-size:15px;padding:16px;background:#f8faff;border-left:3px solid #1d4ed8;border-radius:6px;">
+                                    </div>
+
+                                    <div th:if="${content.contentType == 'VIDEO'}"
+                                         class="ratio ratio-16x9 rounded overflow-hidden border">
+                                        <iframe th:src="${content.contentUrl}" allowfullscreen></iframe>
+                                    </div>
+
+                                    <div th:if="${content.contentType == 'FILE'}"
+                                         class="d-flex align-items-center gap-3 p-3 rounded border"
+                                         style="background:#f8faff;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                             style="width:40px;height:40px;background:#dbeafe;">
+                                            <i class="ti ti-file-text fs-5 text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold" style="font-size:14px;"
+                                                 th:text="${content.title != null ? content.title : 'Tài liệu đính kèm'}">
+                                                Tài liệu đính kèm
+                                            </div>
+                                            <div class="text-muted" style="font-size:12px;">File học tập</div>
+                                        </div>
+                                        <a th:href="${content.contentUrl}" target="_blank"
+                                           class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="ti ti-download me-1"></i>Tải xuống
+                                        </a>
+                                    </div>
+
+                                    <div th:if="${content.contentType == 'LINK'}"
+                                         class="d-flex align-items-center gap-3 p-3 rounded border"
+                                         style="background:#f8faff;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                             style="width:40px;height:40px;background:#dbeafe;">
+                                            <i class="ti ti-link fs-5 text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <div class="fw-semibold" style="font-size:14px;"
+                                                 th:text="${content.title != null ? content.title : 'Liên kết'}">
+                                                Liên kết
+                                            </div>
+                                            <div class="text-muted text-truncate" style="font-size:12px;"
+                                                 th:text="${content.contentUrl}"></div>
+                                        </div>
+                                        <a th:href="${content.contentUrl}" target="_blank"
+                                           class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="ti ti-external-link me-1"></i>Mở
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

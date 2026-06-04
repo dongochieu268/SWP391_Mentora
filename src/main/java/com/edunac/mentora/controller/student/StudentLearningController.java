@@ -1,10 +1,12 @@
 package com.edunac.mentora.controller.student;
 
+import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.domain.learning.NodeProgress;
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.dto.NodeProgressResponse;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
+import com.edunac.mentora.service.learning.NodeContentService;
 import com.edunac.mentora.service.learning.NodeProgressService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 public class StudentLearningController {
 
     private final NodeProgressService nodeProgressService;
+    private final NodeContentService nodeContentService;
     private final LearningNodeRepository learningNodeRepository;
 
     @GetMapping("/classrooms/{classroomId}/nodes")
@@ -80,6 +83,8 @@ public class StudentLearningController {
         LearningNode node = learningNodeRepository.findById(nodeId)
                 .orElseThrow(() -> new RuntimeException("Node không tồn tại"));
 
+        List<NodeContent> contents = nodeContentService.getByNodeId(nodeId);
+
         NodeProgressResponse progress = nodeProgressService
                 .buildProgressResponse(currentUser.getId(), classroomId, nodeId);
 
@@ -99,6 +104,7 @@ public class StudentLearningController {
         model.addAttribute("user", currentUser);
         model.addAttribute("activePage", "classrooms");
         model.addAttribute("node", node);
+        model.addAttribute("contents", contents);
         model.addAttribute("progress", progress);
         model.addAttribute("classroomId", classroomId);
         model.addAttribute("prevNodeId", prevNodeId);

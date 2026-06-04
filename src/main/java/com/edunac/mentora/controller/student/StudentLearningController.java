@@ -1,7 +1,6 @@
 package com.edunac.mentora.controller.student;
 
 import com.edunac.mentora.domain.learning.NodeContent;
-import com.edunac.mentora.domain.learning.NodeProgress;
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.dto.NodeProgressResponse;
@@ -17,8 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/student")
@@ -30,42 +27,8 @@ public class StudentLearningController {
     private final LearningNodeRepository learningNodeRepository;
 
     @GetMapping("/classrooms/{classroomId}/nodes")
-    public String viewLearningPath(
-            @PathVariable Integer classroomId,
-            HttpSession session,
-            Model model) {
-
-        User currentUser = (User) session.getAttribute("loggedInUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-
-        List<LearningNode> nodes = learningNodeRepository.findVisibleNodesByClassroom(classroomId);
-        List<NodeProgress> progressList = nodeProgressService
-                .getProgressByStudentAndClassroom(currentUser.getId(), classroomId);
-
-        Map<Integer, Boolean> completedMap = progressList.stream()
-                .collect(Collectors.toMap(
-                        NodeProgress::getNodeId,
-                        NodeProgress::getIsCompleted,
-                        (a, b) -> a
-                ));
-
-        long completedCount = progressList.stream()
-                .filter(p -> Boolean.TRUE.equals(p.getIsCompleted())).count();
-        double percent = nodes.isEmpty() ? 0.0
-                : Math.round(completedCount * 100.0 / nodes.size() * 10.0) / 10.0;
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("classroomName", "Lớp học #" + classroomId);
-        model.addAttribute("nodes", nodes);
-        model.addAttribute("completedMap", completedMap);
-        model.addAttribute("percent", percent);
-        model.addAttribute("completedCount", completedCount);
-        model.addAttribute("totalNodes", nodes.size());
-        model.addAttribute("classroomId", classroomId);
-
-        return "student/learning-path";
+    public String viewLearningPath(@PathVariable Integer classroomId) {
+        return "redirect:/student/classrooms/" + classroomId + "/roadmap";
     }
 
     @GetMapping("/classrooms/{classroomId}/nodes/{nodeId}")

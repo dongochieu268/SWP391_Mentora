@@ -112,14 +112,14 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="d-flex flex-wrap gap-2">
                             <a th:if="${prevNodeId != null}"
                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${prevNodeId})}"
-                               class="btn btn-outline-secondary w-50">← Bài trước</a>
+                               class="btn btn-outline-secondary flex-fill">← Bài trước</a>
 
                             <a th:if="${nextNodeId != null}"
                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
-                               class="btn btn-outline-primary w-50 ms-auto">Bài tiếp →</a>
+                               class="btn btn-outline-primary flex-fill ms-auto">Bài tiếp →</a>
                         </div>
                     </div>
                 </div>

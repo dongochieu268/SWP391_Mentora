@@ -60,7 +60,7 @@
                         </form>
 
                         <!-- Table -->
-                        <div class="table-responsive">
+                        <div class="table-responsive mobile-stack">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -79,33 +79,33 @@
                                     </td>
                                 </tr>
                                 <tr th:each="u, stat : ${users}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td>
+                                    <td data-label="STT" th:text="${stat.count}"></td>
+                                    <td data-label="H&#7885; t&#234;n">
                                         <div class="d-flex align-items-center gap-2">
                                             <img th:src="'/assets/images/profile/user-' + ${u.id % 6 + 1} + '.jpg'"
                                                  width="35" height="35" class="rounded-circle" alt="">
                                             <span class="fw-semibold" th:text="${u.fullName}"></span>
                                         </div>
                                     </td>
-                                    <td th:text="${u.email}"></td>
-                                    <td>
+                                    <td data-label="Email" th:text="${u.email}"></td>
+                                    <td data-label="Vai tr&#242;">
                       <span th:switch="${u.role.name}">
                         <span th:case="'ADMIN'" class="badge bg-danger">ADMIN</span>
                         <span th:case="'LECTURER'" class="badge bg-warning text-dark">LECTURER</span>
                         <span th:case="'STUDENT'" class="badge bg-info">STUDENT</span>
                       </span>
                                     </td>
-                                    <td>
+                                    <td data-label="Tr&#7841;ng th&#225;i">
                       <span th:switch="${u.status}">
                         <span th:case="'ACTIVE'" class="badge bg-success">ACTIVE</span>
                         <span th:case="'INACTIVE'" class="badge bg-secondary">INACTIVE</span>
                         <span th:case="'BANNED'" class="badge bg-danger">BANNED</span>
                       </span>
                                     </td>
-                                    <td>
+                                    <td data-label="Email XN">
                                         <i th:class="${u.emailVerified} ? 'ti ti-circle-check text-success fs-5' : 'ti ti-circle-x text-danger fs-5'"></i>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" data-label="Thao t&#225;c">
                                         <!-- Admin: không thể thay đổi -->
                                         <span th:if="${u.role.name == 'ADMIN'}">
                         <button class="btn btn-sm btn-light" disabled title="Không thể thay đổi Admin">

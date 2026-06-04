@@ -25,11 +25,11 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title fw-semibold mb-3">Tham gia lớp học</h5>
-                        <form th:action="@{/student/classrooms/join}" method="post" class="d-flex gap-2">
-                            <input type="text" name="inviteCode" class="form-control"
+                        <form th:action="@{/student/classrooms/join}" method="post" class="d-flex flex-wrap gap-2">
+                            <input type="text" name="inviteCode" class="form-control flex-grow-1"
                                    placeholder="Nhập mã lớp (VD: ABC12345)" maxlength="20"
-                                   style="max-width: 280px;" required/>
-                            <button type="submit" class="btn btn-primary">
+                                   style="min-width: 0;" required/>
+                            <button type="submit" class="btn btn-primary flex-shrink-0">
                                 <i class="ti ti-door-enter me-1"></i> Tham gia
                             </button>
                         </form>
@@ -42,7 +42,7 @@
                         <h5 class="card-title fw-semibold mb-3">
                             <i class="ti ti-clock me-1 text-warning"></i> Yêu cầu đang chờ duyệt
                         </h5>
-                        <div class="table-responsive">
+                        <div class="table-responsive mobile-stack">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -55,14 +55,16 @@
                                 </thead>
                                 <tbody>
                                 <tr th:each="m : ${pendingRequests}">
-                                    <td class="fw-semibold" th:text="${m.classroom.name}"></td>
-                                    <td>
-                                        <span class="badge bg-info text-dark" th:text="${m.classroom.subject.code}"></span>
-                                        <span th:text="${m.classroom.subject.name}"></span>
+                                    <td data-label="T&#234;n l&#7899;p" class="fw-semibold" th:text="${m.classroom.name}"></td>
+                                    <td data-label="M&#244;n h&#7885;c">
+                                        <div class="d-flex justify-content-end flex-wrap gap-1">
+                                            <span class="badge bg-info text-dark" th:text="${m.classroom.subject.code}"></span>
+                                            <span th:text="${m.classroom.subject.name}"></span>
+                                        </div>
                                     </td>
-                                    <td th:text="${m.classroom.teacher.fullName}"></td>
-                                    <td th:text="${m.classroom.semester.name}"></td>
-                                    <td><span class="badge bg-warning text-dark">Chờ duyệt</span></td>
+                                    <td data-label="Gi&#7843;ng vi&#234;n" th:text="${m.classroom.teacher.fullName}"></td>
+                                    <td data-label="H&#7885;c k&#7923;" th:text="${m.classroom.semester.name}"></td>
+                                    <td data-label="Tr&#7841;ng th&#225;i"><span class="badge bg-warning text-dark">Chờ duyệt</span></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -76,7 +78,7 @@
                         <h5 class="card-title fw-semibold mb-3">
                             <i class="ti ti-school me-1 text-success"></i> Lớp học của tôi
                         </h5>
-                        <div class="table-responsive">
+                        <div class="table-responsive mobile-stack">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -97,20 +99,22 @@
                                     </td>
                                 </tr>
                                 <tr th:each="m, stat : ${myClassrooms}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td class="fw-semibold" th:text="${m.classroom.name}"></td>
-                                    <td>
-                                        <span class="badge bg-info text-dark" th:text="${m.classroom.subject.code}"></span>
-                                        <span th:text="${m.classroom.subject.name}"></span>
+                                    <td data-label="STT" th:text="${stat.count}"></td>
+                                    <td data-label="T&#234;n l&#7899;p" class="fw-semibold" th:text="${m.classroom.name}"></td>
+                                    <td data-label="M&#244;n h&#7885;c">
+                                        <div class="d-flex justify-content-end flex-wrap gap-1">
+                                            <span class="badge bg-info text-dark" th:text="${m.classroom.subject.code}"></span>
+                                            <span th:text="${m.classroom.subject.name}"></span>
+                                        </div>
                                     </td>
-                                    <td th:text="${m.classroom.learningPath.name}"></td>
-                                    <td th:text="${m.classroom.teacher.fullName}"></td>
-                                    <td th:text="${m.classroom.semester.name}"></td>
-                                    <td>
+                                    <td data-label="L&#7897; tr&#236;nh" th:text="${m.classroom.learningPath.name}"></td>
+                                    <td data-label="Gi&#7843;ng vi&#234;n" th:text="${m.classroom.teacher.fullName}"></td>
+                                    <td data-label="H&#7885;c k&#7923;" th:text="${m.classroom.semester.name}"></td>
+                                    <td data-label="Vai tr&#242;">
                                         <span th:if="${m.roleInClass == 'TA'}" class="badge bg-primary">Trợ giảng</span>
                                         <span th:unless="${m.roleInClass == 'TA'}" class="badge bg-secondary">Học sinh</span>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" data-label="Thao t&#225;c">
                                         <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
                                            class="btn btn-sm btn-primary">
                                             <i class="ti ti-route me-1"></i> Xem lộ trình

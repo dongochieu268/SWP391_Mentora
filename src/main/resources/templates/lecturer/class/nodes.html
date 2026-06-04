@@ -21,7 +21,7 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-                <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
                     <div>
                         <h5 class="fw-semibold mb-1" th:text="${classroom.name}"></h5>
                         <p class="text-muted small mb-0">
@@ -29,7 +29,7 @@
                             &nbsp;|&nbsp; Lộ trình: <span th:text="${classroom.learningPath.name}"></span>
                         </p>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
                         <a th:href="@{/lecturer/classes/{id}/members(id=${classroom.id})}"
                            class="btn btn-outline-success btn-sm">
                             <i class="ti ti-users me-1"></i> Thành viên
@@ -42,7 +42,7 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <div class="table-responsive">
+                        <div class="table-responsive mobile-stack">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -61,24 +61,25 @@
                                     </td>
                                 </tr>
                                 <tr th:each="n, stat : ${nodes}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td>
+                                    <td data-label="STT" th:text="${stat.count}"></td>
+                                    <td data-label="Ti&#234;u &#273;&#7873; node">
                                         <div class="fw-semibold" th:text="${n.title}"></div>
                                         <div th:if="${n.description != null and !#strings.isEmpty(n.description)}"
                                              class="text-muted small text-truncate" style="max-width: 320px;"
                                              th:text="${n.description}"></div>
                                     </td>
-                                    <td>
+                                    <td data-label="Ti&#234;n quy&#7871;t">
                                         <span th:if="${n.prerequisiteTitle != null}"
                                               class="badge bg-light text-dark border"
                                               th:text="${n.prerequisiteTitle}"></span>
                                         <span th:unless="${n.prerequisiteTitle != null}" class="text-muted">—</span>
                                     </td>
-                                    <td>
+                                    <td data-label="Tr&#7841;ng th&#225;i">
                                         <span th:if="${n.status == 'VISIBLE'}" class="badge bg-success">VISIBLE</span>
                                         <span th:unless="${n.status == 'VISIBLE'}" class="badge bg-secondary">HIDDEN</span>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" data-label="Thao t&#225;c">
+                                        <div class="d-flex gap-1 justify-content-end flex-wrap">
                                         <form th:if="${n.status == 'VISIBLE'}"
                                               th:action="@{/lecturer/classes/{cid}/nodes/{nid}/hide(cid=${classroom.id}, nid=${n.nodeId})}"
                                               method="post" class="d-inline">
@@ -93,6 +94,7 @@
                                                 <i class="ti ti-eye"></i> Hiện
                                             </button>
                                         </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

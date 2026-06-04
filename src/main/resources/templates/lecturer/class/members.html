@@ -22,7 +22,7 @@
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
                 <!-- Header -->
-                <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
                     <div>
                         <h5 class="fw-semibold mb-1" th:text="${classroom.name}"></h5>
                         <p class="text-muted small mb-0">
@@ -30,7 +30,7 @@
                             &nbsp;|&nbsp; Môn: <span th:text="${classroom.subject.code + ' - ' + classroom.subject.name}"></span>
                         </p>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
                         <a th:href="@{/lecturer/classes}" class="btn btn-outline-secondary btn-sm">
                             <i class="ti ti-arrow-left me-1"></i> Quay lại
                         </a>
@@ -52,7 +52,7 @@
                             Không có yêu cầu nào đang chờ duyệt.
                         </div>
 
-                        <div class="table-responsive" th:unless="${#lists.isEmpty(pendingMembers)}">
+                        <div class="table-responsive mobile-stack" th:unless="${#lists.isEmpty(pendingMembers)}">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -65,11 +65,12 @@
                                 </thead>
                                 <tbody>
                                 <tr th:each="m, stat : ${pendingMembers}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td class="fw-semibold" th:text="${m.user.fullName}"></td>
-                                    <td th:text="${m.user.email}"></td>
-                                    <td th:text="${#temporals.format(m.joinedAt, 'dd/MM/yyyy HH:mm')}"></td>
-                                    <td class="text-end">
+                                    <td data-label="STT" th:text="${stat.count}"></td>
+                                    <td data-label="H&#7885; t&#234;n" class="fw-semibold" th:text="${m.user.fullName}"></td>
+                                    <td data-label="Email" th:text="${m.user.email}"></td>
+                                    <td data-label="Th&#7901;i gian g&#7917;i" th:text="${#temporals.format(m.joinedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td class="text-end" data-label="Thao t&#225;c">
+                                        <div class="d-flex gap-1 justify-content-end flex-wrap">
                                         <form th:action="@{/lecturer/classes/{cid}/members/{mid}/approve(cid=${classroom.id}, mid=${m.id})}"
                                               method="post" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-success me-1">
@@ -83,6 +84,7 @@
                                                 <i class="ti ti-x"></i> Từ chối
                                             </button>
                                         </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -104,7 +106,7 @@
                             Chưa có thành viên nào.
                         </div>
 
-                        <div class="table-responsive" th:unless="${#lists.isEmpty(activeMembers)}">
+                        <div class="table-responsive mobile-stack" th:unless="${#lists.isEmpty(activeMembers)}">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -118,15 +120,16 @@
                                 </thead>
                                 <tbody>
                                 <tr th:each="m, stat : ${activeMembers}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td class="fw-semibold" th:text="${m.user.fullName}"></td>
-                                    <td th:text="${m.user.email}"></td>
-                                    <td>
+                                    <td data-label="STT" th:text="${stat.count}"></td>
+                                    <td data-label="H&#7885; t&#234;n" class="fw-semibold" th:text="${m.user.fullName}"></td>
+                                    <td data-label="Email" th:text="${m.user.email}"></td>
+                                    <td data-label="Vai tr&#242;">
                                         <span th:if="${m.roleInClass == 'TA'}" class="badge bg-primary">Trợ giảng (TA)</span>
                                         <span th:unless="${m.roleInClass == 'TA'}" class="badge bg-secondary">Học sinh</span>
                                     </td>
-                                    <td th:text="${#temporals.format(m.joinedAt, 'dd/MM/yyyy')}"></td>
-                                    <td class="text-end">
+                                    <td data-label="Ng&#224;y tham gia" th:text="${#temporals.format(m.joinedAt, 'dd/MM/yyyy')}"></td>
+                                    <td class="text-end" data-label="Thao t&#225;c">
+                                        <div class="d-flex gap-1 justify-content-end flex-wrap">
                                         <!-- Chỉ định TA -->
                                         <form th:if="${m.roleInClass != 'TA'}"
                                               th:action="@{/lecturer/classes/{cid}/members/{mid}/assign-ta(cid=${classroom.id}, mid=${m.id})}"
@@ -143,6 +146,7 @@
                                                 <i class="ti ti-star-off"></i> Thu hồi TA
                                             </button>
                                         </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

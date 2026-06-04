@@ -26,7 +26,7 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
                             <div>
                                 <h4 class="card-title mb-1" th:text="${pageTitle}">Quản lý môn học</h4>
                             </div>
@@ -35,8 +35,8 @@
                             </a>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle text-nowrap mb-0">
+                        <div class="table-responsive mobile-stack">
+                            <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
                                     <th>ID</th>
@@ -53,20 +53,20 @@
                                     <td colspan="7" class="text-center text-muted py-4">Chưa có môn học nào.</td>
                                 </tr>
                                 <tr th:each="s : ${subjects}">
-                                    <td th:text="${s.id}">1</td>
-                                    <td><strong th:text="${s.code}">CODE</strong></td>
-                                    <td th:text="${s.name}">Name</td>
-                                    <td>
+                                    <td data-label="ID" th:text="${s.id}">1</td>
+                                    <td data-label="M&#227; m&#244;n"><strong th:text="${s.code}">CODE</strong></td>
+                                    <td data-label="T&#234;n m&#244;n" th:text="${s.name}">Name</td>
+                                    <td data-label="M&#244; t&#7843;">
                                         <span th:if="${s.description == null or #strings.isEmpty(s.description)}">-</span>
                                         <span th:unless="${s.description == null or #strings.isEmpty(s.description)}"
                                               th:text="${#strings.length(s.description) > 50 ? #strings.substring(s.description, 0, 50) + '...' : s.description}">Mô tả</span>
                                     </td>
-                                    <td>
+                                    <td data-label="Tr&#7841;ng th&#225;i">
                                         <span th:if="${s.status == 'ACTIVE'}" class="badge bg-success">ACTIVE</span>
                                         <span th:unless="${s.status == 'ACTIVE'}" class="badge bg-secondary" th:text="${s.status}">HIDDEN</span>
                                     </td>
-                                    <td th:text="${s.createdAt != null ? #temporals.format(s.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
-                                    <td class="text-end">
+                                    <td data-label="Ng&#224;y t&#7841;o" th:text="${s.createdAt != null ? #temporals.format(s.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                                    <td class="text-end" data-label="Thao t&#225;c">
                                         <div class="d-flex gap-1 justify-content-end flex-wrap">
                                             <a th:href="${baseUrl + '?editId=' + s.id}" class="btn btn-sm btn-outline-primary">Sửa</a>
 
@@ -101,7 +101,7 @@
      th:classappend="${openModal} ? ' show' : ''"
      th:style="${openModal} ? 'display: block;' : ''"
      aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
             <form th:action="${baseUrl + '/save'}" th:object="${subjectForm}" method="post">
                 <div class="modal-header">

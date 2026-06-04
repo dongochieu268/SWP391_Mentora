@@ -25,13 +25,13 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
                             <h5 class="card-title fw-semibold mb-0">Quản lý học kỳ</h5>
                             <a class="btn btn-primary" th:href="@{/admin/semesters/new}">
                                 <i class="ti ti-plus"></i> Thêm học kỳ
                             </a>
                         </div>
-                        <div class="table-responsive">
+                        <div class="table-responsive mobile-stack">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
@@ -48,15 +48,16 @@
                                     <td colspan="6" class="text-center text-muted py-4">Chưa có học kỳ nào.</td>
                                 </tr>
                                 <tr th:each="semester, stat : ${semesters}">
-                                    <td th:text="${stat.count}">1</td>
-                                    <td th:text="${semester.name}">Học kỳ 1</td>
-                                    <td th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')}">01/09/2025</td>
-                                    <td th:text="${#temporals.format(semester.endDate, 'dd/MM/yyyy')}">15/01/2026</td>
-                                    <td>
+                                    <td data-label="#" th:text="${stat.count}">1</td>
+                                    <td data-label="T&#234;n h&#7885;c k&#7923;" th:text="${semester.name}">Học kỳ 1</td>
+                                    <td data-label="B&#7855;t &#273;&#7847;u" th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')}">01/09/2025</td>
+                                    <td data-label="K&#7871;t th&#250;c" th:text="${#temporals.format(semester.endDate, 'dd/MM/yyyy')}">15/01/2026</td>
+                                    <td data-label="Tr&#7841;ng th&#225;i">
                                         <span class="badge bg-primary" th:if="${semester.status == 'ACTIVE'}">ACTIVE</span>
                                         <span class="badge bg-secondary" th:if="${semester.status == 'HIDDEN'}">HIDDEN</span>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" data-label="Thao t&#225;c">
+                                        <div class="d-flex gap-1 justify-content-end flex-wrap">
                                         <a class="btn btn-sm btn-outline-primary"
                                            th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}">Sửa</a>
                                         <form class="d-inline" method="post"
@@ -64,6 +65,7 @@
                                               th:onsubmit="return confirm('Xóa học kỳ này?');">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                                         </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

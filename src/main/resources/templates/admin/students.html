@@ -58,7 +58,7 @@
             </form>
 
             <!-- Table -->
-            <div class="table-responsive">
+            <div class="table-responsive mobile-stack">
               <table class="table table-hover align-middle mb-0">
                 <thead>
                 <tr>
@@ -74,21 +74,21 @@
                   <td colspan="5" class="text-center text-muted py-4">Không tìm thấy sinh viên nào.</td>
                 </tr>
                 <tr th:each="s, stat : ${students}">
-                  <td th:text="${stat.count}"></td>
-                  <td>
+                  <td data-label="STT" th:text="${stat.count}"></td>
+                  <td data-label="Sinh vi&#234;n">
                     <div class="d-flex align-items-center gap-2">
                       <img th:src="'/assets/images/profile/user-' + ${s.id % 6 + 1} + '.jpg'"
                            width="35" height="35" class="rounded-circle" alt="">
                       <span class="fw-semibold" th:text="${s.fullName}"></span>
                     </div>
                   </td>
-                  <td th:text="${s.email}"></td>
-                  <td>
+                  <td data-label="Email" th:text="${s.email}"></td>
+                  <td data-label="Tr&#7841;ng th&#225;i">
                     <span th:if="${s.status == 'ACTIVE'}"   class="badge bg-success">ACTIVE</span>
                     <span th:if="${s.status == 'BANNED'}"   class="badge bg-danger">BANNED</span>
                     <span th:if="${s.status == 'INACTIVE'}" class="badge bg-secondary">INACTIVE</span>
                   </td>
-                  <td class="text-end">
+                  <td class="text-end" data-label="Thao t&#225;c">
                     <button th:if="${s.status == 'ACTIVE'}"
                             class="btn btn-sm btn-outline-danger"
                             data-bs-toggle="modal" data-bs-target="#modalSVStatus"

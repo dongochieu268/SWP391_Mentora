@@ -92,10 +92,10 @@ public class AdminSubjectController {
     }
 
     private String firstValidationError(BindingResult bindingResult) {
-        if (!bindingResult.getFieldErrors().isEmpty()) {
-            return bindingResult.getFieldErrors().get(0).getDefaultMessage();
-        }
-        return "Dữ liệu không hợp lệ.";
+        return bindingResult.getFieldErrors().stream()
+                .map(err -> err.getDefaultMessage())
+                .findFirst()
+                .orElse("Dữ liệu không hợp lệ.");
     }
 
     private void populatePage(Model model, String baseUrl, HttpSession session) {

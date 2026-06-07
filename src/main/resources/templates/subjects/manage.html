@@ -69,9 +69,6 @@
                                     <td class="text-end">
                                         <div class="d-flex gap-1 justify-content-end flex-wrap">
                                             <a th:href="${baseUrl + '?editId=' + s.id}" class="btn btn-sm btn-outline-primary">Sửa</a>
-
-                                            <a th:href="${baseUrl + '/' + s.id + '/prerequisites'}" class="btn btn-sm btn-outline-info">Subject Prerequisite</a>
-
                                             <form th:if="${s.status == 'ACTIVE'}"
                                                   th:action="${baseUrl + '/unpublish/' + s.id}" method="post" class="d-inline">
                                                 <button type="submit" class="btn btn-sm btn-outline-secondary">Unpublish</button>

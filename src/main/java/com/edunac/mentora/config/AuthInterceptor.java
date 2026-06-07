@@ -1,7 +1,6 @@
 package com.edunac.mentora.config;
 
 import com.edunac.mentora.domain.User;
-import com.edunac.mentora.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -10,12 +9,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
-
-    private final UserRepository userRepository;
-
-    public AuthInterceptor(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request,
@@ -29,15 +22,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        User fresh = userRepository.findById(user.getId()).orElse(null);
-        if (fresh == null || !"ACTIVE".equals(fresh.getStatus())) {
-            session.invalidate();
-            response.sendRedirect(request.getContextPath() + "/login");
-            return false;
-        }
-
         String path = request.getServletPath();
-        String role = fresh.getRole().getName();
+        String role = user.getRole().getName();
         String ctx = request.getContextPath();
 
         if (path.startsWith("/admin") && !"ADMIN".equals(role)) {

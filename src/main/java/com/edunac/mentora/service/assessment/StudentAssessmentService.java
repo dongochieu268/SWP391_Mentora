@@ -7,7 +7,10 @@ import com.edunac.mentora.repository.assessment.AssessmentAttemptRepository;
 import com.edunac.mentora.repository.assessment.AssessmentRepository;
 import com.edunac.mentora.repository.assessment.QuestionOptionRepository;
 import com.edunac.mentora.repository.assessment.QuestionRepository;
+import com.edunac.mentora.repository.branching.BranchRuleRepository;
+import com.edunac.mentora.service.branching.StudentBranchService;
 import com.edunac.mentora.service.classroom.ClassroomMemberService;
+import com.edunac.mentora.service.learning.NodeProgressService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,42 +32,51 @@ public class StudentAssessmentService {
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository optionRepository;
     private final ClassroomMemberService memberService;
+    private final StudentBranchService studentBranchService;
+    private final BranchRuleRepository branchRuleRepository;
+    private final NodeProgressService nodeProgressService;
 
     public StudentAssessmentService(
             AssessmentRepository assessmentRepository,
             AssessmentAttemptRepository attemptRepository,
             QuestionRepository questionRepository,
             QuestionOptionRepository optionRepository,
-            ClassroomMemberService memberService
+            ClassroomMemberService memberService,
+            StudentBranchService studentBranchService,
+            BranchRuleRepository branchRuleRepository,
+            NodeProgressService nodeProgressService
     ) {
         this.assessmentRepository = assessmentRepository;
         this.attemptRepository = attemptRepository;
         this.questionRepository = questionRepository;
         this.optionRepository = optionRepository;
         this.memberService = memberService;
+        this.studentBranchService = studentBranchService;
+        this.branchRuleRepository = branchRuleRepository;
+        this.nodeProgressService = nodeProgressService;
     }
 
     @Transactional(readOnly = true)
-    public Optional<AssessmentAttempt> findSubmittedAttempt(Integer assessmentId, Integer classroomId, User student) {
-        return attemptRepository.findFirstByAssessment_IdAndClassroom_IdAndStudent_IdAndStatusOrderBySubmittedAtDesc(
-                assessmentId, classroomId, student.getId(), AttemptStatus.SUBMITTED.name());
+    public Optional<AssessmentAttempt> findSubmittedAttempt(
+            Integer assessmentId, Integer classroomId, User student) {
+        return attemptRepository
+                .findFirstByAssessment_IdAndClassroom_IdAndStudent_IdAndStatusOrderBySubmittedAtDesc(
+                        assessmentId, classroomId, student.getId(), AttemptStatus.SUBMITTED.name());
     }
 
-    public AssessmentAttempt startAttempt(Integer assessmentId, Integer classroomId, User student) {
+    public AssessmentAttempt startAttempt(
+            Integer assessmentId, Integer classroomId, User student) {
         Classroom classroom = memberService.requireActiveMember(classroomId, student);
         Assessment assessment = loadSelfPacedPublishedAssessment(assessmentId);
 
-        Optional<AssessmentAttempt> submitted = findSubmittedAttempt(assessmentId, classroomId, student);
-        if (submitted.isPresent()) {
-            return submitted.get();
-        }
+        Optional<AssessmentAttempt> submitted =
+                findSubmittedAttempt(assessmentId, classroomId, student);
+        if (submitted.isPresent()) return submitted.get();
 
         Optional<AssessmentAttempt> inProgress = attemptRepository
                 .findFirstByAssessment_IdAndClassroom_IdAndStudent_IdAndStatusOrderByStartedAtDesc(
                         assessmentId, classroomId, student.getId(), AttemptStatus.IN_PROGRESS.name());
-        if (inProgress.isPresent()) {
-            return inProgress.get();
-        }
+        if (inProgress.isPresent()) return inProgress.get();
 
         AssessmentAttempt attempt = new AssessmentAttempt();
         attempt.setAssessment(assessment);
@@ -83,81 +95,95 @@ public class StudentAssessmentService {
     ) {
         AssessmentAttempt attempt = attemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lượt làm bài."));
-        if (!attempt.getStudent().getId().equals(student.getId())) {
+
+        if (!attempt.getStudent().getId().equals(student.getId()))
             throw new IllegalStateException("Bạn không có quyền nộp lượt làm bài này.");
-        }
-        if (!attempt.getClassroom().getId().equals(classroomId)) {
+        if (!attempt.getClassroom().getId().equals(classroomId))
             throw new IllegalArgumentException("Lượt làm bài không thuộc lớp học này.");
-        }
+
         memberService.requireActiveMember(classroomId, student);
-        if (AttemptStatus.SUBMITTED.name().equals(attempt.getStatus())) {
-            return attempt;
-        }
-        if (!AttemptStatus.IN_PROGRESS.name().equals(attempt.getStatus())) {
+
+        if (AttemptStatus.SUBMITTED.name().equals(attempt.getStatus())) return attempt;
+        if (!AttemptStatus.IN_PROGRESS.name().equals(attempt.getStatus()))
             throw new IllegalStateException("Lượt làm bài không ở trạng thái có thể nộp.");
-        }
-        if (!AssessmentStatus.PUBLISHED.name().equals(attempt.getAssessment().getStatus())) {
+        if (!AssessmentStatus.PUBLISHED.name().equals(attempt.getAssessment().getStatus()))
             throw new IllegalStateException("Bài test chưa được publish.");
-        }
 
         BigDecimal score = grade(attempt.getAssessment(), selectedOptionByQuestionId);
         attempt.setScore(score);
         attempt.setStatus(AttemptStatus.SUBMITTED.name());
         attempt.setSubmittedAt(LocalDateTime.now());
-        return attemptRepository.save(attempt);
+        AssessmentAttempt saved = attemptRepository.save(attempt);
+
+        Integer pathId = saved.getClassroom().getLearningPath().getId();
+
+        studentBranchService.assignBranch(
+                saved.getAssessment().getId(),
+                saved.getClassroom().getId(),
+                pathId,
+                saved.getStudent().getId(),
+                score.intValue()
+        );
+
+        return saved;
     }
 
-    @Transactional(readOnly = true)
-    public AssessmentAttempt findResult(Integer classroomId, Integer attemptId, User student) {
+    @Transactional
+    public AssessmentAttempt findResult(
+            Integer classroomId, Integer attemptId, User student) {
         AssessmentAttempt attempt = attemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy kết quả bài test."));
-        if (!attempt.getStudent().getId().equals(student.getId())) {
+        if (!attempt.getStudent().getId().equals(student.getId()))
             throw new IllegalStateException("Bạn không có quyền xem kết quả này.");
-        }
-        if (!attempt.getClassroom().getId().equals(classroomId)) {
+        if (!attempt.getClassroom().getId().equals(classroomId))
             throw new IllegalArgumentException("Kết quả không thuộc lớp học này.");
-        }
         memberService.requireActiveMember(classroomId, student);
+
+        if (AttemptStatus.SUBMITTED.name().equals(attempt.getStatus())) {
+            Integer pathId = attempt.getClassroom().getLearningPath().getId();
+
+            branchRuleRepository.findByAssessmentAndPath(attempt.getAssessment().getId(), pathId)
+                    .ifPresent(rule ->
+                            nodeProgressService.markBranchTestCompleted(
+                                    attempt.getStudent().getId(),
+                                    rule.getNode().getId(),
+                                    attempt.getClassroom().getId()
+                            )
+                    );
+        }
+
         return attempt;
     }
 
     private Assessment loadSelfPacedPublishedAssessment(Integer assessmentId) {
         Assessment assessment = assessmentRepository.findById(assessmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài test."));
-        if (!AssessmentStatus.PUBLISHED.name().equals(assessment.getStatus())) {
+        if (!AssessmentStatus.PUBLISHED.name().equals(assessment.getStatus()))
             throw new IllegalStateException("Chỉ bài test đã publish mới được làm.");
-        }
-        if (!DeliveryMode.SELF_PACED.name().equals(assessment.getDeliveryMode())) {
+        if (!DeliveryMode.SELF_PACED.name().equals(assessment.getDeliveryMode()))
             throw new IllegalStateException("Phần này chỉ hỗ trợ bài test SELF_PACED.");
-        }
         return assessment;
     }
 
     private BigDecimal grade(Assessment assessment, Map<Integer, Integer> selectedOptionByQuestionId) {
-        List<Question> questions = questionRepository.findByAssessment_IdOrderByIdAsc(assessment.getId());
-        if (questions.isEmpty()) {
+        List<Question> questions =
+                questionRepository.findByAssessment_IdOrderByIdAsc(assessment.getId());
+        if (questions.isEmpty())
             throw new IllegalStateException("Bài test chưa có câu hỏi.");
-        }
 
-        List<Integer> questionIds = questions.stream()
-                .map(Question::getId)
-                .toList();
+        List<Integer> questionIds = questions.stream().map(Question::getId).toList();
         Map<Integer, QuestionOption> optionById = optionRepository
                 .findByQuestion_IdInOrderByQuestion_IdAscIdAsc(questionIds)
                 .stream()
                 .collect(Collectors.toMap(QuestionOption::getId, Function.identity()));
 
         Map<Integer, Integer> answers = selectedOptionByQuestionId == null
-                ? Collections.emptyMap()
-                : selectedOptionByQuestionId;
+                ? Collections.emptyMap() : selectedOptionByQuestionId;
 
         BigDecimal score = BigDecimal.ZERO;
         for (Question question : questions) {
             Integer selectedOptionId = answers.get(question.getId());
-            if (selectedOptionId == null) {
-                continue;
-            }
-
+            if (selectedOptionId == null) continue;
             QuestionOption selectedOption = optionById.get(selectedOptionId);
             if (selectedOption != null
                     && selectedOption.getQuestion().getId().equals(question.getId())

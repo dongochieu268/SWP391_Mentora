@@ -6,6 +6,17 @@
     <title th:text="${path.name} + ' | mentora'">Chi tiết lộ trình | mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <style>
+        .node-type-badge { font-size: 0.7rem; letter-spacing: 0.03em; }
+        .branch-indent { padding-left: 2rem; border-left: 3px solid #dee2e6; margin-left: 1.2rem; }
+        .branch-indent.pass-branch { border-left-color: #198754; background: #f0faf4; border-radius: 0 4px 4px 0; }
+        .branch-indent.fail-branch { border-left-color: #dc3545; background: #fff5f5; border-radius: 0 4px 4px 0; }
+        .branch-test-row td { background: #fffbec !important; }
+        .branch-test-row:hover td { background: #fff8d6 !important; }
+        tr.branch-pass-row td { background: #f0faf4 !important; }
+        tr.branch-fail-row td { background: #fff5f5 !important; }
+        .branch-connector { color: #adb5bd; font-size: 0.8rem; }
+    </style>
 </head>
 <body>
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
@@ -21,7 +32,7 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-                <!-- PATH INFO CARD -->
+                <!-- ===== HEADER CARD ===== -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="d-flex align-items-start justify-content-between">
@@ -74,7 +85,7 @@
                     </div>
                 </div>
 
-                <!-- NODES CARD -->
+                <!-- ===== NODE TABLE CARD ===== -->
                 <div class="card">
                     <div class="card-body">
                         <div th:if="${hasClassroom}" class="alert alert-warning d-flex align-items-center mb-3">
@@ -88,11 +99,25 @@
                                 </form>
                             </div>
                         </div>
+
                         <div class="d-flex align-items-center justify-content-between mb-3">
-                            <h5 class="card-title fw-semibold mb-0">
-                                Danh sách Node
-                                <span class="badge bg-secondary ms-1" th:text="${#lists.size(nodes)}"></span>
-                            </h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="card-title fw-semibold mb-0">
+                                    Danh sách Node
+                                    <span class="badge bg-secondary ms-1" th:text="${#lists.size(nodes)}"></span>
+                                </h5>
+                                <!-- Legend -->
+                                <span class="badge bg-warning text-dark node-type-badge ms-2">
+                                    <i class="ti ti-git-branch me-1"></i>BRANCH_TEST
+                                </span>
+                                <span class="badge bg-success node-type-badge">
+                                    <i class="ti ti-check me-1"></i>PASS
+                                </span>
+                                <span class="badge bg-danger node-type-badge">
+                                    <i class="ti ti-x me-1"></i>FAIL
+                                </span>
+                                <span class="badge bg-secondary node-type-badge">MAIN</span>
+                            </div>
                             <a th:if="${!hasClassroom}"
                                th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addEnd=true)}"
                                class="btn btn-primary btn-sm">
@@ -106,39 +131,104 @@
 
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead>
+                                <thead class="table-light">
                                 <tr>
                                     <th style="width:50px">STT</th>
                                     <th>Tiêu đề</th>
+                                    <th style="width:140px">Loại / Luồng</th>
                                     <th>Node tiên quyết</th>
-                                    <th style="width:120px">Thứ tự</th>
+                                    <th style="width:90px">Thứ tự</th>
                                     <th class="text-end">Thao tác</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr th:if="${#lists.isEmpty(nodes)}">
-                                    <td colspan="5" class="text-center text-muted py-4">
+                                    <td colspan="6" class="text-center text-muted py-4">
                                         Chưa có node nào.
                                         <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addEnd=true)}">Thêm node đầu tiên</a>
                                     </td>
                                 </tr>
-                                <tr th:each="node, stat : ${nodes}">
+                                <tr th:each="node, stat : ${nodes}"
+                                    th:classappend="${node.nodeType == 'BRANCH_TEST'} ? 'branch-test-row' : (${node.branchTag == 'PASS'} ? 'branch-pass-row' : (${node.branchTag == 'FAIL'} ? 'branch-fail-row' : ''))">
+
                                     <td th:text="${stat.count}"></td>
+
+                                    <!-- Tiêu đề với indent cho branch nodes -->
                                     <td>
-                                        <div class="fw-semibold" th:text="${node.title}"></div>
-                                        <small class="text-muted"
-                                               th:if="${node.description != null}"
-                                               th:text="${#strings.length(node.description) > 60 ? #strings.substring(node.description,0,60)+'...' : node.description}"></small>
+                                        <div class="d-flex align-items-start gap-2">
+                                            <!-- Indent connector cho PASS/FAIL -->
+                                            <span th:if="${node.branchTag == 'PASS' or node.branchTag == 'FAIL'}"
+                                                  class="branch-connector mt-1">
+                                                <i class="ti ti-corner-down-right"></i>
+                                            </span>
+                                            <div>
+                                                <!-- Icon theo loại -->
+                                                <span th:if="${node.nodeType == 'BRANCH_TEST'}"
+                                                      class="me-1 text-warning">
+                                                    <i class="ti ti-git-branch"></i>
+                                                </span>
+                                                <span th:if="${node.branchTag == 'PASS'}" class="me-1 text-success">
+                                                    <i class="ti ti-check-circle"></i>
+                                                </span>
+                                                <span th:if="${node.branchTag == 'FAIL'}" class="me-1 text-danger">
+                                                    <i class="ti ti-x-circle"></i>
+                                                </span>
+                                                <strong th:text="${node.title}"></strong>
+                                                <br th:if="${node.description != null}">
+                                                <small class="text-muted"
+                                                       th:if="${node.description != null}"
+                                                       th:text="${#strings.length(node.description) > 60 ? #strings.substring(node.description,0,60)+'...' : node.description}"></small>
+                                                <!-- Nếu BRANCH_TEST: hiện assessment info -->
+                                                <span th:if="${node.nodeType == 'BRANCH_TEST'}"
+                                                      class="d-block mt-1">
+                                                    <small class="text-muted fst-italic">
+                                                        <i class="ti ti-clipboard-list me-1"></i>Bài kiểm tra rẽ nhánh
+                                                    </small>
+                                                </span>
+                                                <!-- Nếu thuộc nhánh: hiện owner -->
+                                                <span th:if="${(node.branchTag == 'PASS' or node.branchTag == 'FAIL') and node.branchOwnerNode != null}"
+                                                      class="d-block mt-1">
+                                                    <small class="text-muted">
+                                                        <i class="ti ti-arrow-up me-1"></i>Gốc:
+                                                        <span th:text="${node.branchOwnerNode.title}"></span>
+                                                    </small>
+                                                </span>
+                                            </div>
+                                        </div>
                                     </td>
+
+                                    <!-- Badge Loại / Luồng -->
+                                    <td>
+                                        <span th:if="${node.nodeType == 'BRANCH_TEST'}"
+                                              class="badge bg-warning text-dark node-type-badge">
+                                            <i class="ti ti-git-branch me-1"></i>BRANCH_TEST
+                                        </span>
+                                        <span th:if="${node.nodeType != 'BRANCH_TEST' and node.branchTag == 'MAIN'}"
+                                              class="badge bg-secondary node-type-badge">MAIN</span>
+                                        <span th:if="${node.branchTag == 'PASS'}"
+                                              class="badge bg-success node-type-badge">
+                                            <i class="ti ti-check me-1"></i>PASS
+                                        </span>
+                                        <span th:if="${node.branchTag == 'FAIL'}"
+                                              class="badge bg-danger node-type-badge">
+                                            <i class="ti ti-x me-1"></i>FAIL
+                                        </span>
+                                        <span th:if="${node.nodeType != 'BRANCH_TEST' and node.branchTag == null}"
+                                              class="badge bg-secondary node-type-badge">LESSON</span>
+                                    </td>
+
+                                    <!-- Node tiên quyết -->
                                     <td>
                                         <span th:if="${node.prerequisite == null}" class="text-muted">—</span>
                                         <span th:unless="${node.prerequisite == null}"
                                               class="badge bg-warning text-dark"
                                               th:text="${node.prerequisite.title}"></span>
                                     </td>
+
                                     <td>
-                                        <code th:text="${#numbers.formatDecimal(node.nodeOrder, 1, 3)}"></code>
+                                        <code th:text="${#numbers.formatDecimal(node.nodeOrder, 1, 0)}"></code>
                                     </td>
+
                                     <td class="text-end">
                                         <a th:if="${!hasClassroom}"
                                            th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addAfter=${node.id})}"
@@ -186,7 +276,7 @@
     </div>
 </div>
 
-<!-- MODAL: Edit Path Info -->
+<!-- ===== MODAL SỬA PATH ===== -->
 <div class="modal fade" id="modalEditPath" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -197,13 +287,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Tên lộ trình <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="name"
+                        <label class="form-label" for="pathName">Tên lộ trình <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" id="pathName"
                                th:value="${path.name}" maxlength="150" required>
                     </div>
                     <div class="mb-0">
-                        <label class="form-label">Mô tả</label>
-                        <textarea class="form-control" name="description" rows="3"
+                        <label class="form-label" for="pathDesc">Mô tả</label>
+                        <textarea class="form-control" name="description" id="pathDesc" rows="3"
                                   maxlength="1000" th:text="${path.description}"></textarea>
                     </div>
                 </div>
@@ -216,33 +306,35 @@
     </div>
 </div>
 
-<!-- MODAL: Add / Edit Node -->
+<!-- ===== MODAL THÊM / SỬA NODE ===== -->
 <div class="modal fade" id="modalNode" tabindex="-1" aria-hidden="true"
      th:classappend="${openNodeModal} ? ' show' : ''"
      th:style="${openNodeModal} ? 'display:block;' : ''">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
+
+            <!-- EDIT FORM -->
             <form th:if="${editMode}"
                   th:action="@{/lecturer/learning-paths/{id}/nodes/{nodeId}/edit(id=${path.id},nodeId=${nodeForm.id})}"
                   method="post">
                 <div class="modal-header">
-                    <h5 class="modal-title">Sửa node</h5>
+                    <h5 class="modal-title"><i class="ti ti-edit me-1"></i>Sửa node</h5>
                     <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id})}" class="btn-close"></a>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Tiêu đề <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="title"
+                        <label class="form-label" for="editNodeTitle">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="title" id="editNodeTitle"
                                th:value="${nodeForm.title}" maxlength="200" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mô tả</label>
-                        <textarea class="form-control" name="description" rows="3"
+                        <label class="form-label" for="editNodeDesc">Mô tả</label>
+                        <textarea class="form-control" name="description" id="editNodeDesc" rows="3"
                                   maxlength="2000" th:text="${nodeForm.description}"></textarea>
                     </div>
-                    <div class="mb-0">
-                        <label class="form-label">Node tiên quyết</label>
-                        <select class="form-select" name="prerequisiteNodeId">
+                    <div class="mb-3">
+                        <label class="form-label" for="editPrerequisiteNodeId">Node tiên quyết</label>
+                        <select class="form-select" name="prerequisiteNodeId" id="editPrerequisiteNodeId">
                             <option value="">Không có tiên quyết</option>
                             <option th:each="n : ${nodes}"
                                     th:if="${n.id != nodeForm.id}"
@@ -251,19 +343,97 @@
                                     th:selected="${nodeForm.prerequisiteNodeId != null and nodeForm.prerequisiteNodeId == n.id}"></option>
                         </select>
                     </div>
+
+                    <hr class="my-3">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="ti ti-git-branch me-1"></i>Cấu hình Rẽ nhánh
+                    </h6>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="nodeTypeEdit">Loại bài học</label>
+                        <select class="form-select js-node-type" name="nodeType" id="nodeTypeEdit" onchange="toggleBranchFields()">
+                            <option value="LESSON" th:selected="${nodeForm.nodeType == null or nodeForm.nodeType == 'LESSON'}">
+                                📄 Bài học bình thường (LESSON)
+                            </option>
+                            <option value="BRANCH_TEST" th:selected="${nodeForm.nodeType == 'BRANCH_TEST'}">
+                                🔀 Bài kiểm tra rẽ nhánh (BRANCH_TEST)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 js-branch-tag-group">
+                        <label class="form-label fw-semibold" for="branchTagEdit">Luồng bài học (Branch Tag)</label>
+                        <select class="form-select js-branch-tag" name="branchTag" id="branchTagEdit" onchange="toggleOwnerNode()">
+                            <option value="MAIN" th:selected="${nodeForm.branchTag == null or nodeForm.branchTag == 'MAIN'}">
+                                ▶ Luồng chính – MAIN (Ai cũng phải học)
+                            </option>
+                            <option value="PASS" th:selected="${nodeForm.branchTag == 'PASS'}">
+                                ✅ Luồng Đạt – PASS (SV qua bài test)
+                            </option>
+                            <option value="FAIL" th:selected="${nodeForm.branchTag == 'FAIL'}">
+                                ❌ Luồng Trượt – FAIL (SV rớt bài test)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 js-branch-owner-group" style="display: none;">
+                        <label class="form-label fw-semibold text-danger" for="branchOwnerNodeIdEdit">
+                            <i class="ti ti-arrow-up me-1"></i>Thuộc về bài kiểm tra gốc nào?
+                        </label>
+                        <select class="form-select js-branch-owner-select" name="branchOwnerNodeId" id="branchOwnerNodeIdEdit">
+                            <option value="">-- Chọn bài kiểm tra gốc --</option>
+                            <option th:each="n : ${branchTestNodes}"
+                                    th:value="${n.id}"
+                                    th:text="${n.title}"
+                                    th:selected="${nodeForm.branchOwnerNodeId == n.id}"></option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning js-branch-test-group" style="display: none;">
+                        <p class="small text-warning fw-semibold mb-2">
+                            <i class="ti ti-alert-triangle me-1"></i>
+                            Node BRANCH_TEST: sinh viên làm bài xong sẽ tự động được phân vào nhánh PASS hoặc FAIL.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="assessmentIdEdit">
+                                <i class="ti ti-clipboard-list me-1"></i>Chọn Đề Test (Assessment)
+                            </label>
+                            <select class="form-select" name="assessmentId" id="assessmentIdEdit">
+                                <option value="">-- Chọn đề test --</option>
+                                <option th:each="a : ${assessments}"
+                                        th:value="${a.id}"
+                                        th:text="${a.title}"
+                                        th:selected="${nodeForm.assessmentId == a.id}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold" for="minScoreEdit">
+                                <i class="ti ti-medal me-1"></i>Điểm sàn qua môn (Min Score)
+                            </label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="minScore" id="minScoreEdit"
+                                       min="0" step="0.5" placeholder="Ví dụ: 5" th:value="${nodeForm.minScore}">
+                                <span class="input-group-text">điểm</span>
+                            </div>
+                            <div class="form-text">Score ≥ giá trị này → PASS, ngược lại → FAIL</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id})}" class="btn btn-light">Hủy</a>
-                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-device-floppy me-1"></i>Lưu thay đổi
+                    </button>
                 </div>
             </form>
 
+            <!-- ADD FORM -->
             <form th:unless="${editMode}"
                   th:action="@{/lecturer/learning-paths/{id}/nodes(id=${path.id})}"
                   method="post">
                 <input type="hidden" name="afterNodeId" th:value="${nodeForm.afterNodeId}"/>
                 <div class="modal-header">
-                    <h5 class="modal-title">Thêm node mới</h5>
+                    <h5 class="modal-title"><i class="ti ti-plus me-1"></i>Thêm node mới</h5>
                     <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id})}" class="btn-close"></a>
                 </div>
                 <div class="modal-body">
@@ -275,27 +445,87 @@
                     <div th:unless="${nodeForm.afterNodeId != null}" class="alert alert-info py-2 mb-3">
                         <i class="ti ti-info-circle me-1"></i> Node mới sẽ được thêm vào <strong>cuối danh sách</strong>.
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label">Tiêu đề <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="title" maxlength="200" required autofocus>
+                        <label class="form-label" for="addNodeTitle">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="title" id="addNodeTitle" maxlength="200" required autofocus>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mô tả</label>
-                        <textarea class="form-control" name="description" rows="3" maxlength="2000"></textarea>
+                        <label class="form-label" for="addNodeDesc">Mô tả</label>
+                        <textarea class="form-control" name="description" id="addNodeDesc" rows="3" maxlength="2000"></textarea>
                     </div>
-                    <div class="mb-0">
-                        <label class="form-label">Node tiên quyết</label>
-                        <select class="form-select" name="prerequisiteNodeId">
+                    <div class="mb-3">
+                        <label class="form-label" for="addPrerequisiteNodeId">Node tiên quyết</label>
+                        <select class="form-select" name="prerequisiteNodeId" id="addPrerequisiteNodeId">
                             <option value="">Không có tiên quyết</option>
-                            <option th:each="n : ${nodes}"
-                                    th:value="${n.id}"
-                                    th:text="${n.title}"></option>
+                            <option th:each="n : ${nodes}" th:value="${n.id}" th:text="${n.title}"></option>
                         </select>
+                    </div>
+
+                    <hr class="my-3">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="ti ti-git-branch me-1"></i>Cấu hình Rẽ nhánh
+                    </h6>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="nodeTypeAdd">Loại bài học</label>
+                        <select class="form-select js-node-type" name="nodeType" id="nodeTypeAdd" onchange="toggleBranchFields()">
+                            <option value="LESSON">📄 Bài học bình thường (LESSON)</option>
+                            <option value="BRANCH_TEST">🔀 Bài kiểm tra rẽ nhánh (BRANCH_TEST)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 js-branch-tag-group">
+                        <label class="form-label fw-semibold" for="branchTagAdd">Luồng bài học (Branch Tag)</label>
+                        <select class="form-select js-branch-tag" name="branchTag" id="branchTagAdd" onchange="toggleOwnerNode()">
+                            <option value="MAIN">▶ Luồng chính – MAIN (Ai cũng phải học)</option>
+                            <option value="PASS">✅ Luồng Đạt – PASS (SV qua bài test)</option>
+                            <option value="FAIL">❌ Luồng Trượt – FAIL (SV rớt bài test)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 js-branch-owner-group" style="display: none;">
+                        <label class="form-label fw-semibold text-danger" for="branchOwnerNodeIdAdd">
+                            <i class="ti ti-arrow-up me-1"></i>Thuộc về bài kiểm tra gốc nào?
+                        </label>
+                        <select class="form-select js-branch-owner-select" name="branchOwnerNodeId" id="branchOwnerNodeIdAdd">
+                            <option value="">-- Chọn bài kiểm tra gốc --</option>
+                            <option th:each="n : ${branchTestNodes}" th:value="${n.id}" th:text="${n.title}"></option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning js-branch-test-group" style="display: none;">
+                        <p class="small text-warning fw-semibold mb-2">
+                            <i class="ti ti-alert-triangle me-1"></i>
+                            Node BRANCH_TEST: sinh viên làm bài xong sẽ tự động được phân vào nhánh PASS hoặc FAIL.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="assessmentIdAdd">
+                                <i class="ti ti-clipboard-list me-1"></i>Chọn Đề Test (Assessment)
+                            </label>
+                            <select class="form-select" name="assessmentId" id="assessmentIdAdd">
+                                <option value="">-- Chọn đề test --</option>
+                                <option th:each="a : ${assessments}" th:value="${a.id}" th:text="${a.title}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold" for="minScoreAdd">
+                                <i class="ti ti-medal me-1"></i>Điểm sàn qua môn (Min Score)
+                            </label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="minScore" id="minScoreAdd"
+                                       min="0" step="0.5" placeholder="Ví dụ: 5">
+                                <span class="input-group-text">điểm</span>
+                            </div>
+                            <div class="form-text">Score ≥ giá trị này → PASS, ngược lại → FAIL</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id})}" class="btn btn-light">Hủy</a>
-                    <button type="submit" class="btn btn-primary">Thêm node</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-plus me-1"></i>Thêm node
+                    </button>
                 </div>
             </form>
         </div>
@@ -304,5 +534,43 @@
 <div th:if="${openNodeModal}" class="modal-backdrop fade show"></div>
 
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+
+<script>
+    function toggleBranchFields() {
+        const typeSelects = document.querySelectorAll('.js-node-type');
+        const tagGroups   = document.querySelectorAll('.js-branch-tag-group');
+        const testGroups  = document.querySelectorAll('.js-branch-test-group');
+        const tags        = document.querySelectorAll('.js-branch-tag');
+
+        typeSelects.forEach((type, i) => {
+            const isBranchTest = type.value === 'BRANCH_TEST';
+            tagGroups[i].style.display  = isBranchTest ? 'none'  : 'block';
+            testGroups[i].style.display = isBranchTest ? 'block' : 'none';
+            if (isBranchTest && !tags[i].value) tags[i].value = 'MAIN';
+        });
+        toggleOwnerNode();
+    }
+
+    function toggleOwnerNode() {
+        const typeSelects  = document.querySelectorAll('.js-node-type');
+        const tags         = document.querySelectorAll('.js-branch-tag');
+        const ownerGroups  = document.querySelectorAll('.js-branch-owner-group');
+        const ownerSelects = document.querySelectorAll('.js-branch-owner-select');
+
+        typeSelects.forEach((type, i) => {
+            const showOwner = type.value === 'LESSON' &&
+                (tags[i].value === 'PASS' || tags[i].value === 'FAIL');
+            ownerGroups[i].style.display = showOwner ? 'block' : 'none';
+            if (!showOwner && !ownerSelects[i].getAttribute('data-loaded')) {
+                ownerSelects[i].value = '';
+            }
+            ownerSelects[i].setAttribute('data-loaded', 'true');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        toggleBranchFields();
+    });
+</script>
 </body>
 </html>

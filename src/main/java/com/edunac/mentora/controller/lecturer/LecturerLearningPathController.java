@@ -1,14 +1,10 @@
 package com.edunac.mentora.controller.lecturer;
 
 import com.edunac.mentora.domain.User;
-import com.edunac.mentora.domain.assessment.Assessment;
-import com.edunac.mentora.domain.branching.BranchRule;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.dto.LearningNodeForm;
 import com.edunac.mentora.dto.LearningPathForm;
-import com.edunac.mentora.service.assessment.AssessmentService;
-import com.edunac.mentora.service.branching.BranchRuleService;
 import com.edunac.mentora.service.learningpath.LearningPathService;
 import com.edunac.mentora.service.subject.SubjectService;
 import jakarta.servlet.http.HttpSession;
@@ -18,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/lecturer/learning-paths")
@@ -27,29 +21,16 @@ public class LecturerLearningPathController {
 
     private final LearningPathService pathService;
     private final SubjectService subjectService;
-    private final AssessmentService assessmentService;
-    private final BranchRuleService branchRuleService;
 
-    public LecturerLearningPathController(LearningPathService pathService,
-                                          SubjectService subjectService,
-                                          AssessmentService assessmentService,
-                                          BranchRuleService branchRuleService) {
+    public LecturerLearningPathController(LearningPathService pathService, SubjectService subjectService) {
         this.pathService = pathService;
         this.subjectService = subjectService;
-        this.assessmentService = assessmentService;
-        this.branchRuleService = branchRuleService;
     }
 
     @GetMapping
     public String list(HttpSession session, Model model) {
         User user = currentUser(session);
-        List<LearningPath> paths = pathService.findByCreator(user);
-        Set<Integer> withClassroom = paths.stream()
-                .filter(p -> pathService.hasClassroom(p.getId()))
-                .map(LearningPath::getId)
-                .collect(Collectors.toSet());
-        model.addAttribute("paths", paths);
-        model.addAttribute("pathsWithClassroom", withClassroom);
+        model.addAttribute("paths", pathService.findByCreator(user));
         model.addAttribute("user", user);
         model.addAttribute("activePage", "learning-paths");
         return "lecturer/learning-path/list";
@@ -87,27 +68,26 @@ public class LecturerLearningPathController {
                          @RequestParam(required = false) Integer editNode,
                          HttpSession session, Model model) {
         User user = currentUser(session);
-        LearningPath path = pathService.findByIdAndOwner(id, user);
+        LearningPath path = pathService.findById(id);
         List<LearningNode> nodes = pathService.getNodes(id);
 
         model.addAttribute("path", path);
         model.addAttribute("nodes", nodes);
-        model.addAttribute("hasClassroom", pathService.hasClassroom(id));
         model.addAttribute("user", user);
         model.addAttribute("activePage", "learning-paths");
 
-
-        List<LearningNode> branchTestNodes = nodes.stream()
-                .filter(n -> "BRANCH_TEST".equals(n.getNodeType()))
-                .collect(Collectors.toList());
-        model.addAttribute("branchTestNodes", branchTestNodes);
-
-        List<Assessment> publishedAssessments = assessmentService.findPublishedByCreator(user);
-        model.addAttribute("assessments", publishedAssessments);
-
         if (!model.containsAttribute("nodeForm")) {
             if (editNode != null) {
-                buildEditForm(editNode, nodes, model);
+                nodes.stream().filter(n -> n.getId().equals(editNode)).findFirst().ifPresent(n -> {
+                    LearningNodeForm f = new LearningNodeForm();
+                    f.setId(n.getId());
+                    f.setTitle(n.getTitle());
+                    f.setDescription(n.getDescription());
+                    f.setPrerequisiteNodeId(n.getPrerequisite() != null ? n.getPrerequisite().getId() : null);
+                    model.addAttribute("nodeForm", f);
+                    model.addAttribute("editMode", true);
+                    model.addAttribute("openNodeModal", true);
+                });
             } else if (addAfter != null || Boolean.TRUE.equals(addEnd)) {
                 LearningNodeForm f = new LearningNodeForm();
                 f.setAfterNodeId(addAfter);
@@ -120,47 +100,8 @@ public class LecturerLearningPathController {
         if (!model.containsAttribute("nodeForm")) {
             model.addAttribute("nodeForm", new LearningNodeForm());
         }
-        if (!model.containsAttribute("editMode")) {
-            model.addAttribute("editMode", false);
-        }
-        if (!model.containsAttribute("openNodeModal")) {
-            model.addAttribute("openNodeModal", false);
-        }
 
         return "lecturer/learning-path/detail";
-    }
-
-
-    private void buildEditForm(Integer editNodeId, List<LearningNode> nodes, Model model) {
-        for (LearningNode n : nodes) {
-            if (!n.getId().equals(editNodeId)) continue;
-
-            LearningNodeForm f = new LearningNodeForm();
-            f.setId(n.getId());
-            f.setTitle(n.getTitle());
-            f.setDescription(n.getDescription());
-            if (n.getPrerequisite() != null) {
-                f.setPrerequisiteNodeId(n.getPrerequisite().getId());
-            }
-
-            f.setNodeType(n.getNodeType() != null ? n.getNodeType() : "LESSON");
-            f.setBranchTag(n.getBranchTag() != null ? n.getBranchTag() : "MAIN");
-            if (n.getBranchOwnerNode() != null) {
-                f.setBranchOwnerNodeId(n.getBranchOwnerNode().getId());
-            }
-
-            if ("BRANCH_TEST".equals(f.getNodeType())) {
-                branchRuleService.findByNodeId(n.getId()).ifPresent(rule -> {
-                    f.setAssessmentId(rule.getAssessmentId());
-                    f.setMinScore(rule.getMinScore() != null ? rule.getMinScore().doubleValue() : null);
-                });
-            }
-
-            model.addAttribute("nodeForm", f);
-            model.addAttribute("editMode", true);
-            model.addAttribute("openNodeModal", true);
-            return;
-        }
     }
 
     @PostMapping("/{id}/edit")
@@ -202,8 +143,8 @@ public class LecturerLearningPathController {
 
     @PostMapping("/{id}/nodes/{nodeId}/edit")
     public String updateNode(@PathVariable Integer id, @PathVariable Integer nodeId,
-                             @ModelAttribute LearningNodeForm form,
-                             HttpSession session, RedirectAttributes ra) {
+                              @ModelAttribute LearningNodeForm form,
+                              HttpSession session, RedirectAttributes ra) {
         try {
             pathService.updateNode(id, nodeId, form, currentUser(session));
             ra.addFlashAttribute("success", "Đã cập nhật node.");
@@ -215,7 +156,7 @@ public class LecturerLearningPathController {
 
     @PostMapping("/{id}/nodes/{nodeId}/delete")
     public String deleteNode(@PathVariable Integer id, @PathVariable Integer nodeId,
-                             HttpSession session, RedirectAttributes ra) {
+                              HttpSession session, RedirectAttributes ra) {
         try {
             pathService.deleteNode(id, nodeId, currentUser(session));
             ra.addFlashAttribute("success", "Đã xóa node.");
@@ -223,40 +164,6 @@ public class LecturerLearningPathController {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/lecturer/learning-paths/" + id;
-    }
-
-    @PostMapping("/{id}/archive")
-    public String archive(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
-        try {
-            pathService.archive(id, currentUser(session));
-            ra.addFlashAttribute("success", "Đã lưu trữ lộ trình.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/lecturer/learning-paths";
-    }
-
-    @PostMapping("/{id}/unarchive")
-    public String unarchive(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
-        try {
-            pathService.unarchive(id, currentUser(session));
-            ra.addFlashAttribute("success", "Đã khôi phục lộ trình.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/lecturer/learning-paths";
-    }
-
-    @PostMapping("/{id}/clone")
-    public String clone(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
-        try {
-            LearningPath cloned = pathService.clonePath(id, currentUser(session));
-            ra.addFlashAttribute("success", "Đã clone lộ trình thành công.");
-            return "redirect:/lecturer/learning-paths/" + cloned.getId();
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-            return "redirect:/lecturer/learning-paths";
-        }
     }
 
     private User currentUser(HttpSession session) {

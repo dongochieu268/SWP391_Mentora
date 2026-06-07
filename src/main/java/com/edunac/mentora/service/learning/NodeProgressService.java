@@ -22,6 +22,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class NodeProgressService {
 
     private final NodeProgressRepository nodeProgressRepository;
@@ -29,13 +30,15 @@ public class NodeProgressService {
     private final ClassroomMemberRepository classroomMemberRepository;
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
 
-    @Transactional
-    public NodeProgressResponse markNodeCompleted(Integer studentId, Integer nodeId, Integer classroomId) {
+    public NodeProgressResponse markNodeCompleted(
+            Integer studentId, Integer nodeId, Integer classroomId) {
+
         ensureActiveMember(studentId, classroomId);
         ensureNodeVisible(nodeId, classroomId);
 
         LearningNode node = learningNodeRepository.findById(nodeId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Node không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Node không tồn tại"));
 
         if (node.getPrerequisite() != null) {
             boolean prereqDone = nodeProgressRepository
@@ -43,36 +46,63 @@ public class NodeProgressService {
                             studentId, node.getPrerequisite().getId(), classroomId);
             if (!prereqDone) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Bạn cần hoàn thành node tiên quyết trước: " + node.getPrerequisite().getTitle());
+                        "Bạn cần hoàn thành node tiên quyết trước: "
+                                + node.getPrerequisite().getTitle());
             }
         }
 
+        saveCompleted(studentId, nodeId, classroomId);
+        return buildProgressResponse(studentId, classroomId, nodeId);
+    }
+
+
+    public void markBranchTestCompleted(
+            Integer studentId, Integer nodeId, Integer classroomId) {
+
+        saveCompleted(studentId, nodeId, classroomId);
+    }
+
+    void saveCompleted(Integer studentId, Integer nodeId, Integer classroomId) {
         NodeProgress progress = nodeProgressRepository
-                .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
-                .orElseGet(() -> createProgress(studentId, nodeId, classroomId));
+                .findByStudent_IdAndLearningNode_IdAndClassroom_Id(
+                        studentId, nodeId, classroomId)
+                .orElseGet(() -> {
+                    NodeProgress np = new NodeProgress();
+                    User s = new User(); s.setId(studentId);
+                    np.setStudent(s);
+                    LearningNode n = new LearningNode(); n.setId(nodeId);
+                    np.setLearningNode(n);
+                    Classroom c = new Classroom(); c.setId(classroomId);
+                    np.setClassroom(c);
+                    np.setCompleted(false);
+                    return np;
+                });
 
         if (!progress.isCompleted()) {
             progress.setCompleted(true);
             progress.setCompletedAt(LocalDateTime.now());
             nodeProgressRepository.save(progress);
         }
-
-        return buildProgressResponse(studentId, classroomId, nodeId);
     }
 
+
     @Transactional(readOnly = true)
-    public NodeProgressResponse buildProgressResponse(Integer studentId, Integer classroomId, Integer nodeId) {
+    public NodeProgressResponse buildProgressResponse(
+            Integer studentId, Integer classroomId, Integer nodeId) {
+
         ensureActiveMember(studentId, classroomId);
 
         long totalNodes = learningNodeRepository.countVisibleNodesByClassroom(classroomId);
-        long completedNodes = nodeProgressRepository.countValidCompletedNodes(studentId, classroomId);
+        long completedNodes = nodeProgressRepository
+                .countValidCompletedNodes(studentId, classroomId);
         completedNodes = Math.min(completedNodes, totalNodes);
 
         double percent = totalNodes == 0 ? 0.0
                 : Math.round(completedNodes * 100.0 / totalNodes * 10.0) / 10.0;
 
         LearningNode currentNode = learningNodeRepository.findById(nodeId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Node không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Node không tồn tại"));
 
         boolean isCompleted = nodeProgressRepository
                 .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
@@ -97,15 +127,18 @@ public class NodeProgressService {
     }
 
     @Transactional(readOnly = true)
-    public List<NodeProgress> getProgressByStudentAndClassroom(Integer studentId, Integer classroomId) {
+    public List<NodeProgress> getProgressByStudentAndClassroom(
+            Integer studentId, Integer classroomId) {
         return nodeProgressRepository.findByStudent_IdAndClassroom_Id(studentId, classroomId);
     }
+
 
     private void ensureActiveMember(Integer studentId, Integer classroomId) {
         boolean isMember = classroomMemberRepository
                 .existsByClassroomIdAndUserIdAndStatus(classroomId, studentId, "ACTIVE");
         if (!isMember) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không phải thành viên của lớp này");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Bạn không phải thành viên của lớp này");
         }
     }
 
@@ -114,28 +147,9 @@ public class NodeProgressService {
                 .findByClassroomIdAndNodeId(classroomId, nodeId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Node không tồn tại trong lớp này"));
-
         if (!NodeVisibilityStatus.VISIBLE.name().equals(nodeStatus.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Node này chưa được mở");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Node này chưa được mở");
         }
-    }
-
-    private NodeProgress createProgress(Integer studentId, Integer nodeId, Integer classroomId) {
-        NodeProgress progress = new NodeProgress();
-
-        User student = new User();
-        student.setId(studentId);
-        progress.setStudent(student);
-
-        Classroom classroom = new Classroom();
-        classroom.setId(classroomId);
-        progress.setClassroom(classroom);
-
-        LearningNode node = new LearningNode();
-        node.setId(nodeId);
-        progress.setLearningNode(node);
-
-        progress.setCompleted(false);
-        return progress;
     }
 }

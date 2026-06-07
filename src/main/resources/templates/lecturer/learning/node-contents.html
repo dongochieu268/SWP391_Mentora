@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' | Mentora'">Nội dung node | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${successMessage}" class="alert alert-success py-2" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-danger py-2" th:text="${errorMessage}"></div>
+
+                <div class="card mb-3">
+                    <div class="card-body py-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div>
+                                <a th:href="${pathBackUrl}" class="text-muted small text-decoration-none">
+                                    <i class="ti ti-arrow-left"></i> Danh sách node
+                                </a>
+                                <h4 class="card-title mb-1 mt-2" th:text="${node.title}">Node title</h4>
+                                <p class="text-muted mb-0 small">
+                                    Lộ trình:
+                                    <span th:text="${node.learningPath != null ? node.learningPath.name : '-'}">Path</span>
+                                    <span th:if="${node.learningPath != null and node.learningPath.subject != null}">
+                                        · Môn:
+                                        <span th:text="${node.learningPath.subject.name}">Subject</span>
+                                    </span>
+                                    · Node ID: <span th:text="${node.id}">1</span>
+                                </p>
+                            </div>
+                            <a th:href="${baseUrl + '?create=true'}" class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i> Thêm nội dung
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Loại</th>
+                                    <th>Tiêu đề</th>
+                                    <th>Nội dung / Tệp</th>
+                                    <th>Thứ tự</th>
+                                    <th>Ngày tạo</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:if="${#lists.isEmpty(contents)}">
+                                    <td colspan="7" class="text-center text-muted py-4">Chưa có nội dung cho node này.</td>
+                                </tr>
+                                <tr th:each="c : ${contents}">
+                                    <td th:text="${c.id}">1</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${c.contentType}">TEXT</span>
+                                    </td>
+                                    <td th:text="${c.title != null ? c.title : '-'}">-</td>
+                                    <td class="text-break" style="max-width: 300px;">
+                                        <span th:if="${c.contentType == 'TEXT'}"
+                                              th:text="${c.contentText != null and #strings.length(c.contentText) > 80 ? #strings.substring(c.contentText, 0, 80) + '...' : c.contentText}">text</span>
+                                        <a th:if="${c.contentType == 'LINK' and c.contentUrl != null}"
+                                           th:href="${c.contentUrl}" target="_blank" rel="noopener"
+                                           th:text="${c.contentUrl}">link</a>
+                                        <a th:if="${(c.contentType == 'VIDEO' or c.contentType == 'FILE') and c.contentUrl != null}"
+                                           th:href="${c.contentUrl}" target="_blank" rel="noopener">
+                                            <i class="ti ti-download me-1"></i>
+                                            <span th:text="${c.contentUrl}">file</span>
+                                        </a>
+                                        <span th:if="${c.contentType != 'TEXT' and c.contentUrl == null}">-</span>
+                                    </td>
+                                    <td th:text="${c.displayOrder}">1</td>
+                                    <td th:text="${c.createdAt != null ? #temporals.format(c.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-1 justify-content-end">
+                                            <a th:href="${baseUrl + '?editId=' + c.id}"
+                                               class="btn btn-sm btn-outline-primary">Sửa</a>
+                                            <form th:action="${baseUrl + '/delete/' + c.id}" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa nội dung này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="contentModal" tabindex="-1"
+     th:classappend="${openModal} ? ' show' : ''"
+     th:style="${openModal} ? 'display: block;' : ''"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form th:action="${baseUrl + '/save'}" th:object="${contentForm}" method="post"
+                  enctype="multipart/form-data" id="contentForm">
+                <div class="modal-header">
+                    <h5 class="modal-title"
+                        th:text="${contentForm.id != null} ? 'Sửa nội dung' : 'Thêm nội dung'">Thêm nội dung</h5>
+                    <a th:href="${baseUrl}" class="btn-close" aria-label="Close"></a>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" th:field="*{id}"/>
+                    <input type="hidden" th:field="*{nodeId}"/>
+
+                    <div class="mb-3">
+                        <label for="contentType" class="form-label">Loại nội dung <span class="text-danger">*</span></label>
+                        <select class="form-select" id="contentType" th:field="*{contentType}" required>
+                            <option value="TEXT">TEXT — Văn bản</option>
+                            <option value="VIDEO">VIDEO — Tải video từ máy</option>
+                            <option value="FILE">FILE — Tải tệp từ máy</option>
+                            <option value="LINK">LINK — Liên kết ngoài</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" id="title" th:field="*{title}" maxlength="200">
+                    </div>
+
+                    <div class="mb-3" id="fieldText">
+                        <label for="contentText" class="form-label">Nội dung văn bản <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="contentText" th:field="*{contentText}" rows="6"></textarea>
+                    </div>
+
+                    <div class="mb-3 d-none" id="fieldUpload">
+                        <label for="mediaFile" class="form-label">
+                            Chọn tệp từ máy <span class="text-danger upload-required">*</span>
+                        </label>
+                        <input type="file" class="form-control" id="mediaFile" name="mediaFile"
+                               accept="video/*,.mp4,.webm,.mov,.avi,.mkv">
+                        <div class="form-text" id="uploadHint"></div>
+                        <div th:if="${contentForm.id != null and contentForm.contentUrl != null}"
+                             class="alert alert-light border mt-2 mb-0 py-2 small" id="currentFileBox">
+                            <strong>Tệp hiện tại:</strong>
+                            <a th:href="${contentForm.contentUrl}" target="_blank" rel="noopener"
+                               th:text="${contentForm.contentUrl}">/uploads/...</a>
+                            <div class="text-muted mt-1">Để giữ nguyên, không chọn tệp mới. Để thay, chọn tệp khác.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 d-none" id="fieldUrl">
+                        <label for="contentUrl" class="form-label">Liên kết URL <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control" id="contentUrl" th:field="*{contentUrl}"
+                               maxlength="1000" placeholder="https://...">
+                        <div class="form-text">Liên kết trang web bên ngoài (không upload tệp).</div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="displayOrder" class="form-label">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" id="displayOrder" th:field="*{displayOrder}"
+                               min="1" value="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a th:href="${baseUrl}" class="btn btn-light">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:if="${openModal}" class="modal-backdrop fade show"></div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script th:inline="javascript">
+    (function () {
+        var typeSelect = document.getElementById('contentType');
+        var fieldText = document.getElementById('fieldText');
+        var fieldUpload = document.getElementById('fieldUpload');
+        var fieldUrl = document.getElementById('fieldUrl');
+        var contentText = document.getElementById('contentText');
+        var contentUrl = document.getElementById('contentUrl');
+        var mediaFile = document.getElementById('mediaFile');
+        var uploadHint = document.getElementById('uploadHint');
+        var uploadRequired = document.querySelector('.upload-required');
+        var isEdit = /*[[${contentForm.id != null}]]*/ false;
+        var hasCurrentFile = /*[[${contentForm.id != null and contentForm.contentUrl != null}]]*/ false;
+
+        if (!typeSelect) return;
+
+        function toggleFields() {
+            var type = typeSelect.value;
+            var isText = type === 'TEXT';
+            var isUpload = type === 'VIDEO' || type === 'FILE';
+            var isLink = type === 'LINK';
+
+            fieldText.classList.toggle('d-none', !isText);
+            fieldUpload.classList.toggle('d-none', !isUpload);
+            fieldUrl.classList.toggle('d-none', !isLink);
+
+            contentText.required = isText;
+            contentUrl.required = isLink;
+            mediaFile.required = isUpload && !(isEdit && hasCurrentFile);
+
+            if (uploadRequired) {
+                uploadRequired.style.display = (isUpload && isEdit && hasCurrentFile) ? 'none' : '';
+            }
+
+            if (isUpload) {
+                if (type === 'VIDEO') {
+                    mediaFile.accept = 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.avi,.mkv';
+                    uploadHint.textContent = 'Video: mp4, webm, mov, avi, mkv. Tối đa 100MB.';
+                } else {
+                    mediaFile.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt,.png,.jpg,.jpeg,.gif';
+                    uploadHint.textContent = 'Tệp: pdf, office, zip, ảnh, txt... Tối đa 100MB.';
+                }
+            }
+        }
+
+        typeSelect.addEventListener('change', function () {
+            if (typeSelect.value !== 'VIDEO' && typeSelect.value !== 'FILE') {
+                mediaFile.value = '';
+            }
+            toggleFields();
+        });
+        toggleFields();
+    })();
+</script>
+</body>
+</html>

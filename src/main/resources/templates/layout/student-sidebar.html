@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragment: studentSidebar(activePage)
+  Usage: <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
+  activePage values: 'dashboard' | 'classrooms'
+-->
+<aside th:fragment="studentSidebar(activePage)" class="left-sidebar">
+  <div>
+    <div class="brand-logo d-flex align-items-center justify-content-between">
+      <a th:href="@{/student/dashboard}" class="text-nowrap logo-img">
+        <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
+      </a>
+      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+        <i class="ti ti-x fs-6"></i>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+      <ul id="sidebarnav">
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Học sinh</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/student/dashboard}"
+             th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-home"></i>
+            <span class="hide-menu">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Học tập</span>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/student/classrooms}"
+             th:classappend="${activePage == 'classrooms'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-school"></i>
+            <span class="hide-menu">Lớp học của tôi</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+</aside>
+
+</body>
+</html>

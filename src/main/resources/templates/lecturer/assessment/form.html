@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tạo bài test | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <h5 class="card-title fw-semibold mb-1">Tạo bài test mới</h5>
+                                <p class="text-muted small mb-0">Bài test sẽ được lưu ở trạng thái DRAFT.</p>
+                            </div>
+                            <a th:href="@{/lecturer/assessments}" class="btn btn-light border">
+                                <i class="ti ti-arrow-left me-1"></i> Quay lại
+                            </a>
+                        </div>
+
+                        <form th:action="@{/lecturer/assessments}" method="post" th:object="${form}">
+                            <div class="mb-3">
+                                <label class="form-label">Tên bài test <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{title}" maxlength="200" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3" maxlength="2000"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Loại bài test</label>
+                                    <select class="form-select" th:field="*{type}">
+                                        <option th:each="type : ${typeOptions}"
+                                                th:value="${type.name()}"
+                                                th:text="${type.name()}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Hình thức làm bài</label>
+                                    <select class="form-select" th:field="*{deliveryMode}">
+                                        <option th:each="mode : ${deliveryModes}"
+                                                th:value="${mode.name()}"
+                                                th:text="${mode.name()}"></option>
+                                    </select>
+                                    <div class="form-text">MVP hiện hỗ trợ SELF_PACED.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Thời lượng phút <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" th:field="*{durationMinutes}" min="1" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tổng điểm <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" th:field="*{totalScore}" min="0.1" step="0.1" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-check me-1"></i> Tạo bài test
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

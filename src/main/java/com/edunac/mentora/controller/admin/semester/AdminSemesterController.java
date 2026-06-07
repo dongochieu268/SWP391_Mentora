@@ -59,16 +59,18 @@ public class AdminSemesterController {
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Integer id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        java.util.Optional<Semester> opt = semesterService.findById(id);
-        if (opt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy học kỳ.");
-            return "redirect:/admin/semesters";
-        }
-        model.addAttribute("semester", opt.get());
-        model.addAttribute("isEdit", true);
-        model.addAttribute("activePage", "semesters");
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        return "admin/semester/form";
+        return semesterService.findById(id)
+                .map(semester -> {
+                    model.addAttribute("semester", semester);
+                    model.addAttribute("isEdit", true);
+                    model.addAttribute("activePage", "semesters");
+                    model.addAttribute("user", session.getAttribute("loggedInUser"));
+                    return "admin/semester/form";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("error", "Không tìm thấy học kỳ.");
+                    return "redirect:/admin/semesters";
+                });
     }
 
     @PostMapping("/{id}")

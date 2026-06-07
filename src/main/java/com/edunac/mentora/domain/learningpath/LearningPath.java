@@ -32,15 +32,11 @@ public class LearningPath {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    @Column(nullable = false, length = 20)
-    private String status = LearningPathStatus.ACTIVE.name();
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
-        if (status == null || status.isBlank()) status = LearningPathStatus.ACTIVE.name();
     }
 }

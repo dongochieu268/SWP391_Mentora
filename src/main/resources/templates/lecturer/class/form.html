@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${isEdit} ? 'Sửa lớp học | mentora' : 'Tạo lớp học | mentora'">Tạo lớp học | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="card-title fw-semibold mb-0"
+                                th:text="${isEdit} ? 'Sửa lớp học' : 'Tạo lớp học mới'"></h5>
+                            <a th:href="@{/lecturer/classes}" class="btn btn-light border">
+                                <i class="ti ti-arrow-left me-1"></i> Quay lại
+                            </a>
+                        </div>
+
+                        <div th:if="${isEdit and inviteCode != null}" class="alert alert-info py-2 mb-3">
+                            <i class="ti ti-key me-1"></i>
+                            Mã mời lớp: <strong><code th:text="${inviteCode}"></code></strong>
+                            <span class="text-muted small">(sinh viên dùng mã này để tham gia lớp)</span>
+                        </div>
+
+                        <form th:action="${isEdit} ? @{/lecturer/classes/{id}/edit(id=${form.id})} : @{/lecturer/classes}"
+                              method="post">
+
+                            <!-- ===== CHỈ HIỂN THỊ KHI TẠO MỚI (isEdit = false) ===== -->
+
+                            <div class="mb-3" th:unless="${isEdit}">
+                                <label class="form-label">Tên lớp <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name"
+                                       th:value="${form.name}" maxlength="200" required
+                                       placeholder="VD: SWP391 — Nhóm 01">
+                            </div>
+
+                            <div class="mb-3" th:unless="${isEdit}">
+                                <label class="form-label">Môn học <span class="text-danger">*</span></label>
+                                <select class="form-select" id="subjectId" name="subjectId" required>
+                                    <option value="">-- Chọn môn học --</option>
+                                    <option th:each="s : ${activeSubjects}"
+                                            th:value="${s.id}"
+                                            th:text="${s.code + ' — ' + s.name}"
+                                            th:selected="${form.subjectId != null and form.subjectId == s.id}"></option>
+                                </select>
+                                <div class="form-text text-muted">Chỉ môn học đang ACTIVE.</div>
+                            </div>
+
+                            <div class="mb-3" th:unless="${isEdit}">
+                                <label class="form-label">Lộ trình học <span class="text-danger">*</span></label>
+                                <select class="form-select" id="learningPathId" name="learningPathId" required>
+                                    <option value="">-- Chọn lộ trình --</option>
+                                    <option th:each="p : ${learningPaths}"
+                                            th:value="${p.id}"
+                                            th:attr="data-subject-id=${p.subject.id}"
+                                            th:text="${p.subject.code + ' — ' + p.name}"
+                                            th:selected="${form.learningPathId != null and form.learningPathId == p.id}"></option>
+                                </select>
+                                <div class="form-text text-muted">
+                                    Chỉ hiển thị lộ trình do bạn tạo và khớp môn học đã chọn.
+                                </div>
+                            </div>
+
+                            <div class="mb-3" th:unless="${isEdit}">
+                                <label class="form-label">Học kỳ <span class="text-danger">*</span></label>
+                                <select class="form-select" name="semesterId" required>
+                                    <option value="">-- Chọn học kỳ --</option>
+                                    <option th:each="sem : ${activeSemesters}"
+                                            th:value="${sem.id}"
+                                            th:text="${sem.name + ' (' + #temporals.format(sem.startDate, 'dd/MM/yyyy') + ' – ' + #temporals.format(sem.endDate, 'dd/MM/yyyy') + ')'}"
+                                            th:selected="${form.semesterId != null and form.semesterId == sem.id}"></option>
+                                </select>
+                            </div>
+
+                            <!-- ===== HIỂN THỊ Ở CẢ HAI MODE ===== -->
+
+                            <div class="mb-3">
+                                <label class="form-label">Trạng thái lớp</label>
+                                <select class="form-select" name="status">
+                                    <option value="OPEN"
+                                            th:selected="${form.status == null or form.status == 'OPEN'}">OPEN (Đang mở)</option>
+                                    <option value="CLOSE"
+                                            th:selected="${form.status == 'CLOSE'}">CLOSE (Đã đóng)</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-check me-1"></i>
+                                <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo lớp'"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    // Script lọc lộ trình theo môn học — chỉ cần thiết khi tạo mới
+    (function () {
+        const subjectSelect = document.getElementById('subjectId');
+        const pathSelect = document.getElementById('learningPathId');
+        if (!subjectSelect || !pathSelect) return; // Khi isEdit=true, 2 element này không tồn tại → thoát sớm
+
+        const allPaths = [];
+        pathSelect.querySelectorAll('option[data-subject-id]').forEach(function (opt) {
+            allPaths.push({
+                value: opt.value,
+                subjectId: opt.getAttribute('data-subject-id'),
+                label: opt.textContent
+            });
+        });
+
+        function filterPaths() {
+            const subjectId = subjectSelect.value;
+            const selectedPath = pathSelect.value;
+
+            pathSelect.innerHTML = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = '-- Chọn lộ trình --';
+            pathSelect.appendChild(placeholder);
+
+            allPaths.forEach(function (p) {
+                if (!subjectId || p.subjectId === subjectId) {
+                    const opt = document.createElement('option');
+                    opt.value = p.value;
+                    opt.textContent = p.label;
+                    opt.setAttribute('data-subject-id', p.subjectId);
+                    pathSelect.appendChild(opt);
+                }
+            });
+
+            if (selectedPath && Array.from(pathSelect.options).some(function (o) { return o.value === selectedPath; })) {
+                pathSelect.value = selectedPath;
+            }
+        }
+
+        subjectSelect.addEventListener('change', filterPaths);
+        filterPaths();
+    })();
+</script>
+</body>
+</html>

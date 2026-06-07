@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kết quả bài test | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div class="mb-4">
+                    <a th:href="@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}" class="text-muted small text-decoration-none">
+                        <i class="ti ti-arrow-left me-1"></i>Trở lại roadmap
+                    </a>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <span class="badge bg-success fs-3 px-3 py-2">Đã nộp bài</span>
+                        </div>
+                        <h4 class="fw-bold mb-2" th:text="${assessment.title}"></h4>
+                        <p class="text-muted mb-4">Kết quả tự chấm trắc nghiệm</p>
+
+                        <div class="d-inline-block p-4 bg-light rounded-3 mb-4">
+                            <div class="text-muted small">Điểm của bạn</div>
+                            <div class="display-5 fw-bold text-primary">
+                                <span th:text="${attempt.score}"></span>
+                                <span class="fs-5 text-muted">/ <span th:text="${assessment.totalScore}"></span></span>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded">
+                                    <div class="text-muted small">Trạng thái</div>
+                                    <div class="fw-semibold" th:text="${attempt.status}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded">
+                                    <div class="text-muted small">Bắt đầu</div>
+                                    <div class="fw-semibold"
+                                         th:text="${attempt.startedAt != null ? #temporals.format(attempt.startedAt, 'dd/MM/yyyy HH:mm') : '-'}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded">
+                                    <div class="text-muted small">Nộp bài</div>
+                                    <div class="fw-semibold"
+                                         th:text="${attempt.submittedAt != null ? #temporals.format(attempt.submittedAt, 'dd/MM/yyyy HH:mm') : '-'}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a th:href="@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}" class="btn btn-primary">
+                            <i class="ti ti-route me-1"></i> Quay lại roadmap
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

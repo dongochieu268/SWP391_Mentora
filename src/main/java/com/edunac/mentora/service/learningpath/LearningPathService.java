@@ -1,12 +1,14 @@
-    package com.edunac.mentora.service.learningpath;
+package com.edunac.mentora.service.learningpath;
 
 import com.edunac.mentora.domain.User;
+import com.edunac.mentora.domain.branching.BranchRule;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
 import com.edunac.mentora.domain.learningpath.LearningPathStatus;
+import com.edunac.mentora.repository.branching.BranchRuleRepository;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
@@ -38,15 +40,17 @@ public class LearningPathService {
     private final NodeProgressRepository nodeProgressRepository;
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
     private final ClassroomRepository classroomRepository;
+    private final BranchRuleRepository branchRuleRepository;
 
     public LearningPathService(LearningPathRepository pathRepository,
-                                LearningNodeRepository nodeRepository,
-                                SubjectRepository subjectRepository,
-                                NodeContentRepository nodeContentRepository,
-                                NodeContentStorageService storageService,
-                                NodeProgressRepository nodeProgressRepository,
-                                ClassroomNodeStatusRepository classroomNodeStatusRepository,
-                                ClassroomRepository classroomRepository) {
+                               LearningNodeRepository nodeRepository,
+                               SubjectRepository subjectRepository,
+                               NodeContentRepository nodeContentRepository,
+                               NodeContentStorageService storageService,
+                               NodeProgressRepository nodeProgressRepository,
+                               ClassroomNodeStatusRepository classroomNodeStatusRepository,
+                               ClassroomRepository classroomRepository,
+                               BranchRuleRepository branchRuleRepository) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
@@ -55,9 +59,9 @@ public class LearningPathService {
         this.nodeProgressRepository = nodeProgressRepository;
         this.classroomNodeStatusRepository = classroomNodeStatusRepository;
         this.classroomRepository = classroomRepository;
+        this.branchRuleRepository = branchRuleRepository;
     }
 
-    // ===== LEARNING PATH =====
 
     public List<LearningPath> findByCreator(User creator) {
         return pathRepository.findByCreatedByIdOrderByCreatedAtDesc(creator.getId());
@@ -102,16 +106,17 @@ public class LearningPathService {
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
         for (LearningNode n : nodes) {
             n.setPrerequisite(null);
+            n.setBranchOwnerNode(null);
         }
         nodeRepository.saveAll(nodes);
         for (LearningNode n : nodes) {
+            branchRuleRepository.findByNodeId(n.getId()).ifPresent(branchRuleRepository::delete);
             deleteContentsForNode(n.getId());
         }
         nodeRepository.deleteAll(nodes);
         pathRepository.delete(path);
     }
 
-    // ===== LEARNING NODE =====
 
     public List<LearningNode> getNodes(Integer pathId) {
         return nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
@@ -132,8 +137,13 @@ public class LearningPathService {
         node.setNodeOrder(order);
         setPrerequisite(node, form.getPrerequisiteNodeId(), null, pathId);
 
+        applyBranchingFields(node, form, pathId);
+
         LearningNode saved = nodeRepository.save(node);
         normalizeIfNeeded(pathId);
+
+        saveBranchRuleIfNeeded(saved, form);
+
         return saved;
     }
 
@@ -150,7 +160,61 @@ public class LearningPathService {
         node.setTitle(form.getTitle().trim());
         node.setDescription(blankToNull(form.getDescription()));
         setPrerequisite(node, form.getPrerequisiteNodeId(), nodeId, pathId);
-        return nodeRepository.save(node);
+
+        applyBranchingFields(node, form, pathId);
+
+        LearningNode saved = nodeRepository.save(node);
+
+        if ("BRANCH_TEST".equals(form.getNodeType())) {
+            saveBranchRuleIfNeeded(saved, form);
+        } else {
+            branchRuleRepository.findByNodeId(nodeId).ifPresent(branchRuleRepository::delete);
+        }
+
+        return saved;
+    }
+
+
+    private void applyBranchingFields(LearningNode node, LearningNodeForm form, Integer pathId) {
+        String nodeType = form.getNodeType() != null ? form.getNodeType() : "LESSON";
+        node.setNodeType(nodeType);
+
+        if ("BRANCH_TEST".equals(nodeType)) {
+            node.setBranchTag("MAIN");
+            node.setBranchOwnerNode(null);
+        } else {
+            String tag = form.getBranchTag() != null ? form.getBranchTag() : "MAIN";
+            node.setBranchTag(tag);
+
+            if (("PASS".equals(tag) || "FAIL".equals(tag)) && form.getBranchOwnerNodeId() != null) {
+                LearningNode owner = nodeRepository.findById(form.getBranchOwnerNodeId())
+                        .orElseThrow(() -> new IllegalArgumentException("Node gốc không tồn tại."));
+                if (!owner.getLearningPath().getId().equals(pathId)) {
+                    throw new IllegalArgumentException("Node gốc phải thuộc cùng lộ trình.");
+                }
+                if (!"BRANCH_TEST".equals(owner.getNodeType())) {
+                    throw new IllegalArgumentException("Node gốc phải là loại BRANCH_TEST.");
+                }
+                node.setBranchOwnerNode(owner);
+            } else {
+                node.setBranchOwnerNode(null);
+            }
+        }
+    }
+
+
+    private void saveBranchRuleIfNeeded(LearningNode node, LearningNodeForm form) {
+        if (!"BRANCH_TEST".equals(node.getNodeType())) return;
+        if (form.getAssessmentId() == null) return;
+
+        int minScore = (form.getMinScore() != null) ? form.getMinScore().intValue() : 0;
+
+        BranchRule rule = branchRuleRepository.findByNodeId(node.getId())
+                .orElseGet(BranchRule::new);
+        rule.setNode(node);
+        rule.setAssessmentId(form.getAssessmentId());
+        rule.setMinScore(minScore);
+        branchRuleRepository.save(rule);
     }
 
     public void deleteNode(Integer pathId, Integer nodeId, User requester) {
@@ -162,20 +226,29 @@ public class LearningPathService {
             throw new IllegalArgumentException("Node không thuộc lộ trình này.");
         }
 
-        List<LearningNode> dependents = new java.util.ArrayList<>();
+        List<LearningNode> prereqDependents = new java.util.ArrayList<>();
+        List<LearningNode> ownerDependents = new java.util.ArrayList<>();
         for (LearningNode n : nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId)) {
             if (n.getPrerequisite() != null && n.getPrerequisite().getId().equals(nodeId)) {
-                dependents.add(n);
+                prereqDependents.add(n);
+            }
+            if (n.getBranchOwnerNode() != null && n.getBranchOwnerNode().getId().equals(nodeId)) {
+                ownerDependents.add(n);
             }
         }
-        for (LearningNode n : dependents) {
-            n.setPrerequisite(null);
+        for (LearningNode n : prereqDependents) n.setPrerequisite(null);
+        for (LearningNode n : ownerDependents) {
+            n.setBranchOwnerNode(null);
+            n.setBranchTag("MAIN");
         }
-        nodeRepository.saveAll(dependents);
+        nodeRepository.saveAll(prereqDependents);
+        nodeRepository.saveAll(ownerDependents);
 
         if (nodeProgressRepository.existsByLearningNodeId(nodeId)) {
             throw new IllegalStateException("Không thể xóa node vì vẫn còn dữ liệu tiến trình học liên quan.");
         }
+
+        branchRuleRepository.findByNodeId(nodeId).ifPresent(branchRuleRepository::delete);
         classroomNodeStatusRepository.deleteByNodeId(nodeId);
         deleteContentsForNode(nodeId);
         nodeRepository.delete(node);
@@ -245,11 +318,6 @@ public class LearningPathService {
         }
     }
 
-    /**
-     * Tính node_order cho node mới.
-     * afterNodeId=null → append cuối; afterNodeId=X → chèn sau node X.
-     * Nếu chèn giữa: order = (prev + next) / 2.
-     */
     private BigDecimal computeOrder(List<LearningNode> nodes, Integer afterNodeId) {
         if (nodes.isEmpty()) return BigDecimal.ONE;
 
@@ -270,9 +338,6 @@ public class LearningPathService {
         throw new IllegalArgumentException("Vị trí chèn không hợp lệ.");
     }
 
-    /**
-     * Nếu khoảng cách nhỏ nhất giữa các node < 0.001 → gán lại 1.0, 2.0, 3.0, ...
-     */
     private void normalizeIfNeeded(Integer pathId) {
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
         if (nodes.size() < 2) return;
@@ -295,7 +360,7 @@ public class LearningPathService {
         return (s == null || s.isBlank()) ? null : s.trim();
     }
 
-    // ===== ARCHIVE / UNARCHIVE / CLONE =====
+
 
     public LearningPath archive(Integer id, User requester) {
         LearningPath path = findByIdAndOwner(id, requester);
@@ -333,15 +398,34 @@ public class LearningPathService {
             newNode.setTitle(oldNode.getTitle());
             newNode.setDescription(oldNode.getDescription());
             newNode.setNodeOrder(oldNode.getNodeOrder());
+            newNode.setNodeType(oldNode.getNodeType());
+            newNode.setBranchTag(oldNode.getBranchTag());
             nodeMap.put(oldNode.getId(), nodeRepository.save(newNode));
         }
 
         for (LearningNode oldNode : sourceNodes) {
+            LearningNode clonedNode = nodeMap.get(oldNode.getId());
+            boolean changed = false;
             if (oldNode.getPrerequisite() != null) {
-                LearningNode clonedNode = nodeMap.get(oldNode.getId());
                 clonedNode.setPrerequisite(nodeMap.get(oldNode.getPrerequisite().getId()));
-                nodeRepository.save(clonedNode);
+                changed = true;
             }
+            if (oldNode.getBranchOwnerNode() != null) {
+                clonedNode.setBranchOwnerNode(nodeMap.get(oldNode.getBranchOwnerNode().getId()));
+                changed = true;
+            }
+            if (changed) nodeRepository.save(clonedNode);
+        }
+
+        for (LearningNode oldNode : sourceNodes) {
+            branchRuleRepository.findByNodeId(oldNode.getId()).ifPresent(oldRule -> {
+                LearningNode clonedNode = nodeMap.get(oldNode.getId());
+                BranchRule newRule = new BranchRule();
+                newRule.setNode(clonedNode);
+                newRule.setAssessmentId(oldRule.getAssessmentId());
+                newRule.setMinScore(oldRule.getMinScore());
+                branchRuleRepository.save(newRule);
+            });
         }
 
         return savedPath;

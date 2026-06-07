@@ -12,6 +12,8 @@ public interface SemesterRepository extends JpaRepository<Semester, Integer> {
 
     List<Semester> findAllByOrderByStartDateDesc();
 
+    List<Semester> findByStatusOrderByStartDateDesc(String status);
+
     boolean existsByNameIgnoreCase(String name);
 
     boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);

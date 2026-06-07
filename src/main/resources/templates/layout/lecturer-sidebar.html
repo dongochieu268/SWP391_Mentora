@@ -5,7 +5,7 @@
 <!--
   Fragment: lecturerSidebar(activePage)
   Usage: <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
-  activePage values: 'dashboard' | 'subjects' | 'learning-paths'
+  activePage values: 'dashboard' | 'learning-paths' | 'assessments' | 'classes'
 -->
 <aside th:fragment="lecturerSidebar(activePage)" class="left-sidebar">
   <div>
@@ -44,6 +44,22 @@
              th:classappend="${activePage == 'learning-paths'} ? ' active'" aria-expanded="false">
             <i class="ti ti-route"></i>
             <span class="hide-menu">Lộ trình học</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/lecturer/assessments}"
+             th:classappend="${activePage == 'assessments'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-clipboard-check"></i>
+            <span class="hide-menu">Bài test</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" th:href="@{/lecturer/classes}"
+             th:classappend="${activePage == 'classes'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-school"></i>
+            <span class="hide-menu">Lớp học</span>
           </a>
         </li>
 

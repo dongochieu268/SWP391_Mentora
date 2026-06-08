@@ -125,10 +125,20 @@ public class StudentAssessmentService {
                 score.intValue()
         );
 
+        branchRuleRepository
+                .findByAssessmentAndPath(saved.getAssessment().getId(), pathId)
+                .ifPresent(rule ->
+                        nodeProgressService.markBranchTestCompleted(
+                                saved.getStudent().getId(),
+                                rule.getNode().getId(),
+                                saved.getClassroom().getId()
+                        )
+                );
+
         return saved;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AssessmentAttempt findResult(
             Integer classroomId, Integer attemptId, User student) {
         AssessmentAttempt attempt = attemptRepository.findById(attemptId)
@@ -138,20 +148,6 @@ public class StudentAssessmentService {
         if (!attempt.getClassroom().getId().equals(classroomId))
             throw new IllegalArgumentException("Kết quả không thuộc lớp học này.");
         memberService.requireActiveMember(classroomId, student);
-
-        if (AttemptStatus.SUBMITTED.name().equals(attempt.getStatus())) {
-            Integer pathId = attempt.getClassroom().getLearningPath().getId();
-
-            branchRuleRepository.findByAssessmentAndPath(attempt.getAssessment().getId(), pathId)
-                    .ifPresent(rule ->
-                            nodeProgressService.markBranchTestCompleted(
-                                    attempt.getStudent().getId(),
-                                    rule.getNode().getId(),
-                                    attempt.getClassroom().getId()
-                            )
-                    );
-        }
-
         return attempt;
     }
 

@@ -62,27 +62,47 @@
                                               th:text="${#strings.length(s.description) > 50 ? #strings.substring(s.description, 0, 50) + '...' : s.description}">Mô tả</span>
                                     </td>
                                     <td>
-                                        <span th:if="${s.status == 'ACTIVE'}" class="badge bg-success">ACTIVE</span>
-                                        <span th:unless="${s.status == 'ACTIVE'}" class="badge bg-secondary" th:text="${s.status}">HIDDEN</span>
+                                        <span th:if="${s.status == 'ACTIVE'}" class="status-badge status-active">ACTIVE</span>
+                                        <span th:unless="${s.status == 'ACTIVE'}" class="status-badge status-inactive" th:text="${s.status}">HIDDEN</span>
                                     </td>
                                     <td th:text="${s.createdAt != null ? #temporals.format(s.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
                                     <td class="text-end">
-                                        <div class="d-flex gap-1 justify-content-end flex-wrap">
-                                            <a th:href="${baseUrl + '?editId=' + s.id}" class="btn btn-sm btn-outline-primary">Sửa</a>
-
-                                            <a th:href="${baseUrl + '/' + s.id + '/prerequisites'}" class="btn btn-sm btn-outline-info">Subject Prerequisite</a>
-
+                                        <div class="table-actions justify-content-end">
+                                            <a th:href="${baseUrl + '?editId=' + s.id}"
+                                               class="table-action-btn"
+                                               title="Sửa môn học"
+                                               aria-label="Sửa môn học">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                            <a th:href="${baseUrl + '/' + s.id + '/prerequisites'}"
+                                               class="table-action-btn"
+                                               title="Quản lý môn tiên quyết"
+                                               aria-label="Quản lý môn tiên quyết">
+                                                <i class="ti ti-link"></i>
+                                            </a>
                                             <form th:if="${s.status == 'ACTIVE'}"
-                                                  th:action="${baseUrl + '/unpublish/' + s.id}" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary">Unpublish</button>
+                                                  th:action="${baseUrl + '/unpublish/' + s.id}" method="post" class="table-action-form">
+                                                <button type="submit" class="table-action-btn"
+                                                        title="Ẩn môn học"
+                                                        aria-label="Ẩn môn học">
+                                                    <i class="ti ti-eye-off"></i>
+                                                </button>
                                             </form>
                                             <form th:unless="${s.status == 'ACTIVE'}"
-                                                  th:action="${baseUrl + '/publish/' + s.id}" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-success">Publish</button>
+                                                  th:action="${baseUrl + '/publish/' + s.id}" method="post" class="table-action-form">
+                                                <button type="submit" class="table-action-btn is-positive"
+                                                        title="Hiển thị môn học"
+                                                        aria-label="Hiển thị môn học">
+                                                    <i class="ti ti-eye"></i>
+                                                </button>
                                             </form>
-                                            <form th:action="${baseUrl + '/delete/' + s.id}" method="post" class="d-inline"
+                                            <form th:action="${baseUrl + '/delete/' + s.id}" method="post" class="table-action-form"
                                                   onsubmit="return confirm('Bạn có chắc muốn xóa môn học này?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa môn học"
+                                                        aria-label="Xóa môn học">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
                                             </form>
                                         </div>
                                     </td>

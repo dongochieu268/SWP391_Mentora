@@ -189,15 +189,15 @@
 
                                 <div id="statusBadge" class="mb-4">
                                     <span th:if="${progress.completed}"
-                                          class="badge bg-success fs-3 py-2 px-3">
+                                          class="status-badge status-active">
                                         <i class="ti ti-check me-1"></i> Đã hoàn thành
                                     </span>
                                     <span th:if="${!progress.completed and !progress.prerequisiteMet}"
-                                          class="badge bg-secondary fs-3 py-2 px-3">
+                                          class="status-badge status-inactive">
                                         <i class="ti ti-lock me-1"></i> Bị khóa
                                     </span>
                                     <span th:if="${!progress.completed and progress.prerequisiteMet}"
-                                          class="badge bg-warning text-dark fs-3 py-2 px-3">
+                                          class="status-badge status-pending">
                                         <i class="ti ti-clock me-1"></i> Chưa hoàn thành
                                     </span>
                                 </div>
@@ -291,7 +291,7 @@
                         const data = await response.json();
 
                         document.getElementById('statusBadge').innerHTML =
-                            '<span class="badge bg-success fs-3 py-2 px-3"><i class="ti ti-check me-1"></i> Đã hoàn thành</span>';
+                            '<span class="status-badge status-active"><i class="ti ti-check me-1"></i> Đã hoàn thành</span>';
 
                         btnComplete.className = 'btn w-100 py-2 fw-semibold btn-success disabled';
                         btnComplete.innerHTML = 'Đã lưu tiến độ';

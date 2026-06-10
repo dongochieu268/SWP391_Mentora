@@ -15818,11 +15818,11 @@ textarea.form-control-lg {
   width: 100%;
   background: var(--bs-body-bg);
   padding: 0 10px;
-  top: 65px;
+  top: 0;
 }
 @media (max-width: 991.98px) {
   .app-header {
-    top: 131px;
+    top: 0;
   }
 }
 .app-header .container-fluid, .app-header .container-sm, .app-header .container-md, .app-header .container-lg, .app-header .container-xl, .app-header .container-xxl {
@@ -15912,11 +15912,11 @@ body {
   margin: 0 auto;
   padding: 24px;
   transition: 0.2s ease-in;
-  padding-top: 180px;
+  padding-top: calc(70px + 30px);
 }
 @media (max-width: 991.98px) {
   .body-wrapper .container-fluid, .body-wrapper .container-sm, .body-wrapper .container-md, .body-wrapper .container-lg, .body-wrapper .container-xl, .body-wrapper .container-xxl {
-    padding-top: 230px;
+    padding-top: calc(70px + 24px);
   }
 }
 
@@ -15931,11 +15931,11 @@ body {
 
 #main-wrapper[data-layout=vertical][data-sidebar-position=fixed] .left-sidebar {
   position: fixed;
-  top: 65px;
+  top: 0;
 }
 @media (max-width: 991.98px) {
   #main-wrapper[data-layout=vertical][data-sidebar-position=fixed] .left-sidebar {
-    top: 131px;
+    top: 0;
   }
 }
 #main-wrapper[data-layout=vertical][data-header-position=fixed] .app-header {
@@ -16059,6 +16059,176 @@ ul {
 }
 .comment-footer .action-icons a:hover, .comment-footer .action-icons a.active {
   color: var(--bs-info);
+}
+
+.admin-stat-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border: 1px solid #e4e7ec;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #475467;
+}
+
+.admin-stat-icon.is-alert {
+  border-color: #fecdca;
+  background: #fff7f7;
+  color: #b42318;
+}
+
+.admin-quick-action {
+  border-color: #d0d5dd;
+  background: #fff;
+  color: #344054;
+}
+
+.admin-quick-action:hover,
+.admin-quick-action:focus-visible {
+  border-color: #98a2b3;
+  background: #f9fafb;
+  color: #101828;
+}
+
+.role-badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid #e4e7ec;
+  border-radius: 6px;
+  background: #f9fafb;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.status-badge::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #98a2b3;
+  content: "";
+}
+
+.status-active {
+  border-color: #d1fadf;
+  background: #f6fef9;
+  color: #067647;
+}
+
+.status-active::before {
+  background: #17b26a;
+}
+
+.status-inactive {
+  color: #475467;
+}
+
+.status-banned {
+  border-color: #fee4e2;
+  background: #fffafa;
+  color: #b42318;
+}
+
+.status-banned::before {
+  background: #f04438;
+}
+
+.status-pending {
+  border-color: #fedf89;
+  background: #fffcf5;
+  color: #b54708;
+}
+
+.status-pending::before {
+  background: #f79009;
+}
+
+.status-info {
+  border-color: #b2ddff;
+  background: #f5fbff;
+  color: #175cd3;
+}
+
+.status-info::before {
+  background: #2e90fa;
+}
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.table-action-form {
+  display: inline-flex;
+  margin: 0;
+}
+
+.table-action-btn {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  color: #475467;
+  font-size: 17px;
+  line-height: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.table-action-btn:hover,
+.table-action-btn:focus-visible {
+  border-color: #98a2b3;
+  background: #f9fafb;
+  color: #101828;
+}
+
+.table-action-btn.is-danger {
+  color: #b42318;
+}
+
+.table-action-btn.is-positive {
+  color: #067647;
+}
+
+.table-action-btn.is-positive:hover,
+.table-action-btn.is-positive:focus-visible {
+  border-color: #a6f4c5;
+  background: #f6fef9;
+  color: #05603a;
+}
+
+.table-action-btn.is-danger:hover,
+.table-action-btn.is-danger:focus-visible {
+  border-color: #fda29b;
+  background: #fff7f7;
+  color: #912018;
+}
+
+.table-action-btn:disabled,
+.table-action-btn.disabled {
+  border-color: #eaecf0;
+  background: #f9fafb;
+  color: #98a2b3;
+  cursor: not-allowed;
+  opacity: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+  .table-actions {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
 }
 
 /*# sourceMappingURL=styles.min.css.map */

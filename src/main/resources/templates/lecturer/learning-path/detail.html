@@ -198,30 +198,35 @@
                                     </td>
 
                                     <td class="text-end">
-                                        <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addAfter=${node.id})}"
-                                           class="btn btn-sm btn-outline-secondary me-1" title="Chèn node sau">
-                                            <i class="ti ti-row-insert-bottom"></i>
-                                        </a>
-                                        <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, editNode=${node.id})}"
-                                           class="btn btn-sm btn-outline-primary me-1" title="Sửa node">
-                                            <i class="ti ti-edit"></i>
-                                        </a>
-                                        <a th:href="@{/lecturer/nodes/{nodeId}/contents(nodeId=${node.id})}"
-                                           class="btn btn-sm btn-outline-info me-1" title="Quản lý nội dung">
-                                            <i class="ti ti-files"></i>
-                                        </a>
-                                        <form th:if="${!hasClassroom}"
-                                              th:action="@{/lecturer/learning-paths/{id}/nodes/{nodeId}/delete(id=${path.id},nodeId=${node.id})}"
-                                              method="post" class="d-inline"
-                                              onsubmit="return confirm('Xóa node này?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa node">
+                                        <div class="table-actions justify-content-end">
+                                            <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addAfter=${node.id})}"
+                                               class="table-action-btn" title="Chèn node sau" aria-label="Chèn node sau">
+                                                <i class="ti ti-row-insert-bottom"></i>
+                                            </a>
+                                            <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, editNode=${node.id})}"
+                                               class="table-action-btn" title="Sửa node" aria-label="Sửa node">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                            <a th:href="@{/lecturer/nodes/{nodeId}/contents(nodeId=${node.id})}"
+                                               class="table-action-btn" title="Quản lý nội dung" aria-label="Quản lý nội dung">
+                                                <i class="ti ti-files"></i>
+                                            </a>
+                                            <form th:if="${!hasClassroom}"
+                                                  th:action="@{/lecturer/learning-paths/{id}/nodes/{nodeId}/delete(id=${path.id},nodeId=${node.id})}"
+                                                  method="post" class="table-action-form"
+                                                  onsubmit="return confirm('Xóa node này?');">
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa node" aria-label="Xóa node">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                            <button th:unless="${!hasClassroom}" type="button"
+                                                    class="table-action-btn is-danger" disabled
+                                                    title="Không thể xóa node khi lớp đang sử dụng"
+                                                    aria-label="Không thể xóa node khi lớp đang sử dụng">
                                                 <i class="ti ti-trash"></i>
                                             </button>
-                                        </form>
-                                        <button th:unless="${!hasClassroom}" type="button"
-                                                class="btn btn-sm btn-outline-danger" disabled title="Không thể xóa node khi lớp đang sử dụng">
-                                            <i class="ti ti-trash"></i>
-                                        </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

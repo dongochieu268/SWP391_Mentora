@@ -143,9 +143,6 @@ public class ClassroomService {
         if (!path.getSubject().getId().equals(subjectId)) {
             throw new IllegalArgumentException("Lộ trình không thuộc môn học đã chọn.");
         }
-        if (LearningPathStatus.ARCHIVED.name().equals(path.getStatus())) {
-            throw new IllegalArgumentException("Lộ trình đã được lưu trữ, không thể dùng cho lớp mới.");
-        }
         return path;
     }
 

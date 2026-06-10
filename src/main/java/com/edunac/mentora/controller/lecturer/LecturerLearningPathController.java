@@ -225,28 +225,6 @@ public class LecturerLearningPathController {
         return "redirect:/lecturer/learning-paths/" + id;
     }
 
-    @PostMapping("/{id}/archive")
-    public String archive(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
-        try {
-            pathService.archive(id, currentUser(session));
-            ra.addFlashAttribute("success", "Đã lưu trữ lộ trình.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/lecturer/learning-paths";
-    }
-
-    @PostMapping("/{id}/unarchive")
-    public String unarchive(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
-        try {
-            pathService.unarchive(id, currentUser(session));
-            ra.addFlashAttribute("success", "Đã khôi phục lộ trình.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/lecturer/learning-paths";
-    }
-
     @PostMapping("/{id}/clone")
     public String clone(@PathVariable Integer id, HttpSession session, RedirectAttributes ra) {
         try {

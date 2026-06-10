@@ -38,14 +38,13 @@
                                     <th>Môn học</th>
                                     <th>Tên lộ trình</th>
                                     <th>Mô tả</th>
-                                    <th>Trạng thái</th>
                                     <th>Ngày tạo</th>
                                     <th class="text-end">Thao tác</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr th:if="${#lists.isEmpty(paths)}">
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="6" class="text-center text-muted py-4">
                                         Chưa có lộ trình nào. <a th:href="@{/lecturer/learning-paths/new}">Tạo ngay</a>
                                     </td>
                                 </tr>
@@ -61,10 +60,6 @@
                                         <span th:unless="${p.description == null}"
                                               th:text="${#strings.length(p.description) > 60 ? #strings.substring(p.description, 0, 60) + '...' : p.description}"></span>
                                     </td>
-                                    <td>
-                                        <span th:if="${'ACTIVE' == p.status}" class="badge bg-success">ACTIVE</span>
-                                        <span th:unless="${'ACTIVE' == p.status}" class="badge bg-secondary">ARCHIVED</span>
-                                    </td>
                                     <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
                                     <td class="text-end">
                                         <a th:href="@{/lecturer/learning-paths/{id}(id=${p.id})}"
@@ -75,20 +70,6 @@
                                               method="post" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary me-1" title="Clone lộ trình">
                                                 <i class="ti ti-copy"></i>
-                                            </button>
-                                        </form>
-                                        <form th:if="${'ACTIVE' == p.status}"
-                                              th:action="@{/lecturer/learning-paths/{id}/archive(id=${p.id})}"
-                                              method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Lưu trữ">
-                                                <i class="ti ti-archive"></i>
-                                            </button>
-                                        </form>
-                                        <form th:unless="${'ACTIVE' == p.status}"
-                                              th:action="@{/lecturer/learning-paths/{id}/unarchive(id=${p.id})}"
-                                              method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Khôi phục">
-                                                <i class="ti ti-archive-off"></i>
                                             </button>
                                         </form>
                                         <form th:if="${!pathsWithClassroom.contains(p.id)}"

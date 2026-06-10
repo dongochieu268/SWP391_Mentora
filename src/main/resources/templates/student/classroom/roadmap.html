@@ -146,10 +146,10 @@
                                                 </span>
                                                 <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
                                                 <!-- State badge -->
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="badge bg-success">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="badge bg-primary">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="badge bg-warning text-dark">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="badge bg-secondary">Chưa mở</span>
+                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
+                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
+                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
+                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa mở</span>
                                             </div>
                                             <p class="text-muted small mb-1" th:if="${item.node.description != null}"
                                                th:text="${item.node.description}"></p>
@@ -193,10 +193,10 @@
                                                     <i class="ti ti-check me-1"></i>PASS
                                                 </span>
                                                 <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="badge bg-success">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="badge bg-primary">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="badge bg-warning text-dark">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="badge bg-secondary">Chưa hiển thị</span>
+                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
+                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
+                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
+                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa hiển thị</span>
                                             </div>
                                             <p class="text-muted small mb-0" th:if="${item.node.description != null}"
                                                th:text="${item.node.description}"></p>
@@ -242,10 +242,10 @@
                                                     <i class="ti ti-x me-1"></i>FAIL
                                                 </span>
                                                 <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="badge bg-success">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="badge bg-primary">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="badge bg-warning text-dark">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="badge bg-secondary">Chưa hiển thị</span>
+                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
+                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
+                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
+                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa hiển thị</span>
                                             </div>
                                             <p class="text-muted small mb-0" th:if="${item.node.description != null}"
                                                th:text="${item.node.description}"></p>
@@ -287,10 +287,10 @@
                                         <div class="flex-grow-1">
                                             <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
                                                 <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="badge bg-success">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="badge bg-primary">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="badge bg-warning text-dark">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="badge bg-secondary">Chưa mở</span>
+                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
+                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
+                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
+                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa mở</span>
                                             </div>
                                             <p class="text-muted small mb-0"
                                                th:if="${item.node.description != null}"

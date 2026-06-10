@@ -148,10 +148,8 @@
                                      style="border-top:1px solid #f3f4f6;">
                                     <span class="text-muted" style="font-size:13px;">Bài này</span>
                                     <span id="nodeStatusBadge"
-                                          class="badge rounded-pill"
-                                          th:style="${progress.completed} ?
-                                              'background:#dcfce7;color:#166534;padding:4px 10px;' :
-                                              'background:#f3f4f6;color:#6b7280;padding:4px 10px;'"
+                                          class="status-badge"
+                                          th:classappend="${progress.completed} ? 'status-active' : 'status-inactive'"
                                           th:text="${progress.completed} ? '✓ Hoàn thành' : 'Chưa hoàn thành'">
                                     </span>
                                 </div>
@@ -243,8 +241,7 @@
                         data.completedNodes + '/' + data.totalNodes + ' node hoàn thành';
 
                     const badge = document.getElementById('nodeStatusBadge');
-                    badge.style.background = '#dcfce7';
-                    badge.style.color      = '#166534';
+                    badge.className = 'status-badge status-active';
                     badge.textContent      = '✓ Hoàn thành';
 
                     showToast('Hoàn thành! Tiến trình: ' + data.progressPercent + '%', false);

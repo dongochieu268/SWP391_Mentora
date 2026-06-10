@@ -34,9 +34,9 @@
                                 <div class="d-flex align-items-start justify-content-between mb-3">
                                     <div>
                                         <h5 class="card-title fw-semibold mb-1" th:text="${assessment.title}"></h5>
-                                        <span th:if="${assessment.status == 'DRAFT'}" class="badge bg-warning text-dark">DRAFT</span>
-                                        <span th:if="${assessment.status == 'PUBLISHED'}" class="badge bg-success">PUBLISHED</span>
-                                        <span th:if="${assessment.status == 'ARCHIVED'}" class="badge bg-secondary">ARCHIVED</span>
+                                        <span th:if="${assessment.status == 'DRAFT'}" class="status-badge status-pending">DRAFT</span>
+                                        <span th:if="${assessment.status == 'PUBLISHED'}" class="status-badge status-active">PUBLISHED</span>
+                                        <span th:if="${assessment.status == 'ARCHIVED'}" class="status-badge status-inactive">ARCHIVED</span>
                                     </div>
                                     <form th:if="${canEdit}"
                                           th:action="@{/lecturer/assessments/{id}/publish(id=${assessment.id})}"
@@ -221,7 +221,9 @@
                                                   th:action="@{/lecturer/assessments/{aid}/questions/{qid}/delete(aid=${assessment.id},qid=${q.id})}"
                                                   method="post"
                                                   onsubmit="return confirm('Xóa câu hỏi này?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa câu hỏi"
+                                                        aria-label="Xóa câu hỏi">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
@@ -230,7 +232,7 @@
                                         <ol class="mt-3 mb-0">
                                             <li th:each="opt : ${optionsByQuestionId[q.id]}" class="mb-1">
                                                 <span th:text="${opt.content}"></span>
-                                                <span th:if="${opt.correct}" class="badge bg-success ms-2">Đúng</span>
+                                                <span th:if="${opt.correct}" class="status-badge status-active ms-2">Đúng</span>
                                             </li>
                                         </ol>
                                     </div>

@@ -77,10 +77,12 @@
                                             </td>
                                             <td class="text-end">
                                                 <form th:action="@{/admin/subjects/{sId}/prerequisites/delete/{preId}(sId=${mainSubject.id}, preId=${pre.prerequisiteSubjectId})}"
-                                                      method="post" class="d-inline">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                      method="post" class="table-action-form">
+                                                    <button type="submit" class="table-action-btn is-danger"
+                                                            title="Gỡ môn tiên quyết"
+                                                            aria-label="Gỡ môn tiên quyết"
                                                             onclick="return confirm('Bạn có chắc muốn gỡ ràng buộc này?');">
-                                                        Xóa
+                                                        <i class="ti ti-trash"></i>
                                                     </button>
                                                 </form>
                                             </td>

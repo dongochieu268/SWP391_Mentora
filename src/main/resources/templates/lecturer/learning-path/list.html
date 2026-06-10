@@ -62,29 +62,38 @@
                                     </td>
                                     <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
                                     <td class="text-end">
-                                        <a th:href="@{/lecturer/learning-paths/{id}(id=${p.id})}"
-                                           class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="ti ti-list"></i> Xem node
-                                        </a>
-                                        <form th:action="@{/lecturer/learning-paths/{id}/clone(id=${p.id})}"
-                                              method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary me-1" title="Clone lộ trình">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </form>
-                                        <form th:if="${!pathsWithClassroom.contains(p.id)}"
-                                              th:action="@{/lecturer/learning-paths/{id}/delete(id=${p.id})}"
-                                              method="post" class="d-inline"
-                                              onsubmit="return confirm('Xóa lộ trình này và toàn bộ node?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        <div class="table-actions justify-content-end">
+                                            <a th:href="@{/lecturer/learning-paths/{id}(id=${p.id})}"
+                                               class="table-action-btn"
+                                               title="Xem node"
+                                               aria-label="Xem node">
+                                                <i class="ti ti-list"></i>
+                                            </a>
+                                            <form th:action="@{/lecturer/learning-paths/{id}/clone(id=${p.id})}"
+                                                  method="post" class="table-action-form">
+                                                <button type="submit" class="table-action-btn"
+                                                        title="Clone lộ trình"
+                                                        aria-label="Clone lộ trình">
+                                                    <i class="ti ti-copy"></i>
+                                                </button>
+                                            </form>
+                                            <form th:if="${!pathsWithClassroom.contains(p.id)}"
+                                                  th:action="@{/lecturer/learning-paths/{id}/delete(id=${p.id})}"
+                                                  method="post" class="table-action-form"
+                                                  onsubmit="return confirm('Xóa lộ trình này và toàn bộ node?');">
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa lộ trình"
+                                                        aria-label="Xóa lộ trình">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                            <button th:unless="${!pathsWithClassroom.contains(p.id)}"
+                                                    type="button" class="table-action-btn is-danger"
+                                                    disabled title="Không thể xóa lộ trình đang được lớp học sử dụng"
+                                                    aria-label="Không thể xóa lộ trình đang được lớp học sử dụng">
                                                 <i class="ti ti-trash"></i>
                                             </button>
-                                        </form>
-                                        <button th:unless="${!pathsWithClassroom.contains(p.id)}"
-                                                type="button" class="btn btn-sm btn-outline-danger"
-                                                disabled title="Không thể xóa lộ trình đang được lớp học sử dụng">
-                                            <i class="ti ti-trash"></i>
-                                        </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

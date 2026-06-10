@@ -87,12 +87,20 @@
                                     <td th:text="${c.displayOrder}">1</td>
                                     <td th:text="${c.createdAt != null ? #temporals.format(c.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
                                     <td class="text-end">
-                                        <div class="d-flex gap-1 justify-content-end">
+                                        <div class="table-actions justify-content-end">
                                             <a th:href="${baseUrl + '?editId=' + c.id}"
-                                               class="btn btn-sm btn-outline-primary">Sửa</a>
-                                            <form th:action="${baseUrl + '/delete/' + c.id}" method="post" class="d-inline"
+                                               class="table-action-btn"
+                                               title="Sửa nội dung"
+                                               aria-label="Sửa nội dung">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                            <form th:action="${baseUrl + '/delete/' + c.id}" method="post" class="table-action-form"
                                                   onsubmit="return confirm('Bạn có chắc muốn xóa nội dung này?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa nội dung"
+                                                        aria-label="Xóa nội dung">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
                                             </form>
                                         </div>
                                     </td>

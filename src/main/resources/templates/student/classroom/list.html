@@ -62,7 +62,7 @@
                                     </td>
                                     <td th:text="${m.classroom.teacher.fullName}"></td>
                                     <td th:text="${m.classroom.semester.name}"></td>
-                                    <td><span class="badge bg-warning text-dark">Chờ duyệt</span></td>
+                                    <td><span class="status-badge status-pending">Chờ duyệt</span></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -107,14 +107,18 @@
                                     <td th:text="${m.classroom.teacher.fullName}"></td>
                                     <td th:text="${m.classroom.semester.name}"></td>
                                     <td>
-                                        <span th:if="${m.roleInClass == 'TA'}" class="badge bg-primary">Trợ giảng</span>
-                                        <span th:unless="${m.roleInClass == 'TA'}" class="badge bg-secondary">Học sinh</span>
+                                        <span th:if="${m.roleInClass == 'TA'}" class="role-badge">Trợ giảng</span>
+                                        <span th:unless="${m.roleInClass == 'TA'}" class="role-badge">Học sinh</span>
                                     </td>
                                     <td class="text-end">
-                                        <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
-                                           class="btn btn-sm btn-primary">
-                                            <i class="ti ti-route me-1"></i> Lộ trình
-                                        </a>
+                                        <div class="table-actions justify-content-end">
+                                            <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
+                                               class="table-action-btn"
+                                               title="Xem lộ trình"
+                                               aria-label="Xem lộ trình">
+                                                <i class="ti ti-route"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

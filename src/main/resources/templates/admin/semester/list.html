@@ -53,17 +53,27 @@
                                     <td th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')}">01/09/2025</td>
                                     <td th:text="${#temporals.format(semester.endDate, 'dd/MM/yyyy')}">15/01/2026</td>
                                     <td>
-                                        <span class="badge bg-primary" th:if="${semester.status == 'ACTIVE'}">ACTIVE</span>
-                                        <span class="badge bg-secondary" th:if="${semester.status == 'HIDDEN'}">HIDDEN</span>
+                                        <span class="status-badge status-active" th:if="${semester.status == 'ACTIVE'}">ACTIVE</span>
+                                        <span class="status-badge status-inactive" th:if="${semester.status == 'HIDDEN'}">HIDDEN</span>
                                     </td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary"
-                                           th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}">Sửa</a>
-                                        <form class="d-inline" method="post"
-                                              th:action="@{/admin/semesters/{id}/delete(id=${semester.id})}"
-                                              th:onsubmit="return confirm('Xóa học kỳ này?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-                                        </form>
+                                        <div class="table-actions justify-content-end">
+                                            <a class="table-action-btn"
+                                               th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}"
+                                               title="Sửa học kỳ"
+                                               aria-label="Sửa học kỳ">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                            <form class="table-action-form" method="post"
+                                                  th:action="@{/admin/semesters/{id}/delete(id=${semester.id})}"
+                                                  th:onsubmit="return confirm('Xóa học kỳ này?');">
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa học kỳ"
+                                                        aria-label="Xóa học kỳ">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

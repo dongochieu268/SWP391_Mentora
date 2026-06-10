@@ -72,17 +72,6 @@
                 <!-- ===== NODE TABLE CARD ===== -->
                 <div class="card">
                     <div class="card-body">
-                        <div th:if="${hasClassroom}" class="alert alert-warning d-flex align-items-center mb-3">
-                            <i class="ti ti-lock me-2 fs-5"></i>
-                            <div>Cấu trúc đã khóa vì lộ trình đang được lớp học sử dụng.
-                                <form th:action="@{/lecturer/learning-paths/{id}/clone(id=${path.id})}"
-                                      method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-warning ms-2">
-                                        <i class="ti ti-copy me-1"></i> Clone để chỉnh sửa
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
 
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="d-flex align-items-center gap-2">
@@ -102,15 +91,10 @@
                                 </span>
                                 <span class="badge bg-secondary node-type-badge">MAIN</span>
                             </div>
-                            <a th:if="${!hasClassroom}"
-                               th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addEnd=true)}"
+                            <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addEnd=true)}"
                                class="btn btn-primary btn-sm">
                                 <i class="ti ti-plus me-1"></i> Thêm node cuối
                             </a>
-                            <button th:unless="${!hasClassroom}" type="button"
-                                    class="btn btn-primary btn-sm" disabled>
-                                <i class="ti ti-plus me-1"></i> Thêm node cuối
-                            </button>
                         </div>
 
                         <div class="table-responsive">
@@ -214,24 +198,14 @@
                                     </td>
 
                                     <td class="text-end">
-                                        <a th:if="${!hasClassroom}"
-                                           th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addAfter=${node.id})}"
+                                        <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, addAfter=${node.id})}"
                                            class="btn btn-sm btn-outline-secondary me-1" title="Chèn node sau">
                                             <i class="ti ti-row-insert-bottom"></i>
                                         </a>
-                                        <button th:unless="${!hasClassroom}" type="button"
-                                                class="btn btn-sm btn-outline-secondary me-1" disabled title="Cấu trúc đã khóa">
-                                            <i class="ti ti-row-insert-bottom"></i>
-                                        </button>
-                                        <a th:if="${!hasClassroom}"
-                                           th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, editNode=${node.id})}"
+                                        <a th:href="@{/lecturer/learning-paths/{id}(id=${path.id}, editNode=${node.id})}"
                                            class="btn btn-sm btn-outline-primary me-1" title="Sửa node">
                                             <i class="ti ti-edit"></i>
                                         </a>
-                                        <button th:unless="${!hasClassroom}" type="button"
-                                                class="btn btn-sm btn-outline-primary me-1" disabled title="Cấu trúc đã khóa">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
                                         <a th:href="@{/lecturer/nodes/{nodeId}/contents(nodeId=${node.id})}"
                                            class="btn btn-sm btn-outline-info me-1" title="Quản lý nội dung">
                                             <i class="ti ti-files"></i>
@@ -245,7 +219,7 @@
                                             </button>
                                         </form>
                                         <button th:unless="${!hasClassroom}" type="button"
-                                                class="btn btn-sm btn-outline-danger" disabled title="Cấu trúc đã khóa">
+                                                class="btn btn-sm btn-outline-danger" disabled title="Không thể xóa node khi lớp đang sử dụng">
                                             <i class="ti ti-trash"></i>
                                         </button>
                                     </td>

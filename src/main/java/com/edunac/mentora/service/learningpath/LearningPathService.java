@@ -100,7 +100,7 @@ public class LearningPathService {
     public void delete(Integer id, User requester) {
         LearningPath path = findByIdAndOwner(id, requester);
         if (classroomRepository.existsByLearningPathId(id)) {
-            throw new IllegalStateException("Không thể xóa lộ trình đã được lớp học sử dụng. Hãy lưu trữ lộ trình thay vì xóa.");
+            throw new IllegalStateException("Không thể xóa lộ trình đang được lớp học sử dụng.");
         }
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
@@ -124,7 +124,6 @@ public class LearningPathService {
 
     public LearningNode addNode(Integer pathId, LearningNodeForm form, User requester) {
         LearningPath path = findByIdAndOwner(pathId, requester);
-        ensureStructureEditable(pathId);
         validateNodeTitle(form.getTitle());
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
@@ -149,7 +148,6 @@ public class LearningPathService {
 
     public LearningNode updateNode(Integer pathId, Integer nodeId, LearningNodeForm form, User requester) {
         findByIdAndOwner(pathId, requester);
-        ensureStructureEditable(pathId);
         LearningNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
         if (!node.getLearningPath().getId().equals(pathId)) {
@@ -361,18 +359,6 @@ public class LearningPathService {
     }
 
 
-
-    public LearningPath archive(Integer id, User requester) {
-        LearningPath path = findByIdAndOwner(id, requester);
-        path.setStatus(LearningPathStatus.ARCHIVED.name());
-        return pathRepository.save(path);
-    }
-
-    public LearningPath unarchive(Integer id, User requester) {
-        LearningPath path = findByIdAndOwner(id, requester);
-        path.setStatus(LearningPathStatus.ACTIVE.name());
-        return pathRepository.save(path);
-    }
 
     public boolean hasClassroom(Integer pathId) {
         return classroomRepository.existsByLearningPathId(pathId);

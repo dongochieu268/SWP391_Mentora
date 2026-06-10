@@ -43,11 +43,11 @@
 
                   <input type="radio" class="btn-check" name="status" id="filterActive"
                          value="ACTIVE" th:checked="${selectedStatus == 'ACTIVE'}">
-                  <label class="btn btn-outline-success" for="filterActive">ACTIVE</label>
+                  <label class="btn btn-outline-secondary" for="filterActive">ACTIVE</label>
 
                   <input type="radio" class="btn-check" name="status" id="filterBanned"
                          value="BANNED" th:checked="${selectedStatus == 'BANNED'}">
-                  <label class="btn btn-outline-danger" for="filterBanned">BANNED</label>
+                  <label class="btn btn-outline-secondary" for="filterBanned">BANNED</label>
                 </div>
               </div>
               <div class="col-md-2">
@@ -84,23 +84,29 @@
                   </td>
                   <td th:text="${s.email}"></td>
                   <td>
-                    <span th:if="${s.status == 'ACTIVE'}"   class="badge bg-success">ACTIVE</span>
-                    <span th:if="${s.status == 'BANNED'}"   class="badge bg-danger">BANNED</span>
-                    <span th:if="${s.status == 'INACTIVE'}" class="badge bg-secondary">INACTIVE</span>
+                    <span th:if="${s.status == 'ACTIVE'}"   class="status-badge status-active">ACTIVE</span>
+                    <span th:if="${s.status == 'BANNED'}"   class="status-badge status-banned">BANNED</span>
+                    <span th:if="${s.status == 'INACTIVE'}" class="status-badge status-inactive">INACTIVE</span>
                   </td>
                   <td class="text-end">
-                    <button th:if="${s.status == 'ACTIVE'}"
-                            class="btn btn-sm btn-outline-danger"
-                            data-bs-toggle="modal" data-bs-target="#modalSVStatus"
-                            th:data-id="${s.id}" th:data-name="${s.fullName}" data-action="BANNED">
-                      <i class="ti ti-ban me-1"></i> Cấm
-                    </button>
-                    <button th:if="${s.status != 'ACTIVE'}"
-                            class="btn btn-sm btn-outline-success"
-                            data-bs-toggle="modal" data-bs-target="#modalSVStatus"
-                            th:data-id="${s.id}" th:data-name="${s.fullName}" data-action="ACTIVE">
-                      <i class="ti ti-player-play me-1"></i> Kích hoạt
-                    </button>
+                    <div class="table-actions justify-content-end">
+                      <button th:if="${s.status == 'ACTIVE'}"
+                              class="table-action-btn is-danger"
+                              data-bs-toggle="modal" data-bs-target="#modalSVStatus"
+                              th:data-id="${s.id}" th:data-name="${s.fullName}" data-action="BANNED"
+                              title="Cấm sinh viên"
+                              aria-label="Cấm sinh viên">
+                        <i class="ti ti-ban"></i>
+                      </button>
+                      <button th:if="${s.status != 'ACTIVE'}"
+                              class="table-action-btn is-positive"
+                              data-bs-toggle="modal" data-bs-target="#modalSVStatus"
+                              th:data-id="${s.id}" th:data-name="${s.fullName}" data-action="ACTIVE"
+                              title="Kích hoạt sinh viên"
+                              aria-label="Kích hoạt sinh viên">
+                        <i class="ti ti-player-play"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 </tbody>

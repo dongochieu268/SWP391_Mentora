@@ -90,49 +90,56 @@
                                     <td th:text="${u.email}"></td>
                                     <td>
                       <span th:switch="${u.role.name}">
-                        <span th:case="'ADMIN'" class="badge bg-danger">ADMIN</span>
-                        <span th:case="'LECTURER'" class="badge bg-warning text-dark">LECTURER</span>
-                        <span th:case="'STUDENT'" class="badge bg-info">STUDENT</span>
+                        <span th:case="'ADMIN'" class="role-badge">ADMIN</span>
+                        <span th:case="'LECTURER'" class="role-badge">LECTURER</span>
+                        <span th:case="'STUDENT'" class="role-badge">STUDENT</span>
                       </span>
                                     </td>
                                     <td>
                       <span th:switch="${u.status}">
-                        <span th:case="'ACTIVE'" class="badge bg-success">ACTIVE</span>
-                        <span th:case="'INACTIVE'" class="badge bg-secondary">INACTIVE</span>
-                        <span th:case="'BANNED'" class="badge bg-danger">BANNED</span>
+                        <span th:case="'ACTIVE'" class="status-badge status-active">ACTIVE</span>
+                        <span th:case="'INACTIVE'" class="status-badge status-inactive">INACTIVE</span>
+                        <span th:case="'BANNED'" class="status-badge status-banned">BANNED</span>
                       </span>
                                     </td>
                                     <td>
                                         <i th:class="${u.emailVerified} ? 'ti ti-circle-check text-success fs-5' : 'ti ti-circle-x text-danger fs-5'"></i>
                                     </td>
                                     <td class="text-end">
-                                        <!-- Admin: không thể thay đổi -->
-                                        <span th:if="${u.role.name == 'ADMIN'}">
-                        <button class="btn btn-sm btn-light" disabled title="Không thể thay đổi Admin">
-                          <i class="ti ti-lock"></i>
-                        </button>
-                      </span>
-                                        <!-- Non-admin: nút theo trạng thái hiện tại -->
-                                        <span th:unless="${u.role.name == 'ADMIN'}">
-                        <button th:if="${u.status != 'ACTIVE'}"
-                                class="btn btn-sm btn-outline-success me-1"
-                                data-bs-toggle="modal" data-bs-target="#modalStatus"
-                                th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="ACTIVE">
-                          <i class="ti ti-player-play"></i>
-                        </button>
-                        <button th:if="${u.status == 'ACTIVE'}"
-                                class="btn btn-sm btn-outline-warning me-1"
-                                data-bs-toggle="modal" data-bs-target="#modalStatus"
-                                th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="INACTIVE">
-                          <i class="ti ti-player-pause"></i>
-                        </button>
-                        <button th:if="${u.status != 'BANNED'}"
-                                class="btn btn-sm btn-outline-danger"
-                                data-bs-toggle="modal" data-bs-target="#modalStatus"
-                                th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="BANNED">
-                          <i class="ti ti-ban"></i>
-                        </button>
-                      </span>
+                                        <div class="table-actions justify-content-end">
+                                            <button th:if="${u.role.name == 'ADMIN'}"
+                                                    class="table-action-btn" disabled
+                                                    title="Không thể thay đổi Admin"
+                                                    aria-label="Không thể thay đổi Admin">
+                                                <i class="ti ti-lock"></i>
+                                            </button>
+                                            <th:block th:unless="${u.role.name == 'ADMIN'}">
+                                                <button th:if="${u.status != 'ACTIVE'}"
+                                                        class="table-action-btn is-positive"
+                                                        data-bs-toggle="modal" data-bs-target="#modalStatus"
+                                                        th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="ACTIVE"
+                                                        title="Kích hoạt tài khoản"
+                                                        aria-label="Kích hoạt tài khoản">
+                                                    <i class="ti ti-player-play"></i>
+                                                </button>
+                                                <button th:if="${u.status == 'ACTIVE'}"
+                                                        class="table-action-btn"
+                                                        data-bs-toggle="modal" data-bs-target="#modalStatus"
+                                                        th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="INACTIVE"
+                                                        title="Tạm khóa tài khoản"
+                                                        aria-label="Tạm khóa tài khoản">
+                                                    <i class="ti ti-player-pause"></i>
+                                                </button>
+                                                <button th:if="${u.status != 'BANNED'}"
+                                                        class="table-action-btn is-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#modalStatus"
+                                                        th:data-id="${u.id}" th:data-name="${u.fullName}" data-action="BANNED"
+                                                        title="Cấm tài khoản"
+                                                        aria-label="Cấm tài khoản">
+                                                    <i class="ti ti-ban"></i>
+                                                </button>
+                                            </th:block>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -184,7 +191,7 @@
             document.getElementById('formStatus').action = '/admin/users/' + id + '/status';
             var badge = document.getElementById('modalBadge');
             badge.textContent = action;
-            badge.className = 'badge ' + (action === 'ACTIVE' ? 'bg-success' : action === 'INACTIVE' ? 'bg-secondary' : 'bg-danger');
+            badge.className = 'status-badge ' + (action === 'ACTIVE' ? 'status-active' : action === 'INACTIVE' ? 'status-inactive' : 'status-banned');
         });
     });
 </script>

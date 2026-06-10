@@ -64,30 +64,40 @@
                                     <td th:text="${c.semester.name}"></td>
                                     <td><code th:text="${c.inviteCode}"></code></td>
                                     <td>
-                                        <span th:if="${c.status == 'OPEN'}" class="badge bg-success">OPEN</span>
-                                        <span th:unless="${c.status == 'OPEN'}" class="badge bg-secondary"
+                                        <span th:if="${c.status == 'OPEN'}" class="status-badge status-active">OPEN</span>
+                                        <span th:unless="${c.status == 'OPEN'}" class="status-badge status-inactive"
                                               th:text="${c.status}">CLOSE</span>
                                     </td>
                                     <td class="text-end">
-                                        <a th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}"
-                                           class="btn btn-sm btn-warning me-1">
-                                            <i class="ti ti-eye"></i> Ẩn/Hiện
-                                        </a>
-                                        <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
-                                           class="btn btn-sm btn-outline-success me-1"> 
-                                            <i class="ti ti-users"></i> Thành viên
-                                        </a>
-                                        <a th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}"
-                                           class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="ti ti-edit"></i> Sửa
-                                        </a>
-                                        <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
-                                              method="post" class="d-inline"
-                                              onsubmit="return confirm('Xóa lớp học này?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
+                                        <div class="table-actions justify-content-end">
+                                            <a th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}"
+                                               class="table-action-btn"
+                                               title="Quản lý hiển thị node"
+                                               aria-label="Quản lý hiển thị node">
+                                                <i class="ti ti-eye"></i>
+                                            </a>
+                                            <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
+                                               class="table-action-btn"
+                                               title="Quản lý thành viên"
+                                               aria-label="Quản lý thành viên">
+                                                <i class="ti ti-users"></i>
+                                            </a>
+                                            <a th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}"
+                                               class="table-action-btn"
+                                               title="Sửa lớp học"
+                                               aria-label="Sửa lớp học">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                            <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
+                                                  method="post" class="table-action-form"
+                                                  onsubmit="return confirm('Xóa lớp học này?');">
+                                                <button type="submit" class="table-action-btn is-danger"
+                                                        title="Xóa lớp học"
+                                                        aria-label="Xóa lớp học">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

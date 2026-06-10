@@ -75,24 +75,30 @@
                                         <span th:unless="${n.prerequisiteTitle != null}" class="text-muted">—</span>
                                     </td>
                                     <td>
-                                        <span th:if="${n.status == 'VISIBLE'}" class="badge bg-success">VISIBLE</span>
-                                        <span th:unless="${n.status == 'VISIBLE'}" class="badge bg-secondary">HIDDEN</span>
+                                        <span th:if="${n.status == 'VISIBLE'}" class="status-badge status-active">VISIBLE</span>
+                                        <span th:unless="${n.status == 'VISIBLE'}" class="status-badge status-inactive">HIDDEN</span>
                                     </td>
                                     <td class="text-end">
-                                        <form th:if="${n.status == 'VISIBLE'}"
-                                              th:action="@{/lecturer/classes/{cid}/nodes/{nid}/hide(cid=${classroom.id}, nid=${n.nodeId})}"
-                                              method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                                <i class="ti ti-eye-off"></i> Ẩn
-                                            </button>
-                                        </form>
-                                        <form th:unless="${n.status == 'VISIBLE'}"
-                                              th:action="@{/lecturer/classes/{cid}/nodes/{nid}/show(cid=${classroom.id}, nid=${n.nodeId})}"
-                                              method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="ti ti-eye"></i> Hiện
-                                            </button>
-                                        </form>
+                                        <div class="table-actions justify-content-end">
+                                            <form th:if="${n.status == 'VISIBLE'}"
+                                                  th:action="@{/lecturer/classes/{cid}/nodes/{nid}/hide(cid=${classroom.id}, nid=${n.nodeId})}"
+                                                  method="post" class="table-action-form">
+                                                <button type="submit" class="table-action-btn"
+                                                        title="Ẩn node"
+                                                        aria-label="Ẩn node">
+                                                    <i class="ti ti-eye-off"></i>
+                                                </button>
+                                            </form>
+                                            <form th:unless="${n.status == 'VISIBLE'}"
+                                                  th:action="@{/lecturer/classes/{cid}/nodes/{nid}/show(cid=${classroom.id}, nid=${n.nodeId})}"
+                                                  method="post" class="table-action-form">
+                                                <button type="submit" class="table-action-btn is-positive"
+                                                        title="Hiện node"
+                                                        aria-label="Hiện node">
+                                                    <i class="ti ti-eye"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

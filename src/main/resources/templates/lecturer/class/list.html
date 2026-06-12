@@ -27,7 +27,7 @@
                             <div>
                                 <h5 class="card-title fw-semibold mb-1">Quản lý lớp học</h5>
                             </div>
-                            <a th:href="@{/lecturer/classes/new}" class="btn btn-primary">
+                            <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary">
                                 <i class="ti ti-plus me-1"></i> Tạo lớp mới
                             </a>
                         </div>
@@ -50,7 +50,7 @@
                                 <tr th:if="${#lists.isEmpty(classes)}">
                                     <td colspan="8" class="text-center text-muted py-4">
                                         Chưa có lớp học nào.
-                                        <a th:href="@{/lecturer/classes/new}">Tạo lớp đầu tiên</a>
+                                        <a th:href="@{/lecturer/classes/wizard}">Tạo lớp đầu tiên</a>
                                     </td>
                                 </tr>
                                 <tr th:each="c, stat : ${classes}">

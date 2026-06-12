@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Thanh tiến trình wizard: current = 1|2|3. Bước đã qua bấm được để quay lại. -->
+<div th:fragment="wizardStepper(current)" class="pb-stepper">
+    <a th:href="@{/lecturer/classes/wizard}" class="pb-step"
+       th:classappend="${current == 1} ? 'active' : 'done'">
+        <span class="pb-step-num"><th:block th:if="${current > 1}"><i class="ti ti-check"></i></th:block><th:block th:if="${current == 1}">1</th:block></span>
+        Thông tin lớp
+    </a>
+    <a th:href="${current > 2} ? @{/lecturer/classes/wizard/step2} : null" class="pb-step"
+       th:classappend="${current == 2} ? 'active' : (${current > 2} ? 'done' : '')">
+        <span class="pb-step-num"><th:block th:if="${current > 2}"><i class="ti ti-check"></i></th:block><th:block th:unless="${current > 2}">2</th:block></span>
+        Xây lộ trình
+    </a>
+    <span class="pb-step" th:classappend="${current == 3} ? 'active' : ''">
+        <span class="pb-step-num">3</span>
+        Xác nhận
+    </span>
+</div>
+</body>
+</html>

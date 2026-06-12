@@ -2,7 +2,9 @@ package com.edunac.mentora.controller.lecturer;
 
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.assessment.Assessment;
-import com.edunac.mentora.domain.branching.BranchRule;
+import com.edunac.mentora.domain.assessment.AssessmentType;
+import com.edunac.mentora.domain.assessment.DeliveryMode;
+import com.edunac.mentora.dto.AssessmentForm;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.dto.LearningNodeForm;
@@ -29,15 +31,18 @@ public class LecturerLearningPathController {
     private final SubjectService subjectService;
     private final AssessmentService assessmentService;
     private final BranchRuleService branchRuleService;
+    private final PathBuilderViewSupport builderViewSupport;
 
     public LecturerLearningPathController(LearningPathService pathService,
                                           SubjectService subjectService,
                                           AssessmentService assessmentService,
-                                          BranchRuleService branchRuleService) {
+                                          BranchRuleService branchRuleService,
+                                          PathBuilderViewSupport builderViewSupport) {
         this.pathService = pathService;
         this.subjectService = subjectService;
         this.assessmentService = assessmentService;
         this.branchRuleService = branchRuleService;
+        this.builderViewSupport = builderViewSupport;
     }
 
     @GetMapping
@@ -85,6 +90,9 @@ public class LecturerLearningPathController {
                          @RequestParam(required = false) Integer addAfter,
                          @RequestParam(required = false) Boolean addEnd,
                          @RequestParam(required = false) Integer editNode,
+                         @RequestParam(required = false) Integer addBranch,
+                         @RequestParam(required = false) String tag,
+                         @RequestParam(required = false) Integer testPanel,
                          HttpSession session, Model model) {
         User user = currentUser(session);
         LearningPath path = pathService.findByIdAndOwner(id, user);
@@ -95,71 +103,46 @@ public class LecturerLearningPathController {
         model.addAttribute("hasClassroom", pathService.hasClassroom(id));
         model.addAttribute("user", user);
         model.addAttribute("activePage", "learning-paths");
+        model.addAttribute("mode", "standalone");
 
+        builderViewSupport.populateBuilderModel(id, nodes, user, model);
+        builderViewSupport.populateTestPanel(testPanel, user, model);
+        builderViewSupport.populateNodeModal(addAfter, addEnd, editNode, addBranch, tag, nodes, model);
 
-        List<LearningNode> branchTestNodes = nodes.stream()
-                .filter(n -> "BRANCH_TEST".equals(n.getNodeType()))
-                .collect(Collectors.toList());
-        model.addAttribute("branchTestNodes", branchTestNodes);
-
-        List<Assessment> publishedAssessments = assessmentService.findPublishedByCreator(user);
-        model.addAttribute("assessments", publishedAssessments);
-
-        if (!model.containsAttribute("nodeForm")) {
-            if (editNode != null) {
-                buildEditForm(editNode, nodes, model);
-            } else if (addAfter != null || Boolean.TRUE.equals(addEnd)) {
-                LearningNodeForm f = new LearningNodeForm();
-                f.setAfterNodeId(addAfter);
-                model.addAttribute("nodeForm", f);
-                model.addAttribute("editMode", false);
-                model.addAttribute("openNodeModal", true);
-            }
-        }
-
-        if (!model.containsAttribute("nodeForm")) {
-            model.addAttribute("nodeForm", new LearningNodeForm());
-        }
-        if (!model.containsAttribute("editMode")) {
-            model.addAttribute("editMode", false);
-        }
-        if (!model.containsAttribute("openNodeModal")) {
-            model.addAttribute("openNodeModal", false);
-        }
-
-        return "lecturer/learning-path/detail";
+        return "lecturer/learning-path/builder";
     }
 
+    @PostMapping("/{id}/nodes/{nodeId}/create-test")
+    public String createTest(@PathVariable Integer id, @PathVariable Integer nodeId,
+                             @RequestParam(required = false) String returnTo,
+                             HttpSession session, RedirectAttributes ra) {
+        User user = currentUser(session);
+        try {
+            pathService.findByIdAndOwner(id, user);
+            LearningNode node = pathService.getNodes(id).stream()
+                    .filter(n -> n.getId().equals(nodeId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
 
-    private void buildEditForm(Integer editNodeId, List<LearningNode> nodes, Model model) {
-        for (LearningNode n : nodes) {
-            if (!n.getId().equals(editNodeId)) continue;
+            AssessmentForm form = new AssessmentForm();
+            form.setTitle(node.getTitle());
+            form.setType(AssessmentType.BRANCHING_TEST.name());
+            form.setDeliveryMode(DeliveryMode.SELF_PACED.name());
+            form.setDurationMinutes(30);
+            form.setTotalScore(java.math.BigDecimal.TEN);
+            Assessment created = assessmentService.create(form, user);
 
-            LearningNodeForm f = new LearningNodeForm();
-            f.setId(n.getId());
-            f.setTitle(n.getTitle());
-            f.setDescription(n.getDescription());
-            if (n.getPrerequisite() != null) {
-                f.setPrerequisiteNodeId(n.getPrerequisite().getId());
-            }
+            pathService.attachAssessment(id, nodeId, created.getId(), 5, user);
 
-            f.setNodeType(n.getNodeType() != null ? n.getNodeType() : "LESSON");
-            f.setBranchTag(n.getBranchTag() != null ? n.getBranchTag() : "MAIN");
-            if (n.getBranchOwnerNode() != null) {
-                f.setBranchOwnerNodeId(n.getBranchOwnerNode().getId());
-            }
-
-            if ("BRANCH_TEST".equals(f.getNodeType())) {
-                branchRuleService.findByNodeId(n.getId()).ifPresent(rule -> {
-                    f.setAssessmentId(rule.getAssessmentId());
-                    f.setMinScore(rule.getMinScore() != null ? rule.getMinScore().doubleValue() : null);
-                });
-            }
-
-            model.addAttribute("nodeForm", f);
-            model.addAttribute("editMode", true);
-            model.addAttribute("openNodeModal", true);
-            return;
+            ra.addFlashAttribute("success",
+                    "Đã tạo bài test nháp \"" + created.getTitle() + "\" — soạn câu hỏi ở khung bên phải.");
+            String base = (returnTo != null && returnTo.startsWith("/lecturer/"))
+                    ? returnTo : "/lecturer/learning-paths/" + id;
+            return "redirect:" + base + (base.contains("?") ? "&" : "?")
+                    + "testPanel=" + created.getId() + "#node-" + nodeId;
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return redirectTarget(returnTo, id, null);
         }
     }
 
@@ -190,19 +173,22 @@ public class LecturerLearningPathController {
     @PostMapping("/{id}/nodes")
     public String addNode(@PathVariable Integer id,
                           @ModelAttribute LearningNodeForm form,
+                          @RequestParam(required = false) String returnTo,
                           HttpSession session, RedirectAttributes ra) {
         try {
-            pathService.addNode(id, form, currentUser(session));
+            LearningNode saved = pathService.addNode(id, form, currentUser(session));
             ra.addFlashAttribute("success", "Đã thêm node.");
+            return redirectTarget(returnTo, id, "#node-" + saved.getId());
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
+            return redirectTarget(returnTo, id, null);
         }
-        return "redirect:/lecturer/learning-paths/" + id;
     }
 
     @PostMapping("/{id}/nodes/{nodeId}/edit")
     public String updateNode(@PathVariable Integer id, @PathVariable Integer nodeId,
                              @ModelAttribute LearningNodeForm form,
+                             @RequestParam(required = false) String returnTo,
                              HttpSession session, RedirectAttributes ra) {
         try {
             pathService.updateNode(id, nodeId, form, currentUser(session));
@@ -210,11 +196,25 @@ public class LecturerLearningPathController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lecturer/learning-paths/" + id;
+        return redirectTarget(returnTo, id, "#node-" + nodeId);
+    }
+
+    @PostMapping("/{id}/nodes/{nodeId}/move")
+    public String moveNode(@PathVariable Integer id, @PathVariable Integer nodeId,
+                           @RequestParam String dir,
+                           @RequestParam(required = false) String returnTo,
+                           HttpSession session, RedirectAttributes ra) {
+        try {
+            pathService.moveNode(id, nodeId, dir, currentUser(session));
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return redirectTarget(returnTo, id, "#node-" + nodeId);
     }
 
     @PostMapping("/{id}/nodes/{nodeId}/delete")
     public String deleteNode(@PathVariable Integer id, @PathVariable Integer nodeId,
+                             @RequestParam(required = false) String returnTo,
                              HttpSession session, RedirectAttributes ra) {
         try {
             pathService.deleteNode(id, nodeId, currentUser(session));
@@ -222,7 +222,15 @@ public class LecturerLearningPathController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lecturer/learning-paths/" + id;
+        return redirectTarget(returnTo, id, null);
+    }
+
+    /** Chỉ chấp nhận returnTo nội bộ khu lecturer (chống open redirect); mặc định quay về trang builder. */
+    private String redirectTarget(String returnTo, Integer pathId, String anchor) {
+        String base = (returnTo != null && returnTo.startsWith("/lecturer/"))
+                ? returnTo
+                : "/lecturer/learning-paths/" + pathId;
+        return "redirect:" + base + (anchor != null ? anchor : "");
     }
 
     @PostMapping("/{id}/clone")

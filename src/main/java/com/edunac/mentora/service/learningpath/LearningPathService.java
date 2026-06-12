@@ -252,6 +252,100 @@ public class LearningPathService {
         nodeRepository.delete(node);
     }
 
+    /**
+     * Di chuyển một node thuộc luồng chính lên/xuống một bậc trong sơ đồ.
+     * Node BRANCH_TEST mang theo toàn bộ node nhánh PASS/FAIL của nó (cả khối di chuyển cùng nhau).
+     */
+    public void moveNode(Integer pathId, Integer nodeId, String direction, User requester) {
+        findByIdAndOwner(pathId, requester);
+        if (!"up".equals(direction) && !"down".equals(direction)) {
+            throw new IllegalArgumentException("Hướng di chuyển không hợp lệ.");
+        }
+
+        List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
+        List<LearningNode> mains = new java.util.ArrayList<>();
+        Map<Integer, List<LearningNode>> branchByOwner = new java.util.LinkedHashMap<>();
+        List<LearningNode> orphanBranches = new java.util.ArrayList<>();
+
+        for (LearningNode n : nodes) {
+            boolean isBranch = "PASS".equals(n.getBranchTag()) || "FAIL".equals(n.getBranchTag());
+            if (isBranch) {
+                if (n.getBranchOwnerNode() != null) {
+                    branchByOwner.computeIfAbsent(n.getBranchOwnerNode().getId(), k -> new java.util.ArrayList<>()).add(n);
+                } else {
+                    orphanBranches.add(n);
+                }
+            } else {
+                mains.add(n);
+            }
+        }
+
+        List<List<LearningNode>> blocks = new java.util.ArrayList<>();
+        int idx = -1;
+        for (int i = 0; i < mains.size(); i++) {
+            LearningNode main = mains.get(i);
+            List<LearningNode> block = new java.util.ArrayList<>();
+            block.add(main);
+            block.addAll(branchByOwner.getOrDefault(main.getId(), List.of()));
+            blocks.add(block);
+            if (main.getId().equals(nodeId)) idx = i;
+        }
+        if (idx < 0) {
+            throw new IllegalArgumentException("Chỉ có thể di chuyển node thuộc luồng chính.");
+        }
+
+        int target = "up".equals(direction) ? idx - 1 : idx + 1;
+        if (target < 0 || target >= blocks.size()) {
+            throw new IllegalArgumentException("Node đã ở vị trí biên, không thể di chuyển thêm.");
+        }
+        java.util.Collections.swap(blocks, idx, target);
+
+        int order = 1;
+        List<LearningNode> toSave = new java.util.ArrayList<>();
+        for (List<LearningNode> block : blocks) {
+            for (LearningNode n : block) {
+                n.setNodeOrder(BigDecimal.valueOf(order++));
+                toSave.add(n);
+            }
+        }
+        for (LearningNode n : orphanBranches) {
+            n.setNodeOrder(BigDecimal.valueOf(order++));
+            toSave.add(n);
+        }
+        nodeRepository.saveAll(toSave);
+    }
+
+    /** Gắn (hoặc cập nhật) bài test cho node BRANCH_TEST — dùng khi tạo test inline từ builder. */
+    public void attachAssessment(Integer pathId, Integer nodeId, Integer assessmentId, Integer minScore, User requester) {
+        findByIdAndOwner(pathId, requester);
+        LearningNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
+        if (!node.getLearningPath().getId().equals(pathId)) {
+            throw new IllegalArgumentException("Node không thuộc lộ trình này.");
+        }
+        if (!"BRANCH_TEST".equals(node.getNodeType())) {
+            throw new IllegalArgumentException("Chỉ node bài test rẽ nhánh mới gắn được bài test.");
+        }
+        BranchRule rule = branchRuleRepository.findByNodeId(nodeId).orElseGet(BranchRule::new);
+        rule.setNode(node);
+        rule.setAssessmentId(assessmentId);
+        if (minScore != null) {
+            rule.setMinScore(minScore);
+        } else if (rule.getMinScore() == null) {
+            rule.setMinScore(0);
+        }
+        branchRuleRepository.save(rule);
+    }
+
+    /** Số lượng nội dung học tập của từng node trong lộ trình (hiển thị trên builder). */
+    public Map<Integer, Integer> contentCounts(Integer pathId) {
+        Map<Integer, Integer> counts = new HashMap<>();
+        for (LearningNode n : nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId)) {
+            counts.put(n.getId(), nodeContentRepository.findByNode_IdOrderByDisplayOrderAscIdAsc(n.getId()).size());
+        }
+        return counts;
+    }
+
     // ===== PRIVATE HELPERS =====
 
     private void deleteContentsForNode(Integer nodeId) {

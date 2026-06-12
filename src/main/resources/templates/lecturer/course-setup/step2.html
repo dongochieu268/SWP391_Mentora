@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tạo lớp học — Bước 2: Xây lộ trình | mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/path-builder.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <h4 class="mb-0">
+                        <i class="ti ti-school me-2 text-primary"></i>Tạo lớp học:
+                        <span class="text-muted" th:text="${state.name}"></span>
+                    </h4>
+                </div>
+                <div th:replace="~{lecturer/course-setup/stepper :: wizardStepper(2)}"></div>
+
+                <!-- ===== CHƯA CÓ LỘ TRÌNH: tạo mới hoặc chọn có sẵn ===== -->
+                <th:block th:unless="${hasPath}">
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <h5 class="fw-semibold mb-3"><i class="ti ti-route me-1 text-primary"></i>Tạo lộ trình cho lớp</h5>
+                                    <form th:action="@{/lecturer/classes/wizard/step2/path}" method="post">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="wizPathName">Tên lộ trình <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="pathName" id="wizPathName"
+                                                   th:value="${defaultPathName}" maxlength="150" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label" for="wizPathDesc">Mô tả</label>
+                                            <textarea class="form-control" name="pathDescription" id="wizPathDesc"
+                                                      rows="2" maxlength="1000"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="ti ti-plus me-1"></i>Tạo lộ trình và bắt đầu xây
+                                        </button>
+                                    </form>
+
+                                    <th:block th:if="${!#lists.isEmpty(existingPaths)}">
+                                        <div class="text-center text-muted small my-3">— hoặc dùng lộ trình có sẵn —</div>
+                                        <form th:action="@{/lecturer/classes/wizard/step2/select-path}" method="post" class="d-flex gap-2">
+                                            <select class="form-select" name="learningPathId" required>
+                                                <option value="">-- Chọn lộ trình cùng môn --</option>
+                                                <option th:each="p : ${existingPaths}" th:value="${p.id}" th:text="${p.name}"></option>
+                                            </select>
+                                            <button type="submit" class="btn btn-outline-primary text-nowrap">Dùng lộ trình này</button>
+                                        </form>
+                                        <div class="form-text mt-1">
+                                            Lưu ý: nếu lộ trình đã được lớp khác dùng, cấu trúc sẽ bị khóa (không xóa node được).
+                                        </div>
+                                    </th:block>
+
+                                    <div class="d-flex justify-content-start mt-4">
+                                        <a th:href="@{/lecturer/classes/wizard}" class="btn btn-light border">
+                                            <i class="ti ti-arrow-left me-1"></i>Quay lại bước 1
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- ===== ĐÃ CÓ LỘ TRÌNH: builder dùng chung ===== -->
+                <th:block th:if="${hasPath}">
+                    <div class="alert alert-light border py-2 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <i class="ti ti-route me-1 text-primary"></i>
+                            Lộ trình: <strong th:text="${path.name}"></strong>
+                            <span class="badge bg-info text-dark ms-1" th:text="${path.subject.code}"></span>
+                        </div>
+                        <div class="small text-muted">
+                            Thêm bài học, bài test rẽ nhánh và soạn câu hỏi ngay tại đây — xong thì bấm "Tiếp tục".
+                        </div>
+                    </div>
+
+                    <th:block th:replace="~{lecturer/learning-path/builder :: builderBody}"></th:block>
+
+                    <div class="d-flex justify-content-between mt-3 mb-5">
+                        <a th:href="@{/lecturer/classes/wizard}" class="btn btn-light border">
+                            <i class="ti ti-arrow-left me-1"></i>Quay lại bước 1
+                        </a>
+                        <a th:href="@{/lecturer/classes/wizard/review}" class="btn btn-primary">
+                            Tiếp tục: Xem lại &amp; xác nhận <i class="ti ti-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </th:block>
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

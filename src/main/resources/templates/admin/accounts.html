@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý tài khoản | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <!-- Flash messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2" role="alert">
+                    <i class="ti ti-circle-check me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+                    <i class="ti ti-circle-x me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+
+                        <!-- Page header + Tabs -->
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="card-title fw-semibold mb-0">Quản lý tài khoản</h5>
+                            <button type="button" class="btn btn-primary btn-sm"
+                                    data-bs-toggle="modal" data-bs-target="#createTeacherModal">
+                                <i class="ti ti-user-plus me-1"></i> Tạo giảng viên
+                            </button>
+                        </div>
+
+                        <!-- Tabs -->
+                        <ul class="nav nav-tabs mb-3">
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   th:classappend="${activeTab == 'students'} ? ' active'"
+                                   th:href="@{/admin/accounts(tab='students')}">
+                                    <i class="ti ti-school me-1"></i>
+                                    Sinh viên
+                                    <span class="badge bg-secondary ms-1"
+                                          th:if="${activeTab == 'students'}"
+                                          th:text="${#lists.size(accounts)}"></span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   th:classappend="${activeTab == 'lecturers'} ? ' active'"
+                                   th:href="@{/admin/accounts(tab='lecturers')}">
+                                    <i class="ti ti-chalkboard me-1"></i>
+                                    Giảng viên
+                                    <span class="badge bg-secondary ms-1"
+                                          th:if="${activeTab == 'lecturers'}"
+                                          th:text="${#lists.size(accounts)}"></span>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- Filter -->
+                        <form th:action="@{/admin/accounts}" method="get" class="row g-2 mb-3">
+                            <input type="hidden" name="tab" th:value="${activeTab}">
+                            <div class="col-md-5 col-sm-12">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ti ti-search"></i></span>
+                                    <input type="text" class="form-control" name="search"
+                                           th:placeholder="${activeTab == 'students'} ? 'Tên hoặc email sinh viên...' : 'Tên hoặc email giảng viên...'"
+                                           th:value="${search}">
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-12">
+                                <select class="form-select" name="status">
+                                    <option value="" th:selected="${selectedStatus == ''}">Tất cả trạng thái</option>
+                                    <option value="ACTIVE"   th:selected="${selectedStatus == 'ACTIVE'}">Hoạt động</option>
+                                    <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">Vô hiệu</option>
+                                    <option value="BANNED"   th:selected="${selectedStatus == 'BANNED'}">Bị cấm</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 col-sm-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ti ti-filter me-1"></i> Lọc
+                                </button>
+                            </div>
+                            <div class="col-md-1 col-sm-6">
+                                <a th:href="@{/admin/accounts(tab=${activeTab})}" class="btn btn-light border w-100" title="Xóa bộ lọc">
+                                    <i class="ti ti-x"></i>
+                                </a>
+                            </div>
+                        </form>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th style="width: 48px;">#</th>
+                                    <th>
+                                        <span th:text="${activeTab == 'students'} ? 'Sinh viên' : 'Giảng viên'"></span>
+                                    </th>
+                                    <th class="d-none d-md-table-cell">Email</th>
+                                    <th>Trạng thái</th>
+                                    <th style="width: 60px;"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                <!-- Chưa có dữ liệu (không có filter nào đang áp dụng) -->
+                                <th:block th:if="${#lists.isEmpty(accounts) and #strings.isEmpty(search) and #strings.isEmpty(selectedStatus)}">
+                                    <tr th:replace="~{components/empty-state :: emptyRow(${activeTab == 'students'} ? 'Chưa có sinh viên nào.' : 'Chưa có giảng viên nào.', 5)}"></tr>
+                                </th:block>
+                                <!-- Bộ lọc không tìm thấy kết quả -->
+                                <th:block th:if="${#lists.isEmpty(accounts) and (not #strings.isEmpty(search) or not #strings.isEmpty(selectedStatus))}">
+                                    <tr th:replace="~{components/empty-state :: noResults('Không tìm thấy tài khoản phù hợp.', '/admin/accounts?tab=' + ${activeTab}, 5)}"></tr>
+                                </th:block>
+
+                                <!-- Data rows -->
+                                <tr th:each="acc, stat : ${accounts}">
+                                    <td th:text="${stat.count}" class="text-muted small"></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img th:src="'/assets/images/profile/user-' + ${acc.id % 6 + 1} + '.jpg'"
+                                                 width="36" height="36" class="rounded-circle flex-shrink-0" alt="">
+                                            <div>
+                                                <div class="fw-semibold" th:text="${acc.fullName}"></div>
+                                                <div class="text-muted small d-md-none" th:text="${acc.email}"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-md-table-cell text-muted" th:text="${acc.email}"></td>
+                                    <td>
+                                        <th:block th:replace="~{components/status-badge :: statusBadge(${acc.status})}"></th:block>
+                                    </td>
+                                    <td>
+                                        <!-- Skip admin accounts -->
+                                        <div th:if="${acc.role.name == 'ADMIN'}" class="text-center">
+                                            <i class="ti ti-lock text-muted" title="Không thể thay đổi Admin"></i>
+                                        </div>
+
+                                        <!-- Action dropdown for non-admin -->
+                                        <div th:unless="${acc.role.name == 'ADMIN'}" class="dropdown">
+                                            <button class="table-action-btn" type="button"
+                                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                                    title="Thao tác">
+                                                <i class="ti ti-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <button class="dropdown-item" type="button"
+                                                            data-bs-toggle="offcanvas"
+                                                            th:attr="data-bs-target='#detail-' + ${acc.id}">
+                                                        <i class="ti ti-eye me-2"></i> Xem chi tiết
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li th:unless="${acc.status == 'ACTIVE'}">
+                                                    <button class="dropdown-item text-success action-status-btn" type="button"
+                                                            th:data-id="${acc.id}" th:data-name="${acc.fullName}"
+                                                            th:data-action="ACTIVE" th:data-tab="${activeTab}"
+                                                            data-bs-toggle="modal" data-bs-target="#modalConfirm">
+                                                        <i class="ti ti-player-play me-2"></i> Kích hoạt
+                                                    </button>
+                                                </li>
+                                                <li th:if="${acc.status == 'ACTIVE'}">
+                                                    <button class="dropdown-item text-warning action-status-btn" type="button"
+                                                            th:data-id="${acc.id}" th:data-name="${acc.fullName}"
+                                                            th:data-action="INACTIVE" th:data-tab="${activeTab}"
+                                                            data-bs-toggle="modal" data-bs-target="#modalConfirm">
+                                                        <i class="ti ti-player-pause me-2"></i> Tạm khóa
+                                                    </button>
+                                                </li>
+                                                <li th:unless="${acc.status == 'BANNED'}">
+                                                    <button class="dropdown-item text-danger action-status-btn" type="button"
+                                                            th:data-id="${acc.id}" th:data-name="${acc.fullName}"
+                                                            th:data-action="BANNED" th:data-tab="${activeTab}"
+                                                            data-bs-toggle="modal" data-bs-target="#modalConfirm">
+                                                        <i class="ti ti-ban me-2"></i> Cấm tài khoản
+                                                    </button>
+                                                </li>
+                                                <li th:if="${acc.status == 'BANNED'}">
+                                                    <button class="dropdown-item text-success action-status-btn" type="button"
+                                                            th:data-id="${acc.id}" th:data-name="${acc.fullName}"
+                                                            th:data-action="ACTIVE" th:data-tab="${activeTab}"
+                                                            data-bs-toggle="modal" data-bs-target="#modalConfirm">
+                                                        <i class="ti ti-player-play me-2"></i> Bỏ cấm
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-2">
+                            <span class="text-muted small"
+                                  th:text="'Hiển thị ' + ${#lists.size(accounts)} + ' tài khoản'"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offcanvas: chi tiết tài khoản (rendered server-side per account) -->
+<th:block th:each="acc : ${accounts}" th:unless="${acc.role.name == 'ADMIN'}">
+    <div class="offcanvas offcanvas-end" tabindex="-1"
+         th:id="'detail-' + ${acc.id}"
+         th:attr="aria-labelledby='detailLabel-' + ${acc.id}">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" th:id="'detailLabel-' + ${acc.id}">Chi tiết tài khoản</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="text-center mb-4">
+                <img th:src="'/assets/images/profile/user-' + ${acc.id % 6 + 1} + '.jpg'"
+                     width="80" height="80" class="rounded-circle mb-2" alt="">
+                <h6 class="mb-0 fw-semibold" th:text="${acc.fullName}"></h6>
+                <small class="text-muted" th:text="${acc.email}"></small>
+            </div>
+            <hr>
+            <div class="row g-3">
+                <div class="col-12">
+                    <span class="text-muted small d-block">Vai trò</span>
+                    <span class="role-badge" th:text="${acc.role.name}"></span>
+                </div>
+                <div class="col-12">
+                    <span class="text-muted small d-block">Trạng thái</span>
+                    <th:block th:replace="~{components/status-badge :: statusBadge(${acc.status})}"></th:block>
+                </div>
+                <div class="col-12">
+                    <span class="text-muted small d-block">Email xác nhận</span>
+                    <span th:if="${acc.emailVerified}" class="text-success">
+                        <i class="ti ti-circle-check me-1"></i> Đã xác nhận
+                    </span>
+                    <span th:unless="${acc.emailVerified}" class="text-warning">
+                        <i class="ti ti-circle-x me-1"></i> Chưa xác nhận
+                    </span>
+                </div>
+                <div class="col-12">
+                    <span class="text-muted small d-block">ID hệ thống</span>
+                    <span class="fw-semibold" th:text="${acc.id}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<!-- Modal: Tạo giảng viên -->
+<div class="modal fade" id="createTeacherModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form th:action="@{/admin/create-teacher}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-user-plus me-1"></i> Tạo tài khoản giảng viên
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="ct-fullName" class="form-label fw-semibold">
+                            Họ và tên <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="ct-fullName" name="fullName"
+                               placeholder="Ví dụ: Nguyễn Văn A" th:value="${fullName}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ct-email" class="form-label fw-semibold">
+                            Email <span class="text-danger">*</span>
+                        </label>
+                        <input type="email" class="form-control" id="ct-email" name="email"
+                               placeholder="Ví dụ: gv.nguyen@fpt.edu.vn" th:value="${teacherEmail}" required>
+                        <div class="form-text">Email dùng để kích hoạt tài khoản.</div>
+                    </div>
+                    <div class="mb-0">
+                        <label for="ct-password" class="form-label fw-semibold">
+                            Mật khẩu tạm thời <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="ct-password" name="password"
+                                   placeholder="Nhập mật khẩu tạm thời" required>
+                            <button class="btn btn-outline-secondary" type="button" id="ct-togglePwd">
+                                <i class="ti ti-eye" id="ct-eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-user-plus me-1"></i> Tạo tài khoản
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận thay đổi trạng thái -->
+<div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận thao tác</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-1">Thay đổi trạng thái tài khoản</p>
+                <p class="fw-semibold mb-1" id="confirmName"></p>
+                <p class="mb-0">thành <span class="badge" id="confirmBadge"></span>?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <form id="formConfirm" method="post">
+                    <input type="hidden" name="status" id="confirmStatus">
+                    <input type="hidden" name="tab" id="confirmTab">
+                    <button type="submit" class="btn btn-primary" id="confirmBtn">Xác nhận</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    document.querySelectorAll('.action-status-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id     = this.dataset.id;
+            var name   = this.dataset.name;
+            var action = this.dataset.action;
+            var tab    = this.dataset.tab;
+
+            document.getElementById('confirmName').textContent = name;
+            document.getElementById('confirmStatus').value = action;
+            document.getElementById('confirmTab').value = tab;
+            document.getElementById('formConfirm').action = '/admin/accounts/' + id + '/status';
+
+            var badge = document.getElementById('confirmBadge');
+            var btnEl = document.getElementById('confirmBtn');
+            if (action === 'ACTIVE') {
+                badge.textContent = 'Hoạt động';
+                badge.className = 'badge text-bg-success';
+                btnEl.className = 'btn btn-success';
+            } else if (action === 'INACTIVE') {
+                badge.textContent = 'Vô hiệu';
+                badge.className = 'badge text-bg-warning';
+                btnEl.className = 'btn btn-warning';
+            } else {
+                badge.textContent = 'Bị cấm';
+                badge.className = 'badge text-bg-danger';
+                btnEl.className = 'btn btn-danger';
+            }
+        });
+    });
+
+    // Toggle hiển thị mật khẩu trong modal tạo giảng viên
+    document.getElementById('ct-togglePwd').addEventListener('click', function () {
+        var inp = document.getElementById('ct-password');
+        var ico = document.getElementById('ct-eyeIcon');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            ico.className = 'ti ti-eye-off';
+        } else {
+            inp.type = 'password';
+            ico.className = 'ti ti-eye';
+        }
+    });
+</script>
+<!-- Mở lại modal tạo giảng viên nếu có lỗi từ server -->
+<script th:if="${openCreateTeacher}">
+    new bootstrap.Modal(document.getElementById('createTeacherModal')).show();
+</script>
+</body>
+</html>

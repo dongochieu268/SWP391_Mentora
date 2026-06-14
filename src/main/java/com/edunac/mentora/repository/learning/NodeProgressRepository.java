@@ -26,6 +26,10 @@ public interface NodeProgressRepository extends JpaRepository<NodeProgress, Inte
 
     boolean existsByLearningNodeId(Integer nodeId);
 
+    /**
+     * Đếm số node đã hoàn thành (cũ) — đếm trên TOÀN BỘ node visible, không phân nhánh.
+     * Giữ lại để không break code cũ, nhưng không dùng trong buildProgressResponse nữa.
+     */
     @Query("""
         SELECT COUNT(np) FROM NodeProgress np 
         WHERE np.student.id = :studentId 
@@ -38,5 +42,88 @@ public interface NodeProgressRepository extends JpaRepository<NodeProgress, Inte
             AND cns.status = 'VISIBLE'
         )
     """)
-    long countValidCompletedNodes(@Param("studentId") Integer studentId, @Param("classroomId") Integer classroomId);
+    long countValidCompletedNodes(
+            @Param("studentId") Integer studentId,
+            @Param("classroomId") Integer classroomId);
+
+    /**
+     * FIX: Đếm số node đã hoàn thành THEO NHÁNH của sinh viên.
+     *
+     * Quy tắc:
+     *  - Node MAIN (branch_tag IS NULL hoặc = 'MAIN') + BRANCH_TEST: luôn được tính
+     *  - Node PASS: chỉ tính nếu sinh viên được phân vào PASS của cùng branchOwnerNode
+     *  - Node FAIL: chỉ tính nếu sinh viên được phân vào FAIL của cùng branchOwnerNode
+     *
+     * Dùng SQL native để join với student_branch_assignments dễ hơn JPQL.
+     */
+    @Query(value = """
+        SELECT COUNT(np.id)
+        FROM node_progress np
+        JOIN classroom_node_status cns
+            ON cns.node_id    = np.node_id
+           AND cns.classroom_id = np.classroom_id
+           AND cns.status     = 'VISIBLE'
+        JOIN learning_nodes ln
+            ON ln.id = np.node_id
+        WHERE np.student_id    = :studentId
+          AND np.classroom_id  = :classroomId
+          AND np.is_completed  = 1
+          AND (
+              -- Node MAIN hoặc BRANCH_TEST: luôn tính
+              ln.branch_tag IS NULL
+              OR ln.branch_tag = 'MAIN'
+              OR ln.node_type  = 'BRANCH_TEST'
+              OR (
+                  -- Node PASS/FAIL: chỉ tính nếu đúng nhánh sinh viên
+                  ln.branch_owner_node_id IS NOT NULL
+                  AND EXISTS (
+                      SELECT 1
+                      FROM student_branch_assignments sba
+                      WHERE sba.student_id    = :studentId
+                        AND sba.classroom_id  = :classroomId
+                        AND sba.branch_node_id = ln.branch_owner_node_id
+                        AND sba.assigned_branch = ln.branch_tag
+                  )
+              )
+          )
+    """, nativeQuery = true)
+    long countCompletedNodesForStudent(
+            @Param("studentId") Integer studentId,
+            @Param("classroomId") Integer classroomId);
+
+    /**
+     * FIX: Đếm tổng số node sinh viên CẦN HỌC (đúng nhánh + visible).
+     *
+     * Logic giống countCompletedNodesForStudent nhưng đếm trên learning_nodes
+     * thay vì node_progress — tức là đếm denominator (mẫu số) đúng.
+     */
+    @Query(value = """
+        SELECT COUNT(ln.id)
+        FROM learning_nodes ln
+        JOIN classroom_node_status cns
+            ON cns.node_id     = ln.id
+           AND cns.classroom_id = :classroomId
+           AND cns.status      = 'VISIBLE'
+        WHERE (
+            -- Node MAIN hoặc BRANCH_TEST: luôn tính
+            ln.branch_tag IS NULL
+            OR ln.branch_tag = 'MAIN'
+            OR ln.node_type  = 'BRANCH_TEST'
+            OR (
+                -- Node PASS/FAIL: chỉ tính nếu đúng nhánh
+                ln.branch_owner_node_id IS NOT NULL
+                AND EXISTS (
+                    SELECT 1
+                    FROM student_branch_assignments sba
+                    WHERE sba.student_id    = :studentId
+                      AND sba.classroom_id  = :classroomId
+                      AND sba.branch_node_id = ln.branch_owner_node_id
+                      AND sba.assigned_branch = ln.branch_tag
+                )
+            )
+        )
+    """, nativeQuery = true)
+    long countRelevantNodesForStudent(
+            @Param("studentId") Integer studentId,
+            @Param("classroomId") Integer classroomId);
 }

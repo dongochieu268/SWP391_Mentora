@@ -30,6 +30,7 @@ public class NodeProgressService {
     private final ClassroomMemberRepository classroomMemberRepository;
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
 
+
     public NodeProgressResponse markNodeCompleted(
             Integer studentId, Integer nodeId, Integer classroomId) {
 
@@ -58,9 +59,9 @@ public class NodeProgressService {
 
     public void markBranchTestCompleted(
             Integer studentId, Integer nodeId, Integer classroomId) {
-
         saveCompleted(studentId, nodeId, classroomId);
     }
+
 
     void saveCompleted(Integer studentId, Integer nodeId, Integer classroomId) {
         NodeProgress progress = nodeProgressRepository
@@ -92,9 +93,12 @@ public class NodeProgressService {
 
         ensureActiveMember(studentId, classroomId);
 
-        long totalNodes = learningNodeRepository.countVisibleNodesByClassroom(classroomId);
+
+        long totalNodes     = nodeProgressRepository
+                .countRelevantNodesForStudent(studentId, classroomId);
         long completedNodes = nodeProgressRepository
-                .countValidCompletedNodes(studentId, classroomId);
+                .countCompletedNodesForStudent(studentId, classroomId);
+
         completedNodes = Math.min(completedNodes, totalNodes);
 
         double percent = totalNodes == 0 ? 0.0

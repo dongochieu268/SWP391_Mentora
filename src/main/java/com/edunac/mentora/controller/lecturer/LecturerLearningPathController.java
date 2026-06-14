@@ -53,7 +53,20 @@ public class LecturerLearningPathController {
                 .filter(p -> pathService.hasClassroom(p.getId()))
                 .map(LearningPath::getId)
                 .collect(Collectors.toSet());
+
+        // Gom lộ trình theo môn để hiển thị dạng accordion (bấm môn -> xổ lộ trình).
+        // LinkedHashMap giữ thứ tự theo mã môn; trong cùng session Hibernate trả về
+        // cùng instance Subject cho mỗi id nên dùng Subject làm key là an toàn.
+        java.util.Map<com.edunac.mentora.domain.subject.Subject, List<LearningPath>> pathsBySubject =
+                new java.util.LinkedHashMap<>();
+        paths.stream()
+                .sorted(java.util.Comparator.comparing(p -> p.getSubject().getCode()))
+                .forEach(p -> pathsBySubject
+                        .computeIfAbsent(p.getSubject(), k -> new java.util.ArrayList<>())
+                        .add(p));
+
         model.addAttribute("paths", paths);
+        model.addAttribute("pathsBySubject", pathsBySubject);
         model.addAttribute("pathsWithClassroom", withClassroom);
         model.addAttribute("user", user);
         model.addAttribute("activePage", "learning-paths");

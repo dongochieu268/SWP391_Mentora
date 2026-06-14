@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Đăng nhập | mentora</title>
+    <title>Đăng nhập | Mentora</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
@@ -34,7 +34,7 @@
                             <a th:href="@{/login}" class="text-nowrap logo-img text-center d-block py-3 w-100">
                                 <img th:src="@{/assets/images/logos/logo.svg}" alt="logo">
                             </a>
-                            <p class="text-center">Welcome to Mentora</p>
+                            <p class="text-center">Chào mừng đến với Mentora</p>
                             <!-- ALERTS -->
                             <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
                             <div th:if="${success}" class="alert alert-success py-2" th:text="${success}"></div>
@@ -47,37 +47,30 @@
                                            class="form-control"
                                            id="email"
                                            name="email"
-                                           placeholder="Enter your email"
+                                           placeholder="Nhập email của bạn"
                                            th:value="${email}"
                                            required>
                                 </div>
                                 <!-- PASSWORD -->
                                 <div class="mb-4">
-                                    <label for="password" class="form-label">Password</label>
+                                    <label for="password" class="form-label">Mật khẩu</label>
                                     <input type="password"
                                            class="form-control"
                                            id="password"
                                            name="password"
-                                           placeholder="Enter your password"
+                                           placeholder="Nhập mật khẩu"
                                            required>
                                 </div>
-                                <!-- REMEMBER -->
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input primary"
-                                               type="checkbox"
-                                               id="rememberMe">
-                                        <label class="form-check-label text-dark" for="rememberMe">Remember this device</label>
-                                    </div>
-                                    <!-- FORGOT PASSWORD -->
-                                    <a class="text-primary fw-bold" th:href="@{/forgot-password}">Forgot Password?</a>
+                                <!-- FORGOT PASSWORD -->
+                                <div class="d-flex align-items-center justify-content-end mb-4">
+                                    <a class="text-primary fw-bold" th:href="@{/forgot-password}">Quên mật khẩu?</a>
                                 </div>
                                 <!-- LOGIN BUTTON -->
-                                <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Sign In</button>
+                                <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Đăng nhập</button>
                                 <!-- REGISTER -->
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <p class="fs-4 mb-0 fw-bold">New to Mentora?</p>
-                                    <a class="text-primary fw-bold ms-2" th:href="@{/register}">Create an account</a>
+                                    <p class="fs-4 mb-0 fw-bold">Chưa có tài khoản?</p>
+                                    <a class="text-primary fw-bold ms-2" th:href="@{/register}">Tạo tài khoản</a>
                                 </div>
                             </form>
                         </div>

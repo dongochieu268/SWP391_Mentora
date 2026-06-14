@@ -9,12 +9,31 @@
   Add page-specific scripts AFTER this fragment in your page.
 -->
 <th:block th:fragment="adminScripts">
+  <link rel="stylesheet" th:href="@{/assets/css/admin-custom.css}"/>
   <script th:src="@{/assets/libs/jquery/dist/jquery.min.js}"></script>
   <script th:src="@{/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
   <script th:src="@{/assets/js/sidebarmenu.js}"></script>
   <script th:src="@{/assets/js/app.min.js}"></script>
   <script th:src="@{/assets/libs/simplebar/dist/simplebar.js}"></script>
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+
+  <!--
+    Dropdown trong .table-responsive (overflow-x:auto) bị container cắt và tạo
+    scrollbar ngang. Dùng Popper strategy 'fixed' để menu nổi theo viewport,
+    không làm phình chiều rộng cuộn của bảng.
+  -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!window.bootstrap || !window.bootstrap.Dropdown) return;
+      document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+        window.bootstrap.Dropdown.getOrCreateInstance(el, {
+          popperConfig: function (defaultConfig) {
+            return Object.assign({}, defaultConfig, { strategy: 'fixed' });
+          }
+        });
+      });
+    });
+  </script>
 </th:block>
 
 </body>

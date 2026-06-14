@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard | mentora</title>
+    <title>Dashboard | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -18,10 +18,63 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div class="card">
+                <!-- Welcome -->
+                <div class="card mb-4">
                     <div class="card-body">
-                        <h4 class="card-title">Xin chào, <span th:text="${user.fullName}">Giảng viên</span>!</h4>
-                        <p class="card-text text-muted">Bạn đang đăng nhập với vai trò <strong>LECTURER</strong>.</p>
+                        <h4 class="card-title mb-1">Xin chào, <span th:text="${user.fullName}">Giảng viên</span>!</h4>
+                        <p class="card-text text-muted mb-0">Chào mừng bạn đến với Mentora. Chọn chức năng bên dưới để bắt đầu.</p>
+                    </div>
+                </div>
+
+                <!-- Điều hướng nhanh -->
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a th:href="@{/lecturer/learning-paths}" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body d-flex align-items-center gap-3 p-4">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                                         style="width:56px;height:56px;flex-shrink:0;">
+                                        <i class="ti ti-route fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1 text-dark">Lộ trình học</h6>
+                                        <p class="text-muted small mb-0">Tạo và chỉnh sửa lộ trình học cho môn của bạn</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a th:href="@{/lecturer/assessments}" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body d-flex align-items-center gap-3 p-4">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                                         style="width:56px;height:56px;flex-shrink:0;">
+                                        <i class="ti ti-clipboard-check fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1 text-dark">Bài test</h6>
+                                        <p class="text-muted small mb-0">Tạo bài test trắc nghiệm dùng cho điểm phân nhánh</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a th:href="@{/lecturer/classes}" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body d-flex align-items-center gap-3 p-4">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                                         style="width:56px;height:56px;flex-shrink:0;">
+                                        <i class="ti ti-school fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1 text-dark">Lớp học</h6>
+                                        <p class="text-muted small mb-0">Tạo lớp, quản lý thành viên và duyệt yêu cầu tham gia</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>

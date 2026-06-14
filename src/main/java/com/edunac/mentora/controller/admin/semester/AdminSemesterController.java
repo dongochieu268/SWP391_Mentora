@@ -30,12 +30,9 @@ public class AdminSemesterController {
     }
 
     @GetMapping("/new")
-    public String createForm(HttpSession session, Model model) {
-        model.addAttribute("semester", new Semester());
-        model.addAttribute("isEdit", false);
-        model.addAttribute("activePage", "semesters");
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        return "admin/semester/form";
+    public String createForm() {
+        // Form tạo học kỳ giờ là modal trong trang danh sách
+        return "redirect:/admin/semesters";
     }
 
     @PostMapping
@@ -51,7 +48,10 @@ public class AdminSemesterController {
             redirectAttributes.addFlashAttribute("success", "Đã thêm học kỳ mới.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/admin/semesters/new";
+            redirectAttributes.addFlashAttribute("openCreateSemester", true);
+            redirectAttributes.addFlashAttribute("formName", name);
+            redirectAttributes.addFlashAttribute("formStartDate", startDate);
+            redirectAttributes.addFlashAttribute("formEndDate", endDate);
         }
 
         return "redirect:/admin/semesters";

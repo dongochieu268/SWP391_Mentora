@@ -7,6 +7,7 @@
     <title>Quản lý học kỳ | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
 </head>
 
 <body>
@@ -20,59 +21,73 @@
         <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h5 class="card-title fw-semibold mb-0">Quản lý học kỳ</h5>
-                            <a class="btn btn-primary" th:href="@{/admin/semesters/new}">
+                            <button type="button" class="btn btn-primary"
+                                    data-bs-toggle="modal" data-bs-target="#createSemesterModal">
                                 <i class="ti ti-plus"></i> Thêm học kỳ
-                            </a>
+                            </button>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Tên học kỳ</th>
-                                    <th>Bắt đầu</th>
-                                    <th>Kết thúc</th>
+                                    <th>Học kỳ</th>
+                                    <th class="d-none d-md-table-cell">Thời gian</th>
                                     <th>Trạng thái</th>
-                                    <th class="text-end">Thao tác</th>
+                                    <th style="width: 60px;"></th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr th:if="${#lists.isEmpty(semesters)}">
-                                    <td colspan="6" class="text-center text-muted py-4">Chưa có học kỳ nào.</td>
-                                </tr>
+                                <th:block th:if="${#lists.isEmpty(semesters)}">
+                                    <tr th:replace="~{components/empty-state :: emptyRow('Chưa có học kỳ nào.', 4)}"></tr>
+                                </th:block>
                                 <tr th:each="semester, stat : ${semesters}">
-                                    <td th:text="${stat.count}">1</td>
-                                    <td th:text="${semester.name}">Học kỳ 1</td>
-                                    <td th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')}">01/09/2025</td>
-                                    <td th:text="${#temporals.format(semester.endDate, 'dd/MM/yyyy')}">15/01/2026</td>
                                     <td>
-                                        <span class="status-badge status-active" th:if="${semester.status == 'ACTIVE'}">ACTIVE</span>
-                                        <span class="status-badge status-inactive" th:if="${semester.status == 'HIDDEN'}">HIDDEN</span>
+                                        <div class="fw-semibold" th:text="${semester.name}"></div>
+                                        <div class="text-muted small d-md-none"
+                                             th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')} + ' – ' + ${#temporals.format(semester.endDate, 'dd/MM/yyyy')}"></div>
                                     </td>
-                                    <td class="text-end">
-                                        <div class="table-actions justify-content-end">
-                                            <a class="table-action-btn"
-                                               th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}"
-                                               title="Sửa học kỳ"
-                                               aria-label="Sửa học kỳ">
-                                                <i class="ti ti-edit"></i>
-                                            </a>
-                                            <form class="table-action-form" method="post"
-                                                  th:action="@{/admin/semesters/{id}/delete(id=${semester.id})}"
-                                                  th:onsubmit="return confirm('Xóa học kỳ này?');">
-                                                <button type="submit" class="table-action-btn is-danger"
-                                                        title="Xóa học kỳ"
-                                                        aria-label="Xóa học kỳ">
-                                                    <i class="ti ti-trash"></i>
-                                                </button>
-                                            </form>
+                                    <td class="d-none d-md-table-cell text-muted small"
+                                        th:text="${#temporals.format(semester.startDate, 'dd/MM/yyyy')} + ' – ' + ${#temporals.format(semester.endDate, 'dd/MM/yyyy')}"></td>
+                                    <td>
+                                        <th:block th:replace="~{components/status-badge :: statusBadge(${semester.status})}"></th:block>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="table-action-btn" type="button"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="ti ti-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item"
+                                                       th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}">
+                                                        <i class="ti ti-edit me-2"></i> Sửa học kỳ
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form method="post"
+                                                          th:action="@{/admin/semesters/{id}/delete(id=${semester.id})}"
+                                                          onsubmit="return confirm('Xóa học kỳ này?');">
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class="ti ti-trash me-2"></i> Xóa học kỳ
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>
@@ -85,7 +100,74 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Thêm học kỳ -->
+<div class="modal fade" id="createSemesterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" th:action="@{/admin/semesters}">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-calendar-plus me-1"></i> Thêm học kỳ mới
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="cs-name" class="form-label">Tên học kỳ <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="cs-name" name="name"
+                               th:value="${formName}" maxlength="100" required
+                               placeholder="VD: Học kỳ 1 2025-2026">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="cs-startDate" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="cs-startDate" name="startDate"
+                                   th:value="${formStartDate}" placeholder="dd/mm/yyyy" required autocomplete="off">
+                        </div>
+                        <div class="col-6">
+                            <label for="cs-endDate" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="cs-endDate" name="endDate"
+                                   th:value="${formEndDate}" placeholder="dd/mm/yyyy" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label for="cs-status" class="form-label">Trạng thái</label>
+                        <select class="form-select" id="cs-status" name="status">
+                            <option value="ACTIVE">Hoạt động (ACTIVE)</option>
+                            <option value="HIDDEN">Ẩn (HIDDEN)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-plus me-1"></i> Tạo học kỳ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+<script>
+    var csStart = flatpickr('#cs-startDate', {
+        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+        locale: 'vn', allowInput: true,
+        onChange: function (d) { if (d.length) csEnd.set('minDate', d[0]); }
+    });
+    var csEnd = flatpickr('#cs-endDate', {
+        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+        locale: 'vn', allowInput: true
+    });
+</script>
+<!-- Mở lại modal nếu server trả lỗi -->
+<script th:if="${openCreateSemester}">
+    new bootstrap.Modal(document.getElementById('createSemesterModal')).show();
+</script>
 </body>
 
 </html>

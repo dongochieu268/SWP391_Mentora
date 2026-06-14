@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Đăng ký | mentora</title>
+    <title>Đăng ký | Mentora</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
@@ -32,49 +32,49 @@
                         <div class="card-body">
                             <!-- LOGO -->
                             <a th:href="@{/register}" class="text-nowrap logo-img text-center d-block py-3 w-100"><img th:src="@{/assets/images/logos/logo.svg}" alt="logo"></a>
-                            <p class="text-center">Create your Mentora account</p>
+                            <p class="text-center">Tạo tài khoản Mentora</p>
                             <!-- ALERTS -->
                             <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
                             <!-- REGISTER FORM -->
                             <form th:action="@{/register}" method="post">
                                 <!-- FULL NAME -->
                                 <div class="mb-3">
-                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <label for="fullName" class="form-label">Họ và tên</label>
                                     <input type="text"
                                            class="form-control"
                                            id="fullName"
                                            name="fullName"
-                                           placeholder="Enter your full name"
+                                           placeholder="Nhập họ và tên của bạn"
                                            th:value="${fullName}"
                                            required>
                                 </div>
                                 <!-- EMAIL -->
                                 <div class="mb-3">
-                                    <label for="email" class="form-label">Email Address</label>
+                                    <label for="email" class="form-label">Email</label>
                                     <input type="email"
                                            class="form-control"
                                            id="email"
                                            name="email"
-                                           placeholder="Enter your email"
+                                           placeholder="Nhập email của bạn"
                                            th:value="${email}"
                                            required>
                                 </div>
                                 <!-- PASSWORD -->
                                 <div class="mb-4">
-                                    <label for="password" class="form-label">Password</label>
+                                    <label for="password" class="form-label">Mật khẩu</label>
                                     <input type="password"
                                            class="form-control"
                                            id="password"
                                            name="password"
-                                           placeholder="Enter your password"
+                                           placeholder="Nhập mật khẩu"
                                            required>
                                 </div>
                                 <!-- REGISTER BUTTON -->
-                                <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Sign Up</button>
+                                <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Đăng ký</button>
                                 <!-- LOGIN -->
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <p class="fs-4 mb-0 fw-bold">Already have an account?</p>
-                                    <a class="text-primary fw-bold ms-2" th:href="@{/login}">Sign In</a>
+                                    <p class="fs-4 mb-0 fw-bold">Đã có tài khoản?</p>
+                                    <a class="text-primary fw-bold ms-2" th:href="@{/login}">Đăng nhập</a>
                                 </div>
                             </form>
                         </div>

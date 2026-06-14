@@ -72,10 +72,15 @@
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 <li>
-                                                    <a class="dropdown-item"
-                                                       th:href="@{/admin/semesters/{id}/edit(id=${semester.id})}">
+                                                    <button type="button" class="dropdown-item edit-semester-btn"
+                                                            data-bs-toggle="modal" data-bs-target="#editSemesterModal"
+                                                            th:data-id="${semester.id}"
+                                                            th:data-name="${semester.name}"
+                                                            th:data-start="${semester.startDate}"
+                                                            th:data-end="${semester.endDate}"
+                                                            th:data-status="${semester.status}">
                                                         <i class="ti ti-edit me-2"></i> Sửa học kỳ
-                                                    </a>
+                                                    </button>
                                                 </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
@@ -150,6 +155,55 @@
     </div>
 </div>
 
+<!-- Modal: Sửa học kỳ (điền sẵn từ dòng được chọn) -->
+<div class="modal fade" id="editSemesterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" id="editSemesterForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-edit me-1"></i> Cập nhật học kỳ
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="es-name" class="form-label">Tên học kỳ <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="es-name" name="name"
+                               th:value="${formName}" maxlength="100" required
+                               placeholder="VD: Học kỳ 1 2025-2026">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="es-startDate" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="es-startDate" name="startDate"
+                                   th:value="${formStartDate}" placeholder="dd/mm/yyyy" required autocomplete="off">
+                        </div>
+                        <div class="col-6">
+                            <label for="es-endDate" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="es-endDate" name="endDate"
+                                   th:value="${formEndDate}" placeholder="dd/mm/yyyy" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label for="es-status" class="form-label">Trạng thái</label>
+                        <select class="form-select" id="es-status" name="status">
+                            <option value="ACTIVE" th:selected="${formStatus == 'ACTIVE'}">Hoạt động (ACTIVE)</option>
+                            <option value="HIDDEN" th:selected="${formStatus == 'HIDDEN'}">Ẩn (HIDDEN)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-device-floppy me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
@@ -163,10 +217,38 @@
         dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
         locale: 'vn', allowInput: true
     });
+
+    // ----- Modal sửa học kỳ -----
+    var esStart = flatpickr('#es-startDate', {
+        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+        locale: 'vn', allowInput: true,
+        onChange: function (d) { if (d.length) esEnd.set('minDate', d[0]); }
+    });
+    var esEnd = flatpickr('#es-endDate', {
+        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+        locale: 'vn', allowInput: true
+    });
+
+    // Bấm "Sửa học kỳ" -> điền modal từ data của dòng
+    document.querySelectorAll('.edit-semester-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.getElementById('editSemesterForm').action = '/admin/semesters/' + this.dataset.id;
+            document.getElementById('es-name').value = this.dataset.name || '';
+            document.getElementById('es-status').value = this.dataset.status || 'ACTIVE';
+            esStart.setDate(this.dataset.start || null, true);
+            esEnd.setDate(this.dataset.end || null, true);
+            if (this.dataset.start) esEnd.set('minDate', this.dataset.start);
+        });
+    });
 </script>
-<!-- Mở lại modal nếu server trả lỗi -->
+<!-- Mở lại modal TẠO nếu server trả lỗi -->
 <script th:if="${openCreateSemester}">
     new bootstrap.Modal(document.getElementById('createSemesterModal')).show();
+</script>
+<!-- Mở lại modal SỬA của đúng học kỳ nếu server trả lỗi (giá trị đã điền sẵn qua th:value) -->
+<script th:if="${openEditSemester}" th:inline="javascript">
+    document.getElementById('editSemesterForm').action = '/admin/semesters/' + [[${openEditSemester}]];
+    new bootstrap.Modal(document.getElementById('editSemesterModal')).show();
 </script>
 </body>
 

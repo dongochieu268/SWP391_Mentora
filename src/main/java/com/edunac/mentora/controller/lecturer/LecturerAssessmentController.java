@@ -28,9 +28,26 @@ public class LecturerAssessmentController {
     @GetMapping
     public String list(HttpSession session, Model model) {
         User user = currentUser(session);
-        model.addAttribute("assessments", assessmentService.findByCreator(user));
-        model.addAttribute("user", user);
-        model.addAttribute("activePage", "assessments");
+        List<Assessment> assessments = assessmentService.findByCreator(user);
+
+        // Tách thành tab: Bản nháp (DRAFT) và Đã xuất bản (PUBLISHED + ARCHIVED).
+        List<Assessment> drafts = new ArrayList<>();
+        List<Assessment> published = new ArrayList<>();
+        for (Assessment a : assessments) {
+            if (AssessmentStatus.DRAFT.name().equals(a.getStatus())) {
+                drafts.add(a);
+            } else {
+                published.add(a);
+            }
+        }
+        model.addAttribute("draftAssessments", drafts);
+        model.addAttribute("publishedAssessments", published);
+
+        // Cần cho modal "Tạo bài test" ngay trên trang danh sách.
+        if (!model.containsAttribute("form")) {
+            model.addAttribute("form", defaultAssessmentForm());
+        }
+        addCommonModel(model, user);
         return "lecturer/assessment/list";
     }
 
@@ -57,8 +74,27 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             ra.addFlashAttribute("form", form);
-            return "redirect:/lecturer/assessments/new";
+            // Quay về danh sách và mở lại modal tạo bài test (giữ giá trị đã nhập).
+            ra.addFlashAttribute("openCreateModal", true);
+            return "redirect:/lecturer/assessments";
         }
+    }
+
+    @GetMapping("/{id}/questions/new")
+    public String newQuestionForm(@PathVariable Integer id, HttpSession session, Model model,
+                                  RedirectAttributes ra) {
+        User user = currentUser(session);
+        Assessment assessment = assessmentService.findByIdAndOwner(id, user);
+        if (!AssessmentStatus.DRAFT.name().equals(assessment.getStatus())) {
+            ra.addFlashAttribute("error", "Chỉ thêm câu hỏi cho bài test ở trạng thái DRAFT.");
+            return "redirect:/lecturer/assessments/" + id;
+        }
+        model.addAttribute("assessment", assessment);
+        if (!model.containsAttribute("questionForm")) {
+            model.addAttribute("questionForm", defaultQuestionForm());
+        }
+        addCommonModel(model, user);
+        return "lecturer/assessment/question-form";
     }
 
     @GetMapping("/{id}")

@@ -18,20 +18,46 @@ public class AdminController {
     }
 
     // =====================
-    // UC06 — Quản lý tài khoản
+    // Quản lý tài khoản gộp (accounts page)
+    // =====================
+    @GetMapping("/accounts")
+    public String accounts(HttpSession session, Model model,
+                           @RequestParam(defaultValue = "students") String tab,
+                           @RequestParam(defaultValue = "") String search,
+                           @RequestParam(defaultValue = "") String status) {
+        model.addAttribute("user", session.getAttribute("loggedInUser"));
+        model.addAttribute("activePage", "accounts");
+        model.addAttribute("activeTab", tab);
+        model.addAttribute("search", search);
+        model.addAttribute("selectedStatus", status);
+        if ("lecturers".equals(tab)) {
+            model.addAttribute("accounts", userService.getAllFiltered(search, "LECTURER", status));
+        } else {
+            model.addAttribute("accounts", userService.getStudentsFiltered(search, status));
+        }
+        return "admin/accounts";
+    }
+
+    @PostMapping("/accounts/{id}/status")
+    public String updateAccountStatus(@PathVariable Integer id,
+                                      @RequestParam String status,
+                                      @RequestParam(defaultValue = "students") String tab,
+                                      RedirectAttributes ra) {
+        try {
+            userService.updateStatus(id, status);
+            ra.addFlashAttribute("success", "Đã cập nhật trạng thái tài khoản.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/accounts?tab=" + tab;
+    }
+
+    // =====================
+    // UC06 — Quản lý tài khoản (legacy redirects)
     // =====================
     @GetMapping("/users")
-    public String users(HttpSession session, Model model,
-                        @RequestParam(defaultValue = "") String search,
-                        @RequestParam(defaultValue = "") String role,
-                        @RequestParam(defaultValue = "") String status) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("activePage", "users");
-        model.addAttribute("users", userService.getAllFiltered(search, role, status));
-        model.addAttribute("search", search);
-        model.addAttribute("selectedRole", role);
-        model.addAttribute("selectedStatus", status);
-        return "admin/users";
+    public String users() {
+        return "redirect:/admin/accounts?tab=lecturers";
     }
 
     @PostMapping("/users/{id}/status")
@@ -44,53 +70,40 @@ public class AdminController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/users";
+        return "redirect:/admin/accounts?tab=lecturers";
     }
 
     // =====================
     // UC07 — Tạo giảng viên
     // =====================
     @GetMapping("/create-teacher")
-    public String createTeacherPage(HttpSession session, Model model) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("activePage", "create-teacher");
-        return "admin/create-teacher";
+    public String createTeacherPage() {
+        return "redirect:/admin/accounts?tab=lecturers";
     }
 
     @PostMapping("/create-teacher")
     public String createTeacher(@RequestParam String fullName,
                                 @RequestParam String email,
                                 @RequestParam String password,
-                                HttpSession session,
-                                Model model,
                                 RedirectAttributes ra) {
         try {
             userService.createTeacher(fullName, email, password);
             ra.addFlashAttribute("success", "Tạo tài khoản giảng viên thành công!");
-            return "redirect:/admin/create-teacher";
         } catch (Exception e) {
-            model.addAttribute("user", session.getAttribute("loggedInUser"));
-            model.addAttribute("activePage", "create-teacher");
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("fullName", fullName);
-            model.addAttribute("teacherEmail", email);
-            return "admin/create-teacher";
+            ra.addFlashAttribute("error", e.getMessage());
+            ra.addFlashAttribute("openCreateTeacher", true);
+            ra.addFlashAttribute("fullName", fullName);
+            ra.addFlashAttribute("teacherEmail", email);
         }
+        return "redirect:/admin/accounts?tab=lecturers";
     }
 
     // =====================
-    // UC08 — Quản lý sinh viên
+    // UC08 — Quản lý sinh viên (legacy redirect)
     // =====================
     @GetMapping("/students")
-    public String students(HttpSession session, Model model,
-                           @RequestParam(defaultValue = "") String search,
-                           @RequestParam(defaultValue = "") String status) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("activePage", "students");
-        model.addAttribute("students", userService.getStudentsFiltered(search, status));
-        model.addAttribute("search", search);
-        model.addAttribute("selectedStatus", status);
-        return "admin/students";
+    public String students() {
+        return "redirect:/admin/accounts?tab=students";
     }
 
     @PostMapping("/students/{id}/status")
@@ -103,6 +116,6 @@ public class AdminController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/students";
+        return "redirect:/admin/accounts?tab=students";
     }
 }

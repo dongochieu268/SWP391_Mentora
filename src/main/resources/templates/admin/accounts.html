@@ -73,15 +73,18 @@
                         <form th:action="@{/admin/accounts}" method="get" class="row g-2 mb-3">
                             <input type="hidden" name="tab" th:value="${activeTab}">
                             <div class="col-md-5 col-sm-12">
+                                <label for="accountSearch" class="visually-hidden">Tìm kiếm tài khoản</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="ti ti-search"></i></span>
-                                    <input type="text" class="form-control" name="search"
+                                    <input type="text" class="form-control" id="accountSearch" name="search"
+                                           autocomplete="off"
                                            th:placeholder="${activeTab == 'students'} ? 'Tên hoặc email sinh viên...' : 'Tên hoặc email giảng viên...'"
                                            th:value="${search}">
                                 </div>
                             </div>
                             <div class="col-md-4 col-sm-12">
-                                <select class="form-select" name="status">
+                                <label for="accountStatus" class="visually-hidden">Lọc theo trạng thái</label>
+                                <select class="form-select" id="accountStatus" name="status">
                                     <option value="" th:selected="${selectedStatus == ''}">Tất cả trạng thái</option>
                                     <option value="ACTIVE"   th:selected="${selectedStatus == 'ACTIVE'}">Hoạt động</option>
                                     <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">Vô hiệu</option>
@@ -278,6 +281,7 @@
                             Họ và tên <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control" id="ct-fullName" name="fullName"
+                               autocomplete="name"
                                placeholder="Ví dụ: Nguyễn Văn A" th:value="${fullName}" required>
                     </div>
                     <div class="mb-3">
@@ -285,6 +289,7 @@
                             Email <span class="text-danger">*</span>
                         </label>
                         <input type="email" class="form-control" id="ct-email" name="email"
+                               autocomplete="email"
                                placeholder="Ví dụ: gv.nguyen@fpt.edu.vn" th:value="${teacherEmail}" required>
                         <div class="form-text">Email dùng để kích hoạt tài khoản.</div>
                     </div>
@@ -294,8 +299,10 @@
                         </label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="ct-password" name="password"
+                                   autocomplete="new-password"
                                    placeholder="Nhập mật khẩu tạm thời" required>
-                            <button class="btn btn-outline-secondary" type="button" id="ct-togglePwd">
+                            <button class="btn btn-outline-secondary" type="button" id="ct-togglePwd"
+                                    aria-label="Hiển thị mật khẩu">
                                 <i class="ti ti-eye" id="ct-eyeIcon"></i>
                             </button>
                         </div>
@@ -376,9 +383,11 @@
         if (inp.type === 'password') {
             inp.type = 'text';
             ico.className = 'ti ti-eye-off';
+            this.setAttribute('aria-label', 'Ẩn mật khẩu');
         } else {
             inp.type = 'password';
             ico.className = 'ti ti-eye';
+            this.setAttribute('aria-label', 'Hiển thị mật khẩu');
         }
     });
 </script>

@@ -21,10 +21,7 @@
             <div class="container-fluid">
 
                 <div class="mb-4">
-                    <a th:href="@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}"
-                       class="text-muted small text-decoration-none">
-                        <i class="ti ti-arrow-left me-1"></i>Trở lại Lộ trình học
-                    </a>
+                    <a th:replace="~{components/back-button :: backButton(@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}, 'Trở lại Lộ trình học')}"></a>
                 </div>
 
                 <div class="row">

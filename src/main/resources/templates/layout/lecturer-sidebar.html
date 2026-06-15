@@ -13,8 +13,9 @@
       <a th:href="@{/lecturer/dashboard}" class="text-nowrap logo-img">
         <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
       </a>
-      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-        <i class="ti ti-x fs-6"></i>
+      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse"
+           role="button" tabindex="0" aria-label="Đóng menu điều hướng">
+        <i class="ti ti-x fs-6" aria-hidden="true"></i>
       </div>
     </div>
 
@@ -22,27 +23,27 @@
       <ul id="sidebarnav">
 
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Giảng viên</span>
         </li>
 
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/lecturer/dashboard}"
              th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-home"></i>
+            <i class="ti ti-home" aria-hidden="true"></i>
             <span class="hide-menu">Dashboard</span>
           </a>
         </li>
 
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Học thuật</span>
         </li>
 
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/lecturer/learning-paths}"
              th:classappend="${activePage == 'learning-paths'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-route"></i>
+            <i class="ti ti-route" aria-hidden="true"></i>
             <span class="hide-menu">Lộ trình học</span>
           </a>
         </li>
@@ -50,7 +51,7 @@
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/lecturer/assessments}"
              th:classappend="${activePage == 'assessments'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-clipboard-check"></i>
+            <i class="ti ti-clipboard-check" aria-hidden="true"></i>
             <span class="hide-menu">Bài test</span>
           </a>
         </li>
@@ -58,7 +59,7 @@
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/lecturer/classes}"
              th:classappend="${activePage == 'classes'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-school"></i>
+            <i class="ti ti-school" aria-hidden="true"></i>
             <span class="hide-menu">Lớp học</span>
           </a>
         </li>

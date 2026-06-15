@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard | mentora</title>
+  <title>Dashboard | Mentora</title>
   <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
   <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -82,14 +82,14 @@
           <div class="card-body">
             <h5 class="card-title fw-semibold mb-3">Thao tác nhanh</h5>
             <div class="d-flex gap-3 flex-wrap">
-              <a th:href="@{/admin/users}" class="btn admin-quick-action">
+              <a th:href="@{/admin/accounts}" class="btn admin-quick-action">
                 <i class="ti ti-users me-1"></i> Quản lý tài khoản
               </a>
-              <a th:href="@{/admin/create-teacher}" class="btn admin-quick-action">
-                <i class="ti ti-user-plus me-1"></i> Tạo giảng viên
+              <a th:href="@{/admin/subjects}" class="btn admin-quick-action">
+                <i class="ti ti-book me-1"></i> Quản lý môn học
               </a>
-              <a th:href="@{/admin/students}" class="btn admin-quick-action">
-                <i class="ti ti-school me-1"></i> Quản lý sinh viên
+              <a th:href="@{/admin/semesters}" class="btn admin-quick-action">
+                <i class="ti ti-calendar me-1"></i> Quản lý học kỳ
               </a>
             </div>
           </div>

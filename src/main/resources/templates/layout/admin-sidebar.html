@@ -5,7 +5,7 @@
 <!--
   Fragment: adminSidebar(activePage)
   Usage: <aside th:replace="~{layout/admin-sidebar :: adminSidebar(${activePage})}"></aside>
-  activePage values: 'dashboard' | 'users' | 'create-teacher' | 'students' | 'subjects' | 'semesters'
+  activePage values: 'dashboard' | 'accounts' | 'subjects' | 'semesters'
 -->
 <aside th:fragment="adminSidebar(activePage)" class="left-sidebar">
   <div>
@@ -13,8 +13,9 @@
       <a th:href="@{/admin/dashboard}" class="text-nowrap logo-img">
         <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
       </a>
-      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-        <i class="ti ti-x fs-6"></i>
+      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse"
+           role="button" tabindex="0" aria-label="Đóng menu điều hướng">
+        <i class="ti ti-x fs-6" aria-hidden="true"></i>
       </div>
     </div>
 
@@ -22,56 +23,40 @@
       <ul id="sidebarnav">
 
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Admin</span>
         </li>
 
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/admin/dashboard}"
              th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-home"></i>
+            <i class="ti ti-home" aria-hidden="true"></i>
             <span class="hide-menu">Dashboard</span>
           </a>
         </li>
 
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Quản lý người dùng</span>
         </li>
 
         <li class="sidebar-item">
-          <a class="sidebar-link" th:href="@{/admin/users}"
-             th:classappend="${activePage == 'users'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-users"></i>
+          <a class="sidebar-link" th:href="@{/admin/accounts}"
+             th:classappend="${activePage == 'accounts'} ? ' active'" aria-expanded="false">
+            <i class="ti ti-users" aria-hidden="true"></i>
             <span class="hide-menu">Quản lý tài khoản</span>
           </a>
         </li>
 
-        <li class="sidebar-item">
-          <a class="sidebar-link" th:href="@{/admin/create-teacher}"
-             th:classappend="${activePage == 'create-teacher'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-user-plus"></i>
-            <span class="hide-menu">Tạo giảng viên</span>
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a class="sidebar-link" th:href="@{/admin/students}"
-             th:classappend="${activePage == 'students'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-school"></i>
-            <span class="hide-menu">Quản lý sinh viên</span>
-          </a>
-        </li>
-
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Học thuật</span>
         </li>
 
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/admin/subjects}"
              th:classappend="${activePage == 'subjects'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-book"></i>
+            <i class="ti ti-book" aria-hidden="true"></i>
             <span class="hide-menu">Quản lý môn học</span>
           </a>
         </li>
@@ -79,7 +64,7 @@
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/admin/semesters}"
              th:classappend="${activePage == 'semesters'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-calendar"></i>
+            <i class="ti ti-calendar" aria-hidden="true"></i>
             <span class="hide-menu">Quản lý học kỳ</span>
           </a>
         </li>

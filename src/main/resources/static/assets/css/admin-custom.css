@@ -1,0 +1,530 @@
+/* =========================================================
+   Admin UX Fixes — loaded via admin-scripts fragment
+   ========================================================= */
+
+/* 1. Prevent page-level horizontal overflow on mobile */
+html,
+body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.body-wrapper {
+    overflow-x: hidden;
+    min-width: 0;
+}
+
+.body-wrapper-inner {
+    overflow-x: hidden;
+}
+
+/* 2. Table cells: wrap long strings, don't break layout */
+.table td,
+.table th {
+    word-break: break-word;
+    min-width: 0;
+}
+
+/* Remove text-nowrap that comes from old table markup */
+.table.text-nowrap td,
+.table.text-nowrap th {
+    white-space: normal !important;
+}
+
+/* 3. Email and long strings in cells — truncate gracefully */
+.cell-truncate {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 4. Ensure Bootstrap offcanvas is always fixed-positioned
+   (prevents it from adding width to the document flow
+    if the admin theme's CSS partially overrides Bootstrap) */
+.offcanvas {
+    position: fixed !important;
+}
+
+/* 5. Dropdown action menus — consistent min-width */
+.dropdown-menu {
+    min-width: 160px;
+}
+
+/* 6. Status badge text doesn't wrap */
+.status-badge {
+    white-space: nowrap;
+}
+
+/* 7. Action column stays tight */
+.table td:last-child {
+    white-space: nowrap;
+}
+
+/* 8. Nav tabs on mobile — scroll horizontally within the tab bar,
+   not the whole page */
+.nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-tabs .nav-link {
+    white-space: nowrap;
+}
+
+/* 9. Chrome MCP UI audit fixes: touch targets and contrast */
+.table-action-btn {
+    align-items: center;
+    border-radius: 10px;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    min-width: 44px;
+}
+
+.btn-sm {
+    min-height: 36px;
+}
+
+.table thead th {
+    color: #475569;
+    font-weight: 700;
+}
+
+.table td .fw-semibold,
+.table .fw-semibold {
+    color: #1f2937;
+}
+
+.nav-tabs .nav-link.active .badge {
+    background-color: #475569 !important;
+    color: #ffffff !important;
+}
+
+.card code {
+    color: #be185d;
+    font-weight: 700;
+}
+
+.form-check {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    min-height: 40px;
+}
+
+.form-check-input {
+    flex: 0 0 auto;
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.form-check-label {
+    cursor: pointer;
+    margin-bottom: 0;
+    min-height: 32px;
+    padding-top: 0.25rem;
+}
+
+.back-link-touch,
+.text-muted.small.text-decoration-none {
+    align-items: center;
+    display: inline-flex;
+    min-height: 36px;
+}
+
+.mobile-card-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.mobile-list-card {
+    border: 1px solid #e5eaef;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+@media (max-width: 575.98px) {
+    .btn-sm,
+    .table-action-btn {
+        min-height: 44px;
+    }
+
+}
+
+/* 10. Mentora shared design tokens and component normalization */
+:root {
+    --mentora-primary: #1e4db7;
+    --mentora-primary-hover: #173f9e;
+    --mentora-accent: #f59e0b;
+    --mentora-success: #067647;
+    --mentora-warning: #b54708;
+    --mentora-danger: #b42318;
+    --mentora-info: #175cd3;
+    --mentora-text: #111827;
+    --mentora-muted: #475467;
+    --mentora-border: #d9e2ec;
+    --mentora-soft-border: #e7edf4;
+    --mentora-bg: #f6f8fb;
+    --mentora-surface: #ffffff;
+    --mentora-surface-muted: #f8fafc;
+    --mentora-focus: rgba(30, 77, 183, 0.28);
+    --mentora-radius: 8px;
+    --mentora-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --mentora-shadow-card: 0 8px 24px rgba(16, 24, 40, 0.06);
+    --mentora-shadow-hover: 0 12px 32px rgba(16, 24, 40, 0.10);
+    --mentora-transition: 180ms ease;
+}
+
+body {
+    background: var(--mentora-bg);
+    color: var(--mentora-text);
+    text-rendering: optimizeLegibility;
+}
+
+a,
+button,
+.btn,
+.form-control,
+.form-select,
+.card,
+.dropdown-item,
+.sidebar-link,
+.nav-link,
+.table-action-btn {
+    transition: background-color var(--mentora-transition),
+                border-color var(--mentora-transition),
+                box-shadow var(--mentora-transition),
+                color var(--mentora-transition),
+                transform var(--mentora-transition);
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.dropdown-item:focus-visible,
+.sidebar-link:focus-visible,
+.nav-link:focus-visible,
+.table-action-btn:focus-visible,
+.btn-close:focus-visible {
+    outline: 3px solid var(--mentora-focus) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(30, 77, 183, 0.12) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--mentora-primary) !important;
+    box-shadow: 0 0 0 4px rgba(30, 77, 183, 0.12) !important;
+}
+
+.text-muted,
+.form-text,
+.card-subtitle {
+    color: var(--mentora-muted) !important;
+}
+
+.card {
+    border-color: var(--mentora-soft-border);
+    border-radius: var(--mentora-radius);
+    background: var(--mentora-surface);
+    box-shadow: var(--mentora-shadow-card);
+}
+
+.card.shadow-sm,
+.card.border,
+.mobile-list-card {
+    border-color: var(--mentora-soft-border) !important;
+    box-shadow: var(--mentora-shadow-card) !important;
+}
+
+a.text-decoration-none:hover .card,
+a.text-decoration-none:focus-visible .card,
+.card.interactive:hover,
+.card.interactive:focus-within {
+    border-color: #c8d7ea;
+    box-shadow: var(--mentora-shadow-hover) !important;
+    transform: translateY(-1px);
+}
+
+.card-title,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.fw-semibold,
+.fw-bold {
+    color: var(--mentora-text);
+}
+
+.btn {
+    align-items: center;
+    gap: 0.35rem;
+    justify-content: center;
+    min-height: 44px;
+    border-radius: var(--mentora-radius);
+    font-weight: 700;
+}
+
+.btn:not(.d-block) {
+    display: inline-flex;
+}
+
+.btn.d-block {
+    display: flex !important;
+}
+
+.btn-sm {
+    min-height: 40px;
+    padding-inline: 0.85rem;
+}
+
+.btn-primary {
+    background-color: var(--mentora-primary);
+    border-color: var(--mentora-primary);
+    color: #ffffff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+    background-color: var(--mentora-primary-hover);
+    border-color: var(--mentora-primary-hover);
+    color: #ffffff;
+}
+
+.btn-light,
+.btn-outline-secondary,
+.btn-outline-primary,
+.admin-quick-action {
+    border-color: var(--mentora-border);
+}
+
+.admin-quick-action {
+    color: var(--mentora-text);
+    min-height: 44px;
+}
+
+.form-control,
+.form-select {
+    min-height: 44px;
+    border-color: var(--mentora-border);
+    border-radius: var(--mentora-radius);
+    color: var(--mentora-text);
+    background-color: #ffffff;
+}
+
+.form-control::placeholder {
+    color: #667085;
+    opacity: 1;
+}
+
+.input-group-text {
+    min-height: 44px;
+    border-color: var(--mentora-border);
+    background: var(--mentora-surface-muted);
+    color: var(--mentora-muted);
+}
+
+.nav-tabs {
+    gap: 0.25rem;
+}
+
+.nav-tabs .nav-link {
+    align-items: center;
+    border-radius: var(--mentora-radius) var(--mentora-radius) 0 0;
+    display: inline-flex;
+    min-height: 44px;
+    color: var(--mentora-muted);
+    font-weight: 700;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus-visible {
+    border-color: #d0d9e6;
+    color: var(--mentora-primary);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--mentora-text);
+}
+
+.table {
+    --bs-table-hover-bg: #f8fafc;
+    color: var(--mentora-text);
+}
+
+.table thead th {
+    background: var(--mentora-surface-muted);
+    border-bottom-color: var(--mentora-border);
+    color: #344054;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.table td,
+.table th {
+    border-color: var(--mentora-soft-border);
+    vertical-align: middle;
+}
+
+.table-action-btn {
+    min-height: 44px;
+    min-width: 44px;
+    border-color: var(--mentora-border);
+    border-radius: var(--mentora-radius);
+    background: #ffffff;
+}
+
+.table-action-btn:hover,
+.table-action-btn:focus-visible {
+    border-color: #b8c7da;
+    background: var(--mentora-surface-muted);
+    color: var(--mentora-text);
+}
+
+.role-badge,
+.status-badge,
+.badge {
+    letter-spacing: 0;
+}
+
+.alert {
+    border-radius: var(--mentora-radius);
+    border-width: 1px;
+}
+
+.modal-content,
+.offcanvas {
+    border: 1px solid var(--mentora-soft-border);
+    border-radius: var(--mentora-radius);
+    box-shadow: var(--mentora-shadow-hover);
+}
+
+.btn-close {
+    min-height: 44px;
+    min-width: 44px;
+    border-radius: var(--mentora-radius);
+    background-position: center;
+}
+
+.app-header {
+    border-bottom: 1px solid rgba(217, 226, 236, 0.72);
+    background: rgba(255, 255, 255, 0.96);
+}
+
+.sidebar-nav ul .sidebar-item .sidebar-link {
+    min-height: 44px;
+}
+
+.brand-logo .logo-img {
+    align-items: center;
+    display: inline-flex;
+    min-height: 44px;
+}
+
+.close-btn.sidebartoggler {
+    align-items: center;
+    border-radius: var(--mentora-radius);
+    display: inline-flex !important;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.back-link-touch,
+.text-muted.small.text-decoration-none {
+    min-height: 44px;
+}
+
+.mobile-list-card {
+    border-radius: var(--mentora-radius);
+    background: #ffffff;
+}
+
+i[class^="ti "],
+i[class*=" ti-"],
+iconify-icon {
+    pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+    .body-wrapper .container-fluid,
+    .body-wrapper .container-sm,
+    .body-wrapper .container-md,
+    .body-wrapper .container-lg,
+    .body-wrapper .container-xl,
+    .body-wrapper .container-xxl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .btn-sm,
+    .nav-tabs .nav-link {
+        min-height: 44px;
+    }
+
+    .card-body > .d-flex.align-items-center.justify-content-between {
+        align-items: flex-start !important;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+}
+
+/* 11. Nút "Quay lại" dùng chung — đồng bộ kiểu dáng toàn dự án */
+.btn-back {
+    background: var(--mentora-surface);
+    border: 1px solid var(--mentora-border);
+    color: var(--mentora-muted);
+    font-weight: 600;
+}
+
+.btn-back:hover,
+.btn-back:focus-visible {
+    background: var(--mentora-surface-muted);
+    border-color: #b8c7da;
+    color: var(--mentora-text);
+}
+
+/* 12. Phân cấp màu cho trang danh sách lộ trình (môn học vs lộ trình con) */
+/* Khối lộ trình của một môn được thụt vào + dải màu indigo bên trái */
+.lp-subject-group .accordion-body {
+    background: var(--mentora-surface-muted);
+    border-left: 4px solid var(--mentora-primary);
+    border-bottom-left-radius: var(--mentora-radius);
+    padding-left: 1.25rem;
+}
+
+/* Mỗi lộ trình con: viền trái mảnh, sáng lên indigo khi hover */
+.lp-path-item {
+    border-left: 3px solid var(--mentora-border) !important;
+    padding-left: 1rem !important;
+    border-radius: 0 var(--mentora-radius) var(--mentora-radius) 0;
+}
+
+.lp-path-item:hover {
+    border-left-color: var(--mentora-primary) !important;
+    background: var(--mentora-surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

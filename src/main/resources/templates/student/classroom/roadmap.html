@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${classroom.name} + ' – Lộ trình | mentora'">Lộ trình học | mentora</title>
+    <title th:text="${classroom.name} + ' – Lộ trình | Mentora'">Lộ trình học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
     <style>
@@ -81,9 +81,7 @@
                 <!-- ── Header + Progress ── -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <a th:href="@{/student/classrooms}" class="text-muted small">
-                            <i class="ti ti-arrow-left me-1"></i>Danh sách lớp học
-                        </a>
+                        <a th:replace="~{components/back-button :: backButton(@{/student/classrooms}, 'Danh sách lớp học')}"></a>
                         <h4 class="card-title mt-2 mb-1" th:text="${classroom.name}"></h4>
                         <div class="d-flex flex-wrap gap-2 align-items-center">
                             <span class="badge bg-info text-dark" th:text="${classroom.subject.code}"></span>

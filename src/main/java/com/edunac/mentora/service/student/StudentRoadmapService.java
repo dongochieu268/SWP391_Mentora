@@ -55,19 +55,22 @@ public class StudentRoadmapService {
         List<LearningNode> pathNodes = nodeRepository
                 .findByLearningPathIdOrderByNodeOrderAsc(pathId);
 
-        Map<Integer, String> visibilityMap = loadVisibilityMap(classroomId);
-        Map<Integer, Boolean> completedMap = loadCompletionMap(classroomId, student.getId());
+        Map<Integer, String>     visibilityMap = loadVisibilityMap(classroomId);
+        Map<Integer, Boolean>    completedMap  = loadCompletionMap(classroomId, student.getId());
         Map<Integer, AssignedBranch> branchMap = loadBranchMap(student.getId(), classroomId);
 
-        int visibleCount = 0;
+        int visibleCount          = 0;
         int completedVisibleCount = 0;
 
         List<StudentRoadmapNodeView> nodeViews = pathNodes.stream()
                 .map(node -> {
-                    boolean visible = isVisible(node.getId(), visibilityMap);
-                    boolean prereqMet = isPrerequisiteMet(node, completedMap);
-                    boolean completed = Boolean.TRUE.equals(completedMap.get(node.getId()));
+                    boolean visible        = isVisible(node.getId(), visibilityMap);
+                    boolean prereqMet      = isPrerequisiteMet(node, completedMap);
+                    boolean completed      = Boolean.TRUE.equals(completedMap.get(node.getId()));
                     boolean onCorrectBranch = isOnCorrectBranch(node, branchMap);
+
+
+                    Boolean branchDecided = resolveBranchDecided(node, branchMap);
 
                     StudentRoadmapNodeState state = resolveState(
                             visible, prereqMet, completed, onCorrectBranch);
@@ -75,8 +78,10 @@ public class StudentRoadmapService {
                     String prereqTitle = node.getPrerequisite() != null
                             ? node.getPrerequisite().getTitle() : null;
 
-                    return new StudentRoadmapNodeView(node, state, prereqTitle);
+                    return new StudentRoadmapNodeView(node, state, prereqTitle, branchDecided);
                 })
+
+                .filter(view -> shouldShowToStudent(view, branchMap))
                 .toList();
 
         for (StudentRoadmapNodeView view : nodeViews) {
@@ -96,6 +101,49 @@ public class StudentRoadmapService {
                 classroom, nodeViews, completionPercent, visibleCount, completedVisibleCount);
     }
 
+
+    private boolean shouldShowToStudent(
+            StudentRoadmapNodeView view,
+            Map<Integer, AssignedBranch> branchMap) {
+
+        LearningNode node = view.getNode();
+        String tag = node.getBranchTag();
+
+        if (tag == null || BranchTag.MAIN.name().equals(tag)
+                || "BRANCH_TEST".equals(node.getNodeType())) {
+            return true;
+        }
+
+        LearningNode owner = node.getBranchOwnerNode();
+        if (owner == null) return true;
+
+        AssignedBranch assigned = branchMap.get(owner.getId());
+
+        if (assigned == null) {
+
+            return true;
+        }
+
+        if (BranchTag.PASS.name().equals(tag)) return assigned == AssignedBranch.PASS;
+        if (BranchTag.FAIL.name().equals(tag)) return assigned == AssignedBranch.FAIL;
+        return true;
+    }
+
+
+    private Boolean resolveBranchDecided(LearningNode node, Map<Integer, AssignedBranch> branchMap) {
+        String tag = node.getBranchTag();
+        if (tag == null || BranchTag.MAIN.name().equals(tag)) return true;
+
+        LearningNode owner = node.getBranchOwnerNode();
+        if (owner == null) return true;
+
+        AssignedBranch assigned = branchMap.get(owner.getId());
+        if (assigned == null) return null;
+
+        if (BranchTag.PASS.name().equals(tag)) return assigned == AssignedBranch.PASS;
+        if (BranchTag.FAIL.name().equals(tag)) return assigned == AssignedBranch.FAIL;
+        return true;
+    }
 
     public boolean canAccessNode(Integer nodeId, Integer studentId, Integer classroomId) {
         LearningNode node = nodeRepository.findById(nodeId).orElse(null);
@@ -138,20 +186,15 @@ public class StudentRoadmapService {
         return map;
     }
 
-
     private boolean isOnCorrectBranch(LearningNode node, Map<Integer, AssignedBranch> branchMap) {
         String tag = node.getBranchTag();
-        if (tag == null || BranchTag.MAIN.name().equals(tag)) {
-            return true;
-        }
+        if (tag == null || BranchTag.MAIN.name().equals(tag)) return true;
 
         LearningNode owner = node.getBranchOwnerNode();
         if (owner == null) return true;
 
         AssignedBranch assigned = branchMap.get(owner.getId());
-        if (assigned == null) {
-            return false;
-        }
+        if (assigned == null) return false;
 
         if (BranchTag.PASS.name().equals(tag)) return assigned == AssignedBranch.PASS;
         if (BranchTag.FAIL.name().equals(tag)) return assigned == AssignedBranch.FAIL;

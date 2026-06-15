@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bài test | mentora</title>
+    <title>Bài test | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -18,8 +18,14 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
                 <div class="card">
                     <div class="card-body">
@@ -28,70 +34,118 @@
                                 <h5 class="card-title fw-semibold mb-1">Bài test của tôi</h5>
                                 <p class="text-muted small mb-0">Tạo bài test trắc nghiệm để dùng cho điểm phân nhánh.</p>
                             </div>
-                            <a th:href="@{/lecturer/assessments/new}" class="btn btn-primary">
+                            <button type="button" class="btn btn-primary"
+                                    data-bs-toggle="modal" data-bs-target="#createTestModal">
                                 <i class="ti ti-plus me-1"></i> Tạo bài test
-                            </a>
+                            </button>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Tên bài test</th>
-                                    <th>Loại</th>
-                                    <th>Hình thức</th>
-                                    <th>Tổng điểm</th>
-                                    <th>Trạng thái</th>
-                                    <th class="text-end">Thao tác</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:if="${#lists.isEmpty(assessments)}">
-                                    <td colspan="7" class="text-center text-muted py-4">
-                                        Chưa có bài test nào. <a th:href="@{/lecturer/assessments/new}">Tạo ngay</a>
-                                    </td>
-                                </tr>
-                                <tr th:each="a, stat : ${assessments}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td>
-                                        <div class="fw-semibold" th:text="${a.title}"></div>
-                                        <div class="text-muted small"
-                                             th:if="${a.description != null}"
-                                             th:text="${#strings.length(a.description) > 80 ? #strings.substring(a.description, 0, 80) + '...' : a.description}"></div>
-                                    </td>
-                                    <td><span class="badge bg-light text-dark border" th:text="${a.type}"></span></td>
-                                    <td th:text="${a.deliveryMode}"></td>
-                                    <td th:text="${a.totalScore}"></td>
-                                    <td>
-                                        <span th:if="${a.status == 'DRAFT'}" class="status-badge status-pending">DRAFT</span>
-                                        <span th:if="${a.status == 'PUBLISHED'}" class="status-badge status-active">PUBLISHED</span>
-                                        <span th:if="${a.status == 'ARCHIVED'}" class="status-badge status-inactive">ARCHIVED</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="table-actions justify-content-end">
-                                            <a th:href="@{/lecturer/assessments/{id}(id=${a.id})}"
-                                               class="table-action-btn"
-                                               title="Xem chi tiết bài test"
-                                               aria-label="Xem chi tiết bài test">
-                                                <i class="ti ti-eye"></i>
-                                            </a>
-                                            <form th:if="${a.status != 'DRAFT'}"
-                                                  th:action="@{/lecturer/assessments/{id}/clone(id=${a.id})}"
-                                                  method="post"
-                                                  class="table-action-form"
-                                                  onsubmit="return confirm('Clone bài test này thành bản DRAFT mới?');">
-                                                <button type="submit" class="table-action-btn"
-                                                        title="Clone bài test"
-                                                        aria-label="Clone bài test">
-                                                    <i class="ti ti-copy"></i>
-                                                </button>
-                                            </form>
+                        <!-- Tab: Bản nháp / Đã xuất bản -->
+                        <ul class="nav nav-tabs mb-4" id="assessmentTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="draft-tab" data-bs-toggle="tab"
+                                        data-bs-target="#draft-pane" type="button" role="tab">
+                                    <i class="ti ti-pencil me-1"></i> Bản nháp
+                                    <span class="badge bg-warning text-dark ms-1"
+                                          th:text="${#lists.size(draftAssessments)}"></span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="published-tab" data-bs-toggle="tab"
+                                        data-bs-target="#published-pane" type="button" role="tab">
+                                    <i class="ti ti-cloud-check me-1"></i> Đã xuất bản
+                                    <span class="badge bg-success ms-1"
+                                          th:text="${#lists.size(publishedAssessments)}"></span>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <!-- Tab Bản nháp -->
+                            <div class="tab-pane fade show active" id="draft-pane" role="tabpanel">
+                                <div th:if="${#lists.isEmpty(draftAssessments)}" class="text-center text-muted py-5">
+                                    <i class="ti ti-pencil fs-1 d-block mb-2 opacity-50"></i>
+                                    Chưa có bản nháp nào.
+                                </div>
+                                <div class="row g-3" th:unless="${#lists.isEmpty(draftAssessments)}">
+                                    <div class="col-md-6 col-xl-4" th:each="a : ${draftAssessments}">
+                                        <div th:replace="~{components/assessment-card :: testCard(${a})}"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab Đã xuất bản -->
+                            <div class="tab-pane fade" id="published-pane" role="tabpanel">
+                                <div th:if="${#lists.isEmpty(publishedAssessments)}" class="text-center text-muted py-5">
+                                    <i class="ti ti-cloud-check fs-1 d-block mb-2 opacity-50"></i>
+                                    Chưa có bài test nào được xuất bản.
+                                </div>
+                                <div class="row g-3" th:unless="${#lists.isEmpty(publishedAssessments)}">
+                                    <div class="col-md-6 col-xl-4" th:each="a : ${publishedAssessments}">
+                                        <div th:replace="~{components/assessment-card :: testCard(${a})}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== Modal: Tạo bài test ====== -->
+                <div class="modal fade" id="createTestModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <form th:action="@{/lecturer/assessments}" method="post" th:object="${form}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-semibold">Tạo bài test mới</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="text-muted small">Bài test sẽ được lưu ở trạng thái DRAFT.</p>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="title">Tên bài test <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" th:field="*{title}" maxlength="200" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="description">Mô tả</label>
+                                        <textarea class="form-control" th:field="*{description}" rows="3" maxlength="2000"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label" for="type">Loại bài test</label>
+                                            <select class="form-select" th:field="*{type}">
+                                                <option th:each="type : ${typeOptions}"
+                                                        th:value="${type.name()}"
+                                                        th:text="${type.name()}"></option>
+                                            </select>
                                         </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label" for="deliveryMode">Hình thức làm bài</label>
+                                            <select class="form-select" th:field="*{deliveryMode}">
+                                                <option th:each="mode : ${deliveryModes}"
+                                                        th:value="${mode.name()}"
+                                                        th:text="${mode.name()}"></option>
+                                            </select>
+                                            <div class="form-text">MVP hiện hỗ trợ SELF_PACED.</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label" for="durationMinutes">Thời lượng phút <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" th:field="*{durationMinutes}" min="1" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label" for="totalScore">Tổng điểm <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" th:field="*{totalScore}" min="0.1" step="0.1" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ti ti-check me-1"></i> Tạo bài test
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -100,5 +154,14 @@
     </div>
 </div>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<!-- Mở lại modal tạo bài test khi tạo lỗi (giữ giá trị đã nhập) -->
+<script th:if="${openCreateModal}">
+    document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('createTestModal');
+        if (el && window.bootstrap) {
+            window.bootstrap.Modal.getOrCreateInstance(el).show();
+        }
+    });
+</script>
 </body>
 </html>

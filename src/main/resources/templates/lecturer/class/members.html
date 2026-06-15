@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quản lý thành viên | mentora</title>
+    <title>Quản lý thành viên | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -18,8 +18,14 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
                 <!-- Header -->
                 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -30,10 +36,16 @@
                             &nbsp;|&nbsp; Môn: <span th:text="${classroom.subject.code + ' - ' + classroom.subject.name}"></span>
                         </p>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a th:href="@{/lecturer/classes}" class="btn btn-outline-secondary btn-sm">
-                            <i class="ti ti-arrow-left me-1"></i> Quay lại
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a th:href="@{/lecturer/classes/{id}/nodes(id=${classroom.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-list-check me-1"></i> Hiển thị node
                         </a>
+                        <a th:href="@{/lecturer/classes/{id}/edit(id=${classroom.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-edit me-1"></i> Sửa lớp học
+                        </a>
+                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes}, 'Quay lại')}"></a>
                     </div>
                 </div>
 

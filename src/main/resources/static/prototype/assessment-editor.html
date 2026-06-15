@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Soạn bài test | Mentora Prototype</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/images/logos/favicon.svg">
+  <link rel="stylesheet" href="../assets/css/styles.min.css">
+  <link rel="stylesheet" href="../assets/css/question-bank-prototype.css">
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+  <aside class="left-sidebar">
+    <div>
+      <div class="brand-logo d-flex align-items-center justify-content-between">
+        <a href="/lecturer/dashboard" class="text-nowrap logo-img"><img src="../assets/images/logos/logo.svg" alt="Mentora"></a>
+        <button class="close-btn d-xl-none d-block sidebartoggler cursor-pointer border-0 bg-transparent" type="button" aria-label="Đóng menu"><i class="ti ti-x fs-6"></i></button>
+      </div>
+      <nav class="sidebar-nav scroll-sidebar">
+        <ul id="sidebarnav">
+          <li class="nav-small-cap"><span class="hide-menu">Giảng viên</span></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/lecturer/dashboard"><i class="ti ti-home"></i><span class="hide-menu">Dashboard</span></a></li>
+          <li class="nav-small-cap"><span class="hide-menu">Học thuật</span></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/lecturer/learning-paths"><i class="ti ti-route"></i><span class="hide-menu">Lộ trình học</span></a></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="question-bank.html"><i class="ti ti-database"></i><span class="hide-menu">Ngân hàng câu hỏi</span></a></li>
+          <li class="sidebar-item"><a class="sidebar-link active" href="assessment-editor.html"><i class="ti ti-clipboard-check"></i><span class="hide-menu">Bài test</span></a></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/lecturer/classes"><i class="ti ti-school"></i><span class="hide-menu">Lớp học</span></a></li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="body-wrapper">
+    <header class="app-header">
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <ul class="navbar-nav"><li class="nav-item d-block d-xl-none"><button class="nav-link sidebartoggler border-0 bg-transparent" type="button" aria-label="Mở menu"><i class="ti ti-menu-2"></i></button></li></ul>
+        <div class="navbar-collapse justify-content-end px-0">
+          <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+            <li class="nav-item"><span class="prototype-chip me-2">Prototype UI</span></li>
+            <li class="nav-item"><img src="../assets/images/profile/user-1.jpg" alt="Giảng viên" width="35" height="35" class="rounded-circle"></li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <main class="prototype-page">
+      <div class="prototype-page-header">
+        <div>
+          <div class="prototype-eyebrow">PRJ301 · Bản nháp</div>
+          <h1>Kiểm tra kiến thức Spring MVC</h1>
+          <div class="prototype-test-summary">
+            <span><i class="ti ti-clock"></i>30 phút</span>
+            <span><i class="ti ti-list-check"></i><strong data-test-question-count>3</strong> câu hỏi</span>
+            <span><i class="ti ti-trophy"></i>10 điểm</span>
+          </div>
+        </div>
+        <div class="prototype-header-actions">
+          <a href="question-bank.html" class="btn btn-light border d-inline-flex align-items-center gap-2"><i class="ti ti-database"></i>Question Bank</a>
+          <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="button"><i class="ti ti-send"></i>Publish</button>
+        </div>
+      </div>
+
+      <div class="prototype-editor-layout">
+        <section class="prototype-surface prototype-editor-panel" aria-label="Thêm câu hỏi">
+          <div class="prototype-panel-heading">
+            <h2>Thêm câu hỏi</h2>
+            <div class="prototype-segmented" role="tablist" aria-label="Cách thêm câu hỏi">
+              <button type="button" class="active" data-editor-mode="manualMode"><i class="ti ti-pencil-plus"></i><span>Thủ công</span></button>
+              <button type="button" data-editor-mode="bankMode"><i class="ti ti-database"></i><span>Chọn từ kho</span></button>
+              <button type="button" data-editor-mode="randomMode"><i class="ti ti-arrows-shuffle"></i><span>Random</span></button>
+            </div>
+          </div>
+
+          <div class="prototype-panel-body">
+            <div class="prototype-mode-panel active" id="manualMode">
+              <form data-manual-question-form>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Nội dung câu hỏi</label>
+                  <textarea class="form-control" name="manualContent" rows="3" required placeholder="Nhập nội dung câu hỏi..."></textarea>
+                </div>
+                <div class="row">
+                  <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Loại câu</label><select class="form-select" data-question-type><option value="MULTIPLE_CHOICE">Trắc nghiệm</option><option value="TRUE_FALSE">Đúng / Sai</option></select></div>
+                  <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Độ khó</label><select class="form-select" name="manualDifficulty"><option>EASY</option><option>MEDIUM</option><option>HARD</option></select></div>
+                  <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Điểm</label><input class="form-control" name="manualScore" type="number" min="0.1" step="0.1" value="1"></div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-2"><label class="form-label fw-semibold mb-0">Đáp án</label><span class="text-muted small">Chọn đáp án đúng</span></div>
+                <div data-answer-list>
+                  <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="correctAnswer" checked><input class="form-control" value="Model"><button class="prototype-icon-button" type="button" data-remove-answer aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+                  <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="correctAnswer"><input class="form-control" value="View"><button class="prototype-icon-button" type="button" data-remove-answer aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+                  <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="correctAnswer"><input class="form-control" value="Controller"><button class="prototype-icon-button" type="button" data-remove-answer aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+                  <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="correctAnswer"><input class="form-control" value="Repository"><button class="prototype-icon-button" type="button" data-remove-answer aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                  <button class="btn btn-sm btn-light border" type="button" data-add-answer><i class="ti ti-plus me-1"></i>Thêm đáp án</button>
+                  <button class="btn btn-primary" type="submit"><i class="ti ti-plus me-1"></i>Thêm câu hỏi</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="prototype-mode-panel" id="bankMode">
+              <div class="prototype-input-icon mb-3"><i class="ti ti-search"></i><input class="form-control" placeholder="Tìm trong Question Bank PRJ301..."></div>
+              <div class="d-flex gap-2 mb-3"><select class="form-select"><option>Tất cả loại</option><option>Trắc nghiệm</option><option>Đúng / Sai</option></select><select class="form-select"><option>Tất cả độ khó</option><option>Dễ</option><option>Trung bình</option><option>Khó</option></select></div>
+              <div class="prototype-bank-picker">
+                <label class="prototype-bank-pick-row"><input class="form-check-input" type="checkbox" data-bank-question value="0"><span><strong>Trong Java, từ khóa nào được dùng để kế thừa một lớp?</strong><small class="d-block text-muted mt-1">Trắc nghiệm · Dễ · 4 đáp án</small></span></label>
+                <label class="prototype-bank-pick-row"><input class="form-check-input" type="checkbox" data-bank-question value="1"><span><strong>HTTP là giao thức không lưu trạng thái (stateless).</strong><small class="d-block text-muted mt-1">Đúng / Sai · Dễ · 2 đáp án</small></span></label>
+                <label class="prototype-bank-pick-row"><input class="form-check-input" type="checkbox" data-bank-question value="2"><span><strong>Annotation nào dùng để đánh dấu một lớp là Spring MVC Controller?</strong><small class="d-block text-muted mt-1">Trắc nghiệm · Trung bình · 4 đáp án</small></span></label>
+                <label class="prototype-bank-pick-row"><input class="form-check-input" type="checkbox" data-bank-question value="4"><span><strong>Phương thức HTTP nào thường dùng để cập nhật một phần tài nguyên?</strong><small class="d-block text-muted mt-1">Trắc nghiệm · Khó · 4 đáp án</small></span></label>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mt-3">
+                <span class="text-muted small">Đã chọn: <strong data-bank-selected-count>0</strong> câu</span>
+                <button class="btn btn-primary" type="button" data-add-selected-bank><i class="ti ti-plus me-1"></i>Thêm câu đã chọn</button>
+              </div>
+            </div>
+
+            <div class="prototype-mode-panel" id="randomMode">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Số lượng câu hỏi</label>
+                <input class="form-control" type="number" min="1" max="5" value="3" data-random-quantity>
+                <div class="form-text">Question Bank hiện có 128 câu phù hợp.</div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Loại câu hỏi</label><select class="form-select"><option>Tất cả loại câu</option><option>Trắc nghiệm</option><option>Đúng / Sai</option></select></div>
+                <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Độ khó</label><select class="form-select"><option>Tất cả độ khó</option><option>Dễ</option><option>Trung bình</option><option>Khó</option></select></div>
+              </div>
+              <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="shuffleAnswers" checked disabled><label class="form-check-label fw-semibold" for="shuffleAnswers">Random thứ tự đáp án của từng câu</label></div>
+              <button class="btn btn-primary w-100" type="button" data-preview-random><i class="ti ti-arrows-shuffle me-1"></i>Xem trước kết quả random</button>
+              <div class="prototype-random-preview" data-random-preview></div>
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <button class="btn btn-light border" type="button" data-reroll-random><i class="ti ti-refresh me-1"></i>Random lại</button>
+                <button class="btn btn-primary" type="button" data-confirm-random><i class="ti ti-check me-1"></i>Thêm vào bài test</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-label="Danh sách câu hỏi bài test">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <div><h2 class="fs-5 mb-1">Câu hỏi trong bài test</h2><div class="text-muted small">Mỗi câu hỏi là một bản sao độc lập và có thể chỉnh sửa.</div></div>
+            <span class="prototype-chip"><strong data-test-question-count>3</strong>&nbsp;câu</span>
+          </div>
+          <div class="prototype-question-list" data-test-question-list>
+            <article class="prototype-test-question" data-question-source="CUSTOM">
+              <div class="prototype-question-top">
+                <input class="form-check-input" type="checkbox" data-save-bank-question aria-label="Chọn lưu vào Question Bank">
+                <div><div class="prototype-question-title">Trong Spring MVC, thành phần nào tiếp nhận request từ người dùng?</div><div class="prototype-question-meta"><span>Tạo thủ công</span><span>EASY</span><span>1 điểm</span></div><div class="mt-2" data-bank-state><span class="prototype-chip">Chưa lưu vào Question Bank</span></div></div>
+                <div class="prototype-question-actions"><button class="prototype-icon-button" type="button" title="Sửa câu hỏi" data-edit-question><i class="ti ti-pencil"></i></button><button class="prototype-icon-button" type="button" title="Xóa câu hỏi" data-delete-question><i class="ti ti-trash"></i></button></div>
+              </div>
+              <div class="prototype-options-preview"><div class="prototype-option-preview"><span class="prototype-option-letter">A</span>Model</div><div class="prototype-option-preview"><span class="prototype-option-letter">B</span>View</div><div class="prototype-option-preview is-correct"><span class="prototype-option-letter">C</span>Controller</div><div class="prototype-option-preview"><span class="prototype-option-letter">D</span>Repository</div></div>
+            </article>
+            <article class="prototype-test-question" data-question-source="MANUAL_IMPORT">
+              <div class="prototype-question-top">
+                <span></span>
+                <div><div class="prototype-question-title">Annotation nào dùng để đánh dấu một lớp là Spring MVC Controller?</div><div class="prototype-question-meta"><span>Từ Question Bank</span><span>MEDIUM</span><span>1 điểm</span></div><div class="mt-2"><span class="prototype-chip"><i class="ti ti-database"></i>Bản sao độc lập</span></div></div>
+                <div class="prototype-question-actions"><button class="prototype-icon-button" type="button" title="Sửa câu hỏi" data-edit-question><i class="ti ti-pencil"></i></button><button class="prototype-icon-button" type="button" title="Xóa câu hỏi" data-delete-question><i class="ti ti-trash"></i></button></div>
+              </div>
+              <div class="prototype-options-preview"><div class="prototype-option-preview is-correct"><span class="prototype-option-letter">A</span>@Controller</div><div class="prototype-option-preview"><span class="prototype-option-letter">B</span>@Bean</div><div class="prototype-option-preview"><span class="prototype-option-letter">C</span>@Configuration</div><div class="prototype-option-preview"><span class="prototype-option-letter">D</span>@ComponentScan</div></div>
+            </article>
+            <article class="prototype-test-question" data-question-source="RANDOM_IMPORT">
+              <div class="prototype-question-top">
+                <span></span>
+                <div><div class="prototype-question-title">HTTP là giao thức không lưu trạng thái (stateless).</div><div class="prototype-question-meta"><span>Random từ Question Bank</span><span>EASY</span><span>1 điểm</span></div><div class="mt-2"><span class="prototype-chip"><i class="ti ti-arrows-shuffle"></i>Đáp án đã random</span></div></div>
+                <div class="prototype-question-actions"><button class="prototype-icon-button" type="button" title="Sửa câu hỏi" data-edit-question><i class="ti ti-pencil"></i></button><button class="prototype-icon-button" type="button" title="Xóa câu hỏi" data-delete-question><i class="ti ti-trash"></i></button></div>
+              </div>
+              <div class="prototype-options-preview"><div class="prototype-option-preview"><span class="prototype-option-letter">A</span>Sai</div><div class="prototype-option-preview is-correct"><span class="prototype-option-letter">B</span>Đúng</div></div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="prototype-selection-bar" data-selection-bar>
+  <span>Đã chọn <strong data-selection-count>0</strong> câu hỏi thủ công</span>
+  <button class="btn btn-light" type="button" data-save-selected-bank><i class="ti ti-database-plus me-1"></i><span>Lưu vào Question Bank</span></button>
+</div>
+
+<div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <form data-edit-question-form>
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title fs-5" id="editQuestionModalLabel">Chỉnh sửa câu hỏi trong bài test</h2>
+            <div class="text-muted small mt-1">Thay đổi chỉ áp dụng cho bản sao trong bài test này.</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nội dung câu hỏi</label>
+            <textarea class="form-control" name="editContent" rows="3" required></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Loại câu</label><select class="form-select"><option>Trắc nghiệm</option><option>Đúng / Sai</option></select></div>
+            <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Độ khó</label><select class="form-select"><option>Dễ</option><option>Trung bình</option><option>Khó</option></select></div>
+            <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Điểm</label><input class="form-control" type="number" value="1" min="0.1" step="0.1"></div>
+          </div>
+          <div class="d-flex align-items-center justify-content-between mb-2"><label class="form-label fw-semibold mb-0">Đáp án</label><span class="text-muted small">Có thể sửa lại đáp án đã import hoặc random</span></div>
+          <div data-edit-answer-list>
+            <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="editCorrectAnswer" checked><input class="form-control"><button class="prototype-icon-button" type="button" aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+            <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="editCorrectAnswer"><input class="form-control"><button class="prototype-icon-button" type="button" aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+            <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="editCorrectAnswer"><input class="form-control"><button class="prototype-icon-button" type="button" aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+            <div class="prototype-answer-row"><input class="form-check-input" type="radio" name="editCorrectAnswer"><input class="form-control"><button class="prototype-icon-button" type="button" aria-label="Xóa đáp án"><i class="ti ti-x"></i></button></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light border" type="button" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy me-1"></i>Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast align-items-center text-bg-dark border-0 prototype-toast" id="prototypeToast" role="status" aria-live="polite" aria-atomic="true">
+  <div class="d-flex"><div class="toast-body">Đã cập nhật prototype.</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button></div>
+</div>
+
+<script src="../assets/libs/jquery/dist/jquery.min.js"></script>
+<script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/app.min.js"></script>
+<script src="../assets/js/question-bank-prototype.js"></script>
+</body>
+</html>

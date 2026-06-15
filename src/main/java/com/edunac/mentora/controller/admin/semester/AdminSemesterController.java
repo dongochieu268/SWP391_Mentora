@@ -1,6 +1,5 @@
 package com.edunac.mentora.controller.admin.semester;
 
-import com.edunac.mentora.domain.semester.Semester;
 import com.edunac.mentora.service.semester.SemesterService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,12 +29,9 @@ public class AdminSemesterController {
     }
 
     @GetMapping("/new")
-    public String createForm(HttpSession session, Model model) {
-        model.addAttribute("semester", new Semester());
-        model.addAttribute("isEdit", false);
-        model.addAttribute("activePage", "semesters");
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        return "admin/semester/form";
+    public String createForm() {
+        // Form tạo học kỳ giờ là modal trong trang danh sách
+        return "redirect:/admin/semesters";
     }
 
     @PostMapping
@@ -51,24 +47,19 @@ public class AdminSemesterController {
             redirectAttributes.addFlashAttribute("success", "Đã thêm học kỳ mới.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/admin/semesters/new";
+            redirectAttributes.addFlashAttribute("openCreateSemester", true);
+            redirectAttributes.addFlashAttribute("formName", name);
+            redirectAttributes.addFlashAttribute("formStartDate", startDate);
+            redirectAttributes.addFlashAttribute("formEndDate", endDate);
         }
 
         return "redirect:/admin/semesters";
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Integer id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        java.util.Optional<Semester> opt = semesterService.findById(id);
-        if (opt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy học kỳ.");
-            return "redirect:/admin/semesters";
-        }
-        model.addAttribute("semester", opt.get());
-        model.addAttribute("isEdit", true);
-        model.addAttribute("activePage", "semesters");
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        return "admin/semester/form";
+    public String editForm() {
+        // Form sửa học kỳ giờ là modal trong trang danh sách (điền sẵn từ dữ liệu dòng).
+        return "redirect:/admin/semesters";
     }
 
     @PostMapping("/{id}")
@@ -85,7 +76,12 @@ public class AdminSemesterController {
             redirectAttributes.addFlashAttribute("success", "Đã cập nhật học kỳ.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/admin/semesters/" + id + "/edit";
+            // Mở lại modal sửa của đúng học kỳ và giữ giá trị đã nhập.
+            redirectAttributes.addFlashAttribute("openEditSemester", id);
+            redirectAttributes.addFlashAttribute("formName", name);
+            redirectAttributes.addFlashAttribute("formStartDate", startDate);
+            redirectAttributes.addFlashAttribute("formEndDate", endDate);
+            redirectAttributes.addFlashAttribute("formStatus", status);
         }
 
         return "redirect:/admin/semesters";

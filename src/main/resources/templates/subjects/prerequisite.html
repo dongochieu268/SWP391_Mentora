@@ -21,9 +21,9 @@
             <div class="container-fluid">
 
                 <div class="d-flex align-items-center mb-4">
-                    <a th:href="@{/admin/subjects}" class="btn btn-outline-dark btn-sm me-3">
-                        <i class="fa-solid fa-arrow-left"></i> Quay lại
-                    </a>
+                    <span class="me-3">
+                        <a th:replace="~{components/back-button :: backButton(@{/admin/subjects}, 'Quay lại')}"></a>
+                    </span>
                     <h4 class="mb-0 fw-bold">Thiết lập môn tiên quyết cho:
                         <span class="text-primary" th:text="${mainSubject.code + ' - ' + mainSubject.name}"></span>
                     </h4>

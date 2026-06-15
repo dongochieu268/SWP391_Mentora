@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragment dùng chung cho CẢ admin và lecturer.
+
+  emptyRow(message, colspan) — khi chưa có bất kỳ dữ liệu nào.
+  Usage: <tr th:replace="~{components/empty-state :: emptyRow('Chưa có dữ liệu.', 5)}"></tr>
+-->
+<tr th:fragment="emptyRow(message, colspan)">
+  <td th:attr="colspan=${colspan}" class="text-center py-5">
+    <div class="d-flex flex-column align-items-center gap-2 text-muted">
+      <i class="ti ti-inbox" style="font-size: 2rem;"></i>
+      <span th:text="${message}">Không có dữ liệu.</span>
+    </div>
+  </td>
+</tr>
+
+<!--
+  noResults(message, clearUrl, colspan) — khi bộ lọc không tìm thấy kết quả.
+  Usage: <tr th:replace="~{components/empty-state :: noResults('...', '/admin/accounts?tab=students', 5)}"></tr>
+-->
+<tr th:fragment="noResults(message, clearUrl, colspan)">
+  <td th:attr="colspan=${colspan}" class="text-center py-4">
+    <span class="text-muted">
+      <i class="ti ti-search-off me-1"></i>
+      <span th:text="${message}">Không tìm thấy kết quả.</span>
+    </span>
+    <a th:if="${clearUrl != null}" th:href="${clearUrl}" class="ms-2 small">Xóa bộ lọc</a>
+  </td>
+</tr>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tạo lớp học — Bước 3: Xác nhận | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/path-builder.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <h4 class="mb-3"><i class="ti ti-school me-2 text-primary"></i>Tạo lớp học mới</h4>
+                <div th:replace="~{lecturer/course-setup/stepper :: wizardStepper(3)}"></div>
+
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-7">
+                        <div class="card mb-3">
+                            <div class="card-body p-4">
+                                <h5 class="fw-semibold mb-3">Xem lại trước khi tạo lớp</h5>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-sm-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <div class="text-muted small mb-1">LỚP HỌC</div>
+                                            <strong th:text="${state.name}"></strong><br>
+                                            <span class="small">
+                                                Môn: <span th:text="${path.subject.code}"></span> ·
+                                                Học kỳ: <span th:text="${semester != null ? semester.name : '—'}"></span>
+                                            </span><br>
+                                            <span class="badge text-bg-success mt-1">OPEN</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <div class="text-muted small mb-1">LỘ TRÌNH</div>
+                                            <strong th:text="${path.name}"></strong><br>
+                                            <span class="small">
+                                                <span th:text="${nodeCount}"></span> node ·
+                                                <span th:text="${lessonCount}"></span> bài học chính ·
+                                                <span th:text="${testCount}"></span> test rẽ nhánh<br>
+                                                Nhánh ĐẠT: <span th:text="${passCount}"></span> bài ·
+                                                Nhánh CHƯA ĐẠT: <span th:text="${failCount}"></span> bài
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div th:if="${!#lists.isEmpty(errors)}" class="alert alert-danger py-2 small">
+                                    <strong><i class="ti ti-circle-x me-1"></i>Cần xử lý trước khi tạo lớp:</strong>
+                                    <ul class="mb-1 mt-1">
+                                        <li th:each="e : ${errors}" th:text="${e}"></li>
+                                    </ul>
+                                    <a th:href="@{/lecturer/classes/wizard/step2}">← Quay lại sửa lộ trình</a>
+                                </div>
+
+                                <div th:if="${!#lists.isEmpty(warnings)}" class="alert alert-warning py-2 small">
+                                    <strong><i class="ti ti-alert-triangle me-1"></i>Khuyến nghị (không bắt buộc):</strong>
+                                    <ul class="mb-0 mt-1">
+                                        <li th:each="w : ${warnings}" th:text="${w}"></li>
+                                    </ul>
+                                </div>
+
+                                <div class="alert alert-info py-2 small">
+                                    <i class="ti ti-info-circle me-1"></i>
+                                    Sau khi tạo lớp: hệ thống sinh <strong>mã mời 8 ký tự</strong> cho sinh viên tham gia,
+                                    và <strong>cấu trúc lộ trình sẽ bị khóa</strong> (không xóa node được nữa — vẫn thêm node
+                                    và sửa nội dung được).
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/wizard/step2}, 'Quay lại sửa')}"></a>
+                                    <form th:action="@{/lecturer/classes/wizard/confirm}" method="post">
+                                        <button type="submit" class="btn btn-success"
+                                                th:disabled="${!#lists.isEmpty(errors)}"
+                                                th:title="${!#lists.isEmpty(errors)} ? 'Còn lỗi cần xử lý' : 'Tạo lớp học'">
+                                            <i class="ti ti-check me-1"></i>Tạo lớp học
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

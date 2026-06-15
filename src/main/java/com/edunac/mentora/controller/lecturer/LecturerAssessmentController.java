@@ -28,9 +28,26 @@ public class LecturerAssessmentController {
     @GetMapping
     public String list(HttpSession session, Model model) {
         User user = currentUser(session);
-        model.addAttribute("assessments", assessmentService.findByCreator(user));
-        model.addAttribute("user", user);
-        model.addAttribute("activePage", "assessments");
+        List<Assessment> assessments = assessmentService.findByCreator(user);
+
+        // Tách thành tab: Bản nháp (DRAFT) và Đã xuất bản (PUBLISHED + ARCHIVED).
+        List<Assessment> drafts = new ArrayList<>();
+        List<Assessment> published = new ArrayList<>();
+        for (Assessment a : assessments) {
+            if (AssessmentStatus.DRAFT.name().equals(a.getStatus())) {
+                drafts.add(a);
+            } else {
+                published.add(a);
+            }
+        }
+        model.addAttribute("draftAssessments", drafts);
+        model.addAttribute("publishedAssessments", published);
+
+        // Cần cho modal "Tạo bài test" ngay trên trang danh sách.
+        if (!model.containsAttribute("form")) {
+            model.addAttribute("form", defaultAssessmentForm());
+        }
+        addCommonModel(model, user);
         return "lecturer/assessment/list";
     }
 
@@ -57,7 +74,9 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             ra.addFlashAttribute("form", form);
-            return "redirect:/lecturer/assessments/new";
+            // Quay về danh sách và mở lại modal tạo bài test (giữ giá trị đã nhập).
+            ra.addFlashAttribute("openCreateModal", true);
+            return "redirect:/lecturer/assessments";
         }
     }
 
@@ -71,7 +90,6 @@ public class LecturerAssessmentController {
         model.addAttribute("form", assessmentService.toForm(assessment));
         model.addAttribute("questions", questions);
         model.addAttribute("optionsByQuestionId", assessmentService.findOptionsGroupedByQuestion(questions));
-        model.addAttribute("questionForm", defaultQuestionForm());
         model.addAttribute("canEdit", AssessmentStatus.DRAFT.name().equals(assessment.getStatus()));
         addCommonModel(model, user);
         return "lecturer/assessment/detail";
@@ -81,6 +99,7 @@ public class LecturerAssessmentController {
     public String update(
             @PathVariable Integer id,
             @ModelAttribute AssessmentForm form,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -90,13 +109,14 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lecturer/assessments/" + id;
+        return redirectTarget(returnTo, id);
     }
 
     @PostMapping("/{id}/questions")
     public String addQuestion(
             @PathVariable Integer id,
             @ModelAttribute QuestionForm form,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -106,13 +126,14 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lecturer/assessments/" + id;
+        return redirectTarget(returnTo, id);
     }
 
     @PostMapping("/{id}/questions/{questionId}/delete")
     public String deleteQuestion(
             @PathVariable Integer id,
             @PathVariable Integer questionId,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -122,12 +143,13 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lecturer/assessments/" + id;
+        return redirectTarget(returnTo, id);
     }
 
     @PostMapping("/{id}/publish")
     public String publish(
             @PathVariable Integer id,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -137,7 +159,15 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lecturer/assessments/" + id;
+        return redirectTarget(returnTo, id);
+    }
+
+    /** Chỉ chấp nhận returnTo nội bộ khu lecturer (chống open redirect); mặc định về trang bài test. */
+    private String redirectTarget(String returnTo, Integer assessmentId) {
+        String base = (returnTo != null && returnTo.startsWith("/lecturer/"))
+                ? returnTo
+                : "/lecturer/assessments/" + assessmentId;
+        return "redirect:" + base;
     }
 
     @PostMapping("/{id}/clone")
@@ -171,15 +201,6 @@ public class LecturerAssessmentController {
         form.setDeliveryMode(DeliveryMode.SELF_PACED.name());
         form.setDurationMinutes(30);
         form.setTotalScore(BigDecimal.TEN);
-        return form;
-    }
-
-    private QuestionForm defaultQuestionForm() {
-        QuestionForm form = new QuestionForm();
-        form.setDifficulty(QuestionDifficulty.EASY.name());
-        form.setQuestionType(QuestionType.MULTIPLE_CHOICE.name());
-        form.setScore(BigDecimal.ONE);
-        form.setOptionContents(new ArrayList<>(List.of("", "", "", "")));
         return form;
     }
 

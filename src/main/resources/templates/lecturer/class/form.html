@@ -25,9 +25,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h5 class="card-title fw-semibold mb-0"
                                 th:text="${isEdit} ? 'Sửa lớp học' : 'Tạo lớp học mới'"></h5>
-                            <a th:href="@{/lecturer/classes}" class="btn btn-light border">
-                                <i class="ti ti-arrow-left me-1"></i> Quay lại
-                            </a>
+                            <a th:replace="~{components/back-button :: backButton(${isEdit} ? @{/lecturer/classes/{id}/members(id=${form.id})} : @{/lecturer/classes}, 'Quay lại')}"></a>
                         </div>
 
                         <div th:if="${isEdit and inviteCode != null}" class="alert alert-info py-2 mb-3">

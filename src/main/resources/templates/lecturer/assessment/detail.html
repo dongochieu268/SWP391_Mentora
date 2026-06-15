@@ -22,9 +22,7 @@
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
                 <div class="mb-4">
-                    <a th:href="@{/lecturer/assessments}" class="text-muted small text-decoration-none">
-                        <i class="ti ti-arrow-left me-1"></i>Quay lại danh sách bài test
-                    </a>
+                    <a th:replace="~{components/back-button :: backButton(@{/lecturer/assessments}, 'Quay lại danh sách bài test')}"></a>
                 </div>
 
                 <div class="row">
@@ -61,16 +59,16 @@
                                       method="post"
                                       th:object="${form}">
                                     <div class="mb-3">
-                                        <label class="form-label">Tên bài test</label>
+                                        <label for="title" class="form-label">Tên bài test</label>
                                         <input type="text" class="form-control" th:field="*{title}" maxlength="200" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Mô tả</label>
+                                        <label for="description" class="form-label">Mô tả</label>
                                         <textarea class="form-control" th:field="*{description}" rows="3" maxlength="2000"></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Loại</label>
+                                            <label for="type" class="form-label">Loại</label>
                                             <select class="form-select" th:field="*{type}">
                                                 <option th:each="type : ${typeOptions}"
                                                         th:value="${type.name()}"
@@ -78,7 +76,7 @@
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Hình thức</label>
+                                            <label for="deliveryMode" class="form-label">Hình thức</label>
                                             <select class="form-select" th:field="*{deliveryMode}">
                                                 <option th:each="mode : ${deliveryModes}"
                                                         th:value="${mode.name()}"
@@ -88,11 +86,11 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Thời lượng phút</label>
+                                            <label for="durationMinutes" class="form-label">Thời lượng phút</label>
                                             <input type="number" class="form-control" th:field="*{durationMinutes}" min="1" required>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Tổng điểm</label>
+                                            <label for="totalScore" class="form-label">Tổng điểm</label>
                                             <input type="number" class="form-control" th:field="*{totalScore}" min="0.1" step="0.1" required>
                                         </div>
                                     </div>
@@ -133,19 +131,6 @@
                                         Bài test đã publish nên không thể chỉnh sửa nội dung.
                                     </p>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="card" th:if="${canEdit}">
-                            <div class="card-body d-flex align-items-center justify-content-between gap-3">
-                                <div>
-                                    <h6 class="fw-semibold mb-1">Câu hỏi trắc nghiệm</h6>
-                                    <p class="text-muted small mb-0">Soạn từng câu hỏi ở trang riêng.</p>
-                                </div>
-                                <a th:href="@{/lecturer/assessments/{id}/questions/new(id=${assessment.id})}"
-                                   class="btn btn-primary">
-                                    <i class="ti ti-plus me-1"></i> Thêm câu hỏi
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -194,6 +179,53 @@
                                         </ol>
                                     </div>
                                 </div>
+
+                                <!-- ===== Form thêm câu hỏi ngay tại trang (đồng bộ với panel builder lộ trình) ===== -->
+                                <form th:if="${canEdit}"
+                                      th:action="@{/lecturer/assessments/{id}/questions(id=${assessment.id})}"
+                                      method="post" class="border rounded p-3 mt-3" style="background:#f8fafc">
+                                    <input type="hidden" name="questionType" value="MULTIPLE_CHOICE"/>
+                                    <strong class="d-block mb-2"><i class="ti ti-plus me-1"></i>Thêm câu hỏi mới</strong>
+                                    <label for="newQuestionContent" class="visually-hidden">Nội dung câu hỏi</label>
+                                    <textarea class="form-control mb-2" id="newQuestionContent" name="content" rows="2"
+                                              placeholder="Nội dung câu hỏi..." required></textarea>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <label for="newQuestionDifficulty" class="form-label small mb-1">Mức độ</label>
+                                            <select class="form-select" id="newQuestionDifficulty" name="difficulty">
+                                                <option th:each="d : ${difficultyOptions}" th:value="${d}" th:text="${d}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="newQuestionScore" class="form-label small mb-1">Điểm</label>
+                                            <input type="number" class="form-control" id="newQuestionScore" name="score"
+                                                   value="1" min="0.25" step="0.25" required>
+                                        </div>
+                                    </div>
+                                    <label class="form-label small mb-1">Đáp án
+                                        <span class="text-muted">(chọn radio ở đáp án đúng, cần ít nhất 2 đáp án)</span>
+                                    </label>
+                                    <div id="optionRows">
+                                        <div class="input-group mb-1">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" type="radio" name="correctOptionIndex" value="0" checked title="Đáp án đúng" aria-label="Đáp án đúng A">
+                                            </div>
+                                            <input type="text" class="form-control" name="optionContents" placeholder="Đáp án A" aria-label="Đáp án A" required>
+                                        </div>
+                                        <div class="input-group mb-1">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" type="radio" name="correctOptionIndex" value="1" title="Đáp án đúng" aria-label="Đáp án đúng B">
+                                            </div>
+                                            <input type="text" class="form-control" name="optionContents" placeholder="Đáp án B" aria-label="Đáp án B" required>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-light border w-100 mb-2" onclick="addOptionRow()">
+                                        <i class="ti ti-plus me-1"></i>Thêm đáp án
+                                    </button>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ti ti-device-floppy me-1"></i>Lưu câu hỏi
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -204,5 +236,21 @@
     </div>
 </div>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    function addOptionRow() {
+        const wrap = document.getElementById('optionRows');
+        if (!wrap) return;
+        const n = wrap.children.length;
+        const div = document.createElement('div');
+        div.className = 'input-group mb-1';
+        const label = String.fromCharCode(65 + n);
+        div.innerHTML =
+            '<div class="input-group-text">' +
+            '<input class="form-check-input mt-0" type="radio" name="correctOptionIndex" value="' + n + '" title="Đáp án đúng" aria-label="Đáp án đúng ' + label + '">' +
+            '</div>' +
+            '<input type="text" class="form-control" name="optionContents" placeholder="Đáp án ' + label + '" aria-label="Đáp án ' + label + '" required>';
+        wrap.appendChild(div);
+    }
+</script>
 </body>
 </html>

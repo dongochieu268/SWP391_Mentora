@@ -80,23 +80,6 @@ public class LecturerAssessmentController {
         }
     }
 
-    @GetMapping("/{id}/questions/new")
-    public String newQuestionForm(@PathVariable Integer id, HttpSession session, Model model,
-                                  RedirectAttributes ra) {
-        User user = currentUser(session);
-        Assessment assessment = assessmentService.findByIdAndOwner(id, user);
-        if (!AssessmentStatus.DRAFT.name().equals(assessment.getStatus())) {
-            ra.addFlashAttribute("error", "Chỉ thêm câu hỏi cho bài test ở trạng thái DRAFT.");
-            return "redirect:/lecturer/assessments/" + id;
-        }
-        model.addAttribute("assessment", assessment);
-        if (!model.containsAttribute("questionForm")) {
-            model.addAttribute("questionForm", defaultQuestionForm());
-        }
-        addCommonModel(model, user);
-        return "lecturer/assessment/question-form";
-    }
-
     @GetMapping("/{id}")
     public String detail(@PathVariable Integer id, HttpSession session, Model model) {
         User user = currentUser(session);
@@ -107,7 +90,6 @@ public class LecturerAssessmentController {
         model.addAttribute("form", assessmentService.toForm(assessment));
         model.addAttribute("questions", questions);
         model.addAttribute("optionsByQuestionId", assessmentService.findOptionsGroupedByQuestion(questions));
-        model.addAttribute("questionForm", defaultQuestionForm());
         model.addAttribute("canEdit", AssessmentStatus.DRAFT.name().equals(assessment.getStatus()));
         addCommonModel(model, user);
         return "lecturer/assessment/detail";
@@ -219,15 +201,6 @@ public class LecturerAssessmentController {
         form.setDeliveryMode(DeliveryMode.SELF_PACED.name());
         form.setDurationMinutes(30);
         form.setTotalScore(BigDecimal.TEN);
-        return form;
-    }
-
-    private QuestionForm defaultQuestionForm() {
-        QuestionForm form = new QuestionForm();
-        form.setDifficulty(QuestionDifficulty.EASY.name());
-        form.setQuestionType(QuestionType.MULTIPLE_CHOICE.name());
-        form.setScore(BigDecimal.ONE);
-        form.setOptionContents(new ArrayList<>(List.of("", "", "", "")));
         return form;
     }
 

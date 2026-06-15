@@ -69,9 +69,7 @@
                                     </th:block>
 
                                     <div class="d-flex justify-content-start mt-4">
-                                        <a th:href="@{/lecturer/classes/wizard}" class="btn btn-light border">
-                                            <i class="ti ti-arrow-left me-1"></i>Quay lại bước 1
-                                        </a>
+                                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/wizard}, 'Quay lại bước 1')}"></a>
                                     </div>
                                 </div>
                             </div>
@@ -95,9 +93,7 @@
                     <th:block th:replace="~{lecturer/learning-path/builder :: builderBody}"></th:block>
 
                     <div class="d-flex justify-content-between mt-3 mb-5">
-                        <a th:href="@{/lecturer/classes/wizard}" class="btn btn-light border">
-                            <i class="ti ti-arrow-left me-1"></i>Quay lại bước 1
-                        </a>
+                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/wizard}, 'Quay lại bước 1')}"></a>
                         <a th:href="@{/lecturer/classes/wizard/review}" class="btn btn-primary">
                             Tiếp tục: Xem lại &amp; xác nhận <i class="ti ti-arrow-right ms-1"></i>
                         </a>

@@ -118,6 +118,12 @@
                                                aria-label="Xem lộ trình">
                                                 <i class="ti ti-route"></i>
                                             </a>
+                                            <a th:href="@{/student/classrooms/{id}/qna(id=${m.classroom.id})}"
+                                               class="table-action-btn"
+                                               th:title="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Câu hỏi sinh viên'"
+                                               th:aria-label="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Câu hỏi sinh viên'">
+                                                <i class="ti ti-messages"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

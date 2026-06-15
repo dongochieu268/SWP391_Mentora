@@ -4,6 +4,7 @@ import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.classroom.Classroom;
 import com.edunac.mentora.dto.ClassroomForm;
 import com.edunac.mentora.service.classroom.ClassroomService;
+import com.edunac.mentora.service.qna.ClassroomQuestionService;
 import com.edunac.mentora.service.subject.SubjectService;
 import com.edunac.mentora.repository.semester.SemesterRepository;
 import jakarta.servlet.http.HttpSession;
@@ -19,15 +20,18 @@ public class LecturerClassroomController {
     private final ClassroomService classroomService;
     private final SubjectService subjectService;
     private final SemesterRepository semesterRepository;
+    private final ClassroomQuestionService questionService;
 
     public LecturerClassroomController(
             ClassroomService classroomService,
             SubjectService subjectService,
-            SemesterRepository semesterRepository
+            SemesterRepository semesterRepository,
+            ClassroomQuestionService questionService
     ) {
         this.classroomService = classroomService;
         this.subjectService = subjectService;
         this.semesterRepository = semesterRepository;
+        this.questionService = questionService;
     }
 
     @GetMapping
@@ -74,6 +78,48 @@ public class LecturerClassroomController {
         populateFormPage(session, model, form, true);
         model.addAttribute("inviteCode", classroom.getInviteCode());
         return "lecturer/class/form";
+    }
+
+    @GetMapping("/{id}/qna")
+    public String qna(@PathVariable Integer id,
+                      HttpSession session,
+                      Model model) {
+        User user = currentUser(session);
+        Classroom classroom = classroomService.findForTeacher(id, user);
+        model.addAttribute("classroom", classroom);
+        model.addAttribute("questions", questionService.findForLecturer(id, user));
+        model.addAttribute("user", user);
+        model.addAttribute("activePage", "classes");
+        return "lecturer/class/qna";
+    }
+
+    @PostMapping("/{id}/qna/questions/{questionId}/answer")
+    public String answerQuestion(@PathVariable Integer id,
+                                 @PathVariable Integer questionId,
+                                 @RequestParam String answerContent,
+                                 HttpSession session,
+                                 RedirectAttributes ra) {
+        try {
+            questionService.answerAsLecturer(id, questionId, currentUser(session), answerContent);
+            ra.addFlashAttribute("success", "Đã gửi phản hồi.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/classes/" + id + "/qna";
+    }
+
+    @PostMapping("/{id}/qna/questions/{questionId}/delete")
+    public String deleteQuestion(@PathVariable Integer id,
+                                 @PathVariable Integer questionId,
+                                 HttpSession session,
+                                 RedirectAttributes ra) {
+        try {
+            questionService.deleteAsLecturer(id, questionId, currentUser(session));
+            ra.addFlashAttribute("success", "Đã xóa câu hỏi.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/classes/" + id + "/qna";
     }
 
     @PostMapping("/{id}/edit")

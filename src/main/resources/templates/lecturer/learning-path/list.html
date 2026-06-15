@@ -47,7 +47,7 @@
 
                         <!-- Accordion: mỗi môn xổ ra danh sách lộ trình -->
                         <div class="accordion" id="subjectAccordion" th:unless="${#lists.isEmpty(paths)}">
-                            <div class="accordion-item" th:each="entry, sstat : ${pathsBySubject}"
+                            <div class="accordion-item lp-subject-group" th:each="entry, sstat : ${pathsBySubject}"
                                  th:with="subject=${entry.key}, subjectPaths=${entry.value}">
                                 <h2 class="accordion-header" th:id="'subjectHead-' + ${subject.id}">
                                     <button class="accordion-button" type="button"
@@ -56,10 +56,12 @@
                                             th:data-bs-target="'#subjectBody-' + ${subject.id}"
                                             th:aria-expanded="${sstat.first}"
                                             th:aria-controls="'subjectBody-' + ${subject.id}">
-                                        <span class="badge bg-info text-dark me-2" th:text="${subject.code}"></span>
-                                        <span class="fw-semibold" th:text="${subject.name}"></span>
-                                        <span class="text-muted small ms-2"
-                                              th:text="'(' + ${#lists.size(subjectPaths)} + ' lộ trình)'"></span>
+                                        <span class="d-flex flex-column">
+                                            <span class="fw-bold fs-5 text-dark lh-1" th:text="${subject.code}"></span>
+                                            <span class="text-muted small mt-1" th:text="${subject.name}"></span>
+                                        </span>
+                                        <span class="badge bg-light text-dark border ms-3"
+                                              th:text="${#lists.size(subjectPaths)} + ' lộ trình'"></span>
                                     </button>
                                 </h2>
                                 <div th:id="'subjectBody-' + ${subject.id}"
@@ -69,11 +71,11 @@
                                      data-bs-parent="#subjectAccordion">
                                     <div class="accordion-body">
                                         <div class="list-group list-group-flush">
-                                            <div class="list-group-item px-0 d-flex align-items-center justify-content-between gap-3"
+                                            <div class="list-group-item lp-path-item d-flex align-items-center justify-content-between gap-3"
                                                  th:each="p : ${subjectPaths}">
                                                 <div style="min-width: 0;">
-                                                    <div class="fw-semibold" th:text="${p.name}"></div>
-                                                    <div class="text-muted small"
+                                                    <div class="fw-bold fs-6 text-dark mb-1" th:text="${p.name}"></div>
+                                                    <div class="text-muted small mb-1"
                                                          th:if="${p.description != null and !#strings.isEmpty(p.description)}"
                                                          th:text="${#strings.length(p.description) > 80 ? #strings.substring(p.description, 0, 80) + '...' : p.description}"></div>
                                                     <div class="text-muted small">

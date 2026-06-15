@@ -82,9 +82,7 @@
                                 </div>
 
                                 <div class="d-flex justify-content-between">
-                                    <a th:href="@{/lecturer/classes/wizard/step2}" class="btn btn-light border">
-                                        <i class="ti ti-arrow-left me-1"></i>Quay lại sửa
-                                    </a>
+                                    <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/wizard/step2}, 'Quay lại sửa')}"></a>
                                     <form th:action="@{/lecturer/classes/wizard/confirm}" method="post">
                                         <button type="submit" class="btn btn-success"
                                                 th:disabled="${!#lists.isEmpty(errors)}"

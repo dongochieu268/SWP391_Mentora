@@ -13,8 +13,9 @@
       <a th:href="@{/student/dashboard}" class="text-nowrap logo-img">
         <img th:src="@{/assets/images/logos/logo.svg}" alt="logo"/>
       </a>
-      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-        <i class="ti ti-x fs-6"></i>
+      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse"
+           role="button" tabindex="0" aria-label="Đóng menu điều hướng">
+        <i class="ti ti-x fs-6" aria-hidden="true"></i>
       </div>
     </div>
 
@@ -22,27 +23,27 @@
       <ul id="sidebarnav">
 
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Học sinh</span>
         </li>
 
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/student/dashboard}"
              th:classappend="${activePage == 'dashboard'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-home"></i>
+            <i class="ti ti-home" aria-hidden="true"></i>
             <span class="hide-menu">Dashboard</span>
           </a>
         </li>
 
         <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4" aria-hidden="true"></iconify-icon>
           <span class="hide-menu">Học tập</span>
         </li>
 
         <li class="sidebar-item">
           <a class="sidebar-link" th:href="@{/student/classrooms}"
              th:classappend="${activePage == 'classrooms'} ? ' active'" aria-expanded="false">
-            <i class="ti ti-school"></i>
+            <i class="ti ti-school" aria-hidden="true"></i>
             <span class="hide-menu">Lớp học của tôi</span>
           </a>
         </li>

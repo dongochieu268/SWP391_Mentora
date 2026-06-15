@@ -102,16 +102,16 @@
                                 <div class="modal-body">
                                     <p class="text-muted small">Bài test sẽ được lưu ở trạng thái DRAFT.</p>
                                     <div class="mb-3">
-                                        <label class="form-label">Tên bài test <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="title">Tên bài test <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" th:field="*{title}" maxlength="200" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Mô tả</label>
+                                        <label class="form-label" for="description">Mô tả</label>
                                         <textarea class="form-control" th:field="*{description}" rows="3" maxlength="2000"></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Loại bài test</label>
+                                            <label class="form-label" for="type">Loại bài test</label>
                                             <select class="form-select" th:field="*{type}">
                                                 <option th:each="type : ${typeOptions}"
                                                         th:value="${type.name()}"
@@ -119,7 +119,7 @@
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Hình thức làm bài</label>
+                                            <label class="form-label" for="deliveryMode">Hình thức làm bài</label>
                                             <select class="form-select" th:field="*{deliveryMode}">
                                                 <option th:each="mode : ${deliveryModes}"
                                                         th:value="${mode.name()}"
@@ -130,11 +130,11 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Thời lượng phút <span class="text-danger">*</span></label>
+                                            <label class="form-label" for="durationMinutes">Thời lượng phút <span class="text-danger">*</span></label>
                                             <input type="number" class="form-control" th:field="*{durationMinutes}" min="1" required>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Tổng điểm <span class="text-danger">*</span></label>
+                                            <label class="form-label" for="totalScore">Tổng điểm <span class="text-danger">*</span></label>
                                             <input type="number" class="form-control" th:field="*{totalScore}" min="0.1" step="0.1" required>
                                         </div>
                                     </div>

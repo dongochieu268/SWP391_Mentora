@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Nút "Quay lại" dùng chung cho TOÀN dự án (admin, lecturer, student).
+  Mục tiêu: mọi nút quay lại đều cùng 1 kiểu dáng (.btn-back) và cùng 1 icon.
+
+  Usage:
+    <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes}, 'Quay lại')}"></a>
+
+  Tham số:
+    href  : đường dẫn quay về (bắt buộc)
+    label : nhãn hiển thị (nếu null sẽ mặc định 'Quay lại')
+-->
+<a th:fragment="backButton(href, label)"
+   th:href="${href}"
+   class="btn btn-back btn-sm">
+    <i class="ti ti-arrow-left me-1"></i>
+    <span th:text="${label != null ? label : 'Quay lại'}">Quay lại</span>
+</a>
+
+</body>
+</html>

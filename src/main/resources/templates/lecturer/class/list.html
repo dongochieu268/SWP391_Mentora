@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lớp học | mentora</title>
+    <title>Lớp học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -18,90 +18,78 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <h5 class="card-title fw-semibold mb-1">Quản lý lớp học</h5>
+                                <p class="text-muted small mb-0">Bấm vào lớp để mở quản lý thành viên.</p>
                             </div>
-                            <a th:href="@{/lecturer/classes/new}" class="btn btn-primary">
+                            <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary">
                                 <i class="ti ti-plus me-1"></i> Tạo lớp mới
                             </a>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Tên lớp</th>
-                                    <th>Môn học</th>
-                                    <th>Lộ trình</th>
-                                    <th>Học kỳ</th>
-                                    <th>Mã mời</th>
-                                    <th>Trạng thái</th>
-                                    <th class="text-end">Thao tác</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:if="${#lists.isEmpty(classes)}">
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        Chưa có lớp học nào.
-                                        <a th:href="@{/lecturer/classes/new}">Tạo lớp đầu tiên</a>
-                                    </td>
-                                </tr>
-                                <tr th:each="c, stat : ${classes}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td class="fw-semibold" th:text="${c.name}"></td>
-                                    <td>
-                                        <span class="badge bg-info text-dark" th:text="${c.subject.code}"></span>
-                                        <span th:text="${c.subject.name}"></span>
-                                    </td>
-                                    <td th:text="${c.learningPath.name}"></td>
-                                    <td th:text="${c.semester.name}"></td>
-                                    <td><code th:text="${c.inviteCode}"></code></td>
-                                    <td>
-                                        <span th:if="${c.status == 'OPEN'}" class="status-badge status-active">OPEN</span>
-                                        <span th:unless="${c.status == 'OPEN'}" class="status-badge status-inactive"
-                                              th:text="${c.status}">CLOSE</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="table-actions justify-content-end">
-                                            <a th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}"
-                                               class="table-action-btn"
-                                               title="Quản lý hiển thị node"
-                                               aria-label="Quản lý hiển thị node">
-                                                <i class="ti ti-eye"></i>
-                                            </a>
+                        <!-- Trống -->
+                        <div th:if="${#lists.isEmpty(classes)}" class="text-center text-muted py-5">
+                            <i class="ti ti-school fs-1 d-block mb-2 opacity-50"></i>
+                            Chưa có lớp học nào. Bấm <span class="fw-semibold">Tạo lớp mới</span> để bắt đầu.
+                        </div>
+
+                        <!-- Lưới thẻ lớp học -->
+                        <div class="row g-3" th:unless="${#lists.isEmpty(classes)}">
+                            <div class="col-md-6 col-xl-4" th:each="c : ${classes}">
+                                <div class="card h-100 border shadow-none mb-0">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="badge bg-info text-dark" th:text="${c.subject.code}"></span>
+                                            <th:block th:replace="~{components/status-badge :: statusBadge(${c.status})}"></th:block>
+                                        </div>
+
+                                        <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
+                                           class="text-decoration-none">
+                                            <h6 class="fw-semibold text-body mb-1" th:text="${c.name}"></h6>
+                                        </a>
+                                        <div class="text-muted small mb-2" th:text="${c.subject.name}"></div>
+
+                                        <div class="text-muted small mb-1">
+                                            <i class="ti ti-route me-1"></i><span th:text="${c.learningPath.name}"></span>
+                                        </div>
+                                        <div class="text-muted small mb-1">
+                                            <i class="ti ti-calendar me-1"></i><span th:text="${c.semester.name}"></span>
+                                        </div>
+                                        <div class="text-muted small mb-3">
+                                            <i class="ti ti-key me-1"></i>Mã mời: <code th:text="${c.inviteCode}"></code>
+                                        </div>
+
+                                        <!-- Trong trang chi tiết (thành viên) đã có sẵn xem node & sửa lớp,
+                                             nên ngoài lưới chỉ cần 2 nút: Xem chi tiết và Xóa. -->
+                                        <div class="d-flex gap-2 mt-auto">
                                             <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
-                                               class="table-action-btn"
-                                               title="Quản lý thành viên"
-                                               aria-label="Quản lý thành viên">
-                                                <i class="ti ti-users"></i>
-                                            </a>
-                                            <a th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}"
-                                               class="table-action-btn"
-                                               title="Sửa lớp học"
-                                               aria-label="Sửa lớp học">
-                                                <i class="ti ti-edit"></i>
+                                               class="btn btn-sm btn-primary flex-grow-1">
+                                                <i class="ti ti-eye me-1"></i> Xem chi tiết
                                             </a>
                                             <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
-                                                  method="post" class="table-action-form"
+                                                  method="post"
                                                   onsubmit="return confirm('Xóa lớp học này?');">
-                                                <button type="submit" class="table-action-btn is-danger"
-                                                        title="Xóa lớp học"
-                                                        aria-label="Xóa lớp học">
-                                                    <i class="ti ti-trash"></i>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        title="Xóa lớp học">
+                                                    <i class="ti ti-trash me-1"></i> Xóa
                                                 </button>
                                             </form>
                                         </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

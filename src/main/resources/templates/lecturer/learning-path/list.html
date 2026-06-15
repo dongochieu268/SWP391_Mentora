@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lộ trình học | mentora</title>
+    <title>Lộ trình học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -18,91 +18,118 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <h5 class="card-title fw-semibold mb-0">Lộ trình học của tôi</h5>
+                            <div>
+                                <h5 class="card-title fw-semibold mb-1">Lộ trình học của tôi</h5>
+                                <p class="text-muted small mb-0">Chọn môn học để xem các lộ trình bên trong.</p>
+                            </div>
                             <a th:href="@{/lecturer/learning-paths/new}" class="btn btn-primary">
                                 <i class="ti ti-plus me-1"></i> Tạo lộ trình mới
                             </a>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Môn học</th>
-                                    <th>Tên lộ trình</th>
-                                    <th>Mô tả</th>
-                                    <th>Ngày tạo</th>
-                                    <th class="text-end">Thao tác</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:if="${#lists.isEmpty(paths)}">
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        Chưa có lộ trình nào. <a th:href="@{/lecturer/learning-paths/new}">Tạo ngay</a>
-                                    </td>
-                                </tr>
-                                <tr th:each="p, stat : ${paths}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td>
-                                        <span class="badge bg-info text-dark" th:text="${p.subject.code}"></span>
-                                        <span th:text="${p.subject.name}"></span>
-                                    </td>
-                                    <td class="fw-semibold" th:text="${p.name}"></td>
-                                    <td>
-                                        <span th:if="${p.description == null}" class="text-muted">—</span>
-                                        <span th:unless="${p.description == null}"
-                                              th:text="${#strings.length(p.description) > 60 ? #strings.substring(p.description, 0, 60) + '...' : p.description}"></span>
-                                    </td>
-                                    <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
-                                    <td class="text-end">
-                                        <div class="table-actions justify-content-end">
-                                            <a th:href="@{/lecturer/learning-paths/{id}(id=${p.id})}"
-                                               class="table-action-btn"
-                                               title="Xem node"
-                                               aria-label="Xem node">
-                                                <i class="ti ti-list"></i>
-                                            </a>
-                                            <form th:action="@{/lecturer/learning-paths/{id}/clone(id=${p.id})}"
-                                                  method="post" class="table-action-form">
-                                                <button type="submit" class="table-action-btn"
-                                                        title="Clone lộ trình"
-                                                        aria-label="Clone lộ trình">
-                                                    <i class="ti ti-copy"></i>
-                                                </button>
-                                            </form>
-                                            <form th:if="${!pathsWithClassroom.contains(p.id)}"
-                                                  th:action="@{/lecturer/learning-paths/{id}/delete(id=${p.id})}"
-                                                  method="post" class="table-action-form"
-                                                  onsubmit="return confirm('Xóa lộ trình này và toàn bộ node?');">
-                                                <button type="submit" class="table-action-btn is-danger"
-                                                        title="Xóa lộ trình"
-                                                        aria-label="Xóa lộ trình">
-                                                    <i class="ti ti-trash"></i>
-                                                </button>
-                                            </form>
-                                            <button th:unless="${!pathsWithClassroom.contains(p.id)}"
-                                                    type="button" class="table-action-btn is-danger"
-                                                    disabled title="Không thể xóa lộ trình đang được lớp học sử dụng"
-                                                    aria-label="Không thể xóa lộ trình đang được lớp học sử dụng">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                        <!-- Trống: chưa có lộ trình nào -->
+                        <div th:if="${#lists.isEmpty(paths)}" class="text-center text-muted py-5">
+                            <i class="ti ti-route fs-1 d-block mb-2 opacity-50"></i>
+                            Chưa có lộ trình nào. Bấm <span class="fw-semibold">Tạo lộ trình mới</span> để bắt đầu.
                         </div>
 
-                        <div class="mt-3">
+                        <!-- Accordion: mỗi môn xổ ra danh sách lộ trình -->
+                        <div class="accordion" id="subjectAccordion" th:unless="${#lists.isEmpty(paths)}">
+                            <div class="accordion-item lp-subject-group" th:each="entry, sstat : ${pathsBySubject}"
+                                 th:with="subject=${entry.key}, subjectPaths=${entry.value}">
+                                <h2 class="accordion-header" th:id="'subjectHead-' + ${subject.id}">
+                                    <button class="accordion-button" type="button"
+                                            data-bs-toggle="collapse"
+                                            th:classappend="${sstat.first} ? '' : 'collapsed'"
+                                            th:data-bs-target="'#subjectBody-' + ${subject.id}"
+                                            th:aria-expanded="${sstat.first}"
+                                            th:aria-controls="'subjectBody-' + ${subject.id}">
+                                        <span class="d-flex flex-column">
+                                            <span class="fw-bold fs-5 text-dark lh-1" th:text="${subject.code}"></span>
+                                            <span class="text-muted small mt-1" th:text="${subject.name}"></span>
+                                        </span>
+                                        <span class="badge bg-light text-dark border ms-3"
+                                              th:text="${#lists.size(subjectPaths)} + ' lộ trình'"></span>
+                                    </button>
+                                </h2>
+                                <div th:id="'subjectBody-' + ${subject.id}"
+                                     class="accordion-collapse collapse"
+                                     th:classappend="${sstat.first} ? 'show' : ''"
+                                     th:aria-labelledby="'subjectHead-' + ${subject.id}"
+                                     data-bs-parent="#subjectAccordion">
+                                    <div class="accordion-body">
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item lp-path-item d-flex align-items-center justify-content-between gap-3"
+                                                 th:each="p : ${subjectPaths}">
+                                                <div style="min-width: 0;">
+                                                    <div class="fw-bold fs-6 text-dark mb-1" th:text="${p.name}"></div>
+                                                    <div class="text-muted small mb-1"
+                                                         th:if="${p.description != null and !#strings.isEmpty(p.description)}"
+                                                         th:text="${#strings.length(p.description) > 80 ? #strings.substring(p.description, 0, 80) + '...' : p.description}"></div>
+                                                    <div class="text-muted small">
+                                                        <i class="ti ti-calendar me-1"></i>
+                                                        <span th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                                    <a th:href="@{/lecturer/learning-paths/{id}(id=${p.id})}"
+                                                       class="btn btn-sm btn-primary">
+                                                        <i class="ti ti-route me-1"></i> Mở builder
+                                                    </a>
+                                                    <div class="dropdown">
+                                                        <button class="table-action-btn" type="button"
+                                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="ti ti-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li>
+                                                                <form th:action="@{/lecturer/learning-paths/{id}/clone(id=${p.id})}" method="post">
+                                                                    <button type="submit" class="dropdown-item">
+                                                                        <i class="ti ti-copy me-2"></i> Nhân bản
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li th:if="${!pathsWithClassroom.contains(p.id)}">
+                                                                <form th:action="@{/lecturer/learning-paths/{id}/delete(id=${p.id})}"
+                                                                      method="post"
+                                                                      onsubmit="return confirm('Xóa lộ trình này và toàn bộ node?');">
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i class="ti ti-trash me-2"></i> Xóa lộ trình
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                            <li th:unless="${!pathsWithClassroom.contains(p.id)}">
+                                                                <span class="dropdown-item text-muted disabled" style="cursor: not-allowed;"
+                                                                      title="Lộ trình đang được lớp học sử dụng">
+                                                                    <i class="ti ti-lock me-2"></i> Không thể xóa
+                                                                </span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3" th:unless="${#lists.isEmpty(paths)}">
                             <span class="text-muted small"
-                                  th:text="'Hiển thị ' + ${#lists.size(paths)} + ' lộ trình'"></span>
+                                  th:text="'Hiển thị ' + ${#lists.size(paths)} + ' lộ trình trong ' + ${pathsBySubject.size()} + ' môn'"></span>
                         </div>
                     </div>
                 </div>

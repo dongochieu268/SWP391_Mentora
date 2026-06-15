@@ -4,6 +4,7 @@ import com.edunac.mentora.service.subject.SubjectService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -37,8 +38,11 @@ public class AdminPrerequisiteController {
         try {
             subjectService.addPrerequisite(subjectId, prerequisiteSubjectId);
             ra.addFlashAttribute("successMessage", "Đã thêm môn tiên quyết!");
+        } catch (ResponseStatusException e) {
+            // Chỉ lấy phần thông điệp (getReason), tránh hiện chuỗi thô "400 BAD_REQUEST ..."
+            ra.addFlashAttribute("errorMessage", e.getReason());
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
+            ra.addFlashAttribute("errorMessage", "Không thể thêm môn tiên quyết, vui lòng thử lại.");
         }
         return "redirect:/admin/subjects/" + subjectId + "/prerequisites";
     }
@@ -50,8 +54,10 @@ public class AdminPrerequisiteController {
         try {
             subjectService.removePrerequisite(subjectId, prerequisiteSubjectId);
             ra.addFlashAttribute("successMessage", "Đã gỡ bỏ môn tiên quyết!");
+        } catch (ResponseStatusException e) {
+            ra.addFlashAttribute("errorMessage", e.getReason());
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
+            ra.addFlashAttribute("errorMessage", "Không thể gỡ bỏ môn tiên quyết, vui lòng thử lại.");
         }
         return "redirect:/admin/subjects/" + subjectId + "/prerequisites";
     }

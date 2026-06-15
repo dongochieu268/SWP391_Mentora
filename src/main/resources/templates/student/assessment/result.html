@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kết quả bài test | mentora</title>
+    <title>Kết quả bài test | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
@@ -19,9 +19,7 @@
         <div class="body-wrapper-inner">
             <div class="container-fluid">
                 <div class="mb-4">
-                    <a th:href="@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}" class="text-muted small text-decoration-none">
-                        <i class="ti ti-arrow-left me-1"></i>Trở lại roadmap
-                    </a>
+                    <a th:replace="~{components/back-button :: backButton(@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}, 'Trở lại roadmap')}"></a>
                 </div>
 
                 <div class="card">

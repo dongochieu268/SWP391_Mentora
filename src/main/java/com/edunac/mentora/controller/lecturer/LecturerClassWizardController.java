@@ -178,7 +178,7 @@ public class LecturerClassWizardController {
         return "redirect:/lecturer/classes/wizard/step2";
     }
 
-    /** Dùng lại một lộ trình có sẵn (cùng môn, do mình tạo). */
+    /** Dùng lại một lộ trình có sẵn */
     @PostMapping("/step2/select-path")
     public String selectPath(@RequestParam Integer learningPathId,
                              HttpSession session, RedirectAttributes ra) {

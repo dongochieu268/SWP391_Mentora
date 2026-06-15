@@ -24,6 +24,34 @@
   -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('i[class^="ti"], i[class*=" ti-"], iconify-icon').forEach(function (icon) {
+        icon.setAttribute('aria-hidden', 'true');
+        icon.setAttribute('focusable', 'false');
+      });
+
+      document.querySelectorAll('.btn-close').forEach(function (btn) {
+        if (!btn.getAttribute('aria-label')) {
+          btn.setAttribute('aria-label', 'Đóng');
+        }
+      });
+
+      document.querySelectorAll('a[title], button[title]').forEach(function (el) {
+        var hasLabel = el.getAttribute('aria-label');
+        var visibleText = (el.textContent || '').trim();
+        if (!hasLabel && !visibleText) {
+          el.setAttribute('aria-label', el.getAttribute('title'));
+        }
+      });
+
+      document.querySelectorAll('.sidebartoggler[role="button"]').forEach(function (el) {
+        el.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            el.click();
+          }
+        });
+      });
+
       if (!window.bootstrap || !window.bootstrap.Dropdown) return;
       document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
         window.bootstrap.Dropdown.getOrCreateInstance(el, {

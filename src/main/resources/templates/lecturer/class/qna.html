@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hỏi đáp lớp học | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <style>
+        .qna-layout {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        .class-summary {
+            border: 1px solid #edf1f7;
+            border-radius: 8px;
+            padding: 14px;
+            background: #f8fbff;
+        }
+
+        .qa-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .qa-tab {
+            border: 1px solid #dbe3ef;
+            background: #fff;
+            border-radius: 8px;
+            padding: 9px 13px;
+            font-weight: 700;
+            color: #526174;
+        }
+
+        .qa-tab.is-active {
+            border-color: #5d87ff;
+            background: #ecf2ff;
+            color: #3152c9;
+        }
+
+        .question-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            padding: 14px 0;
+            border-top: 1px solid #edf1f7;
+        }
+
+        .question-row:first-child {
+            border-top: 0;
+        }
+
+        .question-meta {
+            color: #6b778c;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .answer-panel {
+            margin-top: 16px;
+            border-top: 1px solid #edf1f7;
+            padding-top: 16px;
+        }
+
+        .feedback-panel {
+            display: none;
+            margin-top: 14px;
+            border-top: 1px solid #edf1f7;
+            padding-top: 14px;
+        }
+
+        .feedback-panel.is-open {
+            display: block;
+        }
+
+        .stat-box {
+            border: 1px solid #edf1f7;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        @media (max-width: 900px) {
+            .qna-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-4">
+                    <div>
+                        <a th:href="@{/lecturer/classes}" class="text-muted small">
+                            <i class="ti ti-arrow-left me-1"></i>Danh sách lớp học
+                        </a>
+                        <h4 class="fw-semibold mt-2 mb-1">Hỏi đáp lớp học</h4>
+                        <p class="text-muted mb-0" th:text="${classroom.name}"></p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a th:href="@{/lecturer/classes/{id}/members(id=${classroom.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-users me-1"></i> Thành viên
+                        </a>
+                        <a th:href="@{/lecturer/classes/{id}/nodes(id=${classroom.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-list-check me-1"></i> Node
+                        </a>
+                    </div>
+                </div>
+
+                <div class="qna-layout">
+                    <aside class="card">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">Tổng quan</h6>
+                            <div class="class-summary mb-3">
+                                <div class="fw-semibold" th:text="${classroom.name}"></div>
+                                <div class="text-muted small mt-1" th:text="${classroom.subject.code + ' - ' + classroom.subject.name}"></div>
+                                <div class="text-muted small mt-1" th:text="'Mã mời: ' + ${classroom.inviteCode}"></div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <div class="stat-box">
+                                    <div class="text-muted small">Tổng câu hỏi</div>
+                                    <div class="h5 fw-semibold mb-0" th:text="${#lists.size(questions)}"></div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="text-muted small">Chưa trả lời</div>
+                                    <div class="h5 fw-semibold mb-0 text-warning"
+                                         th:text="${#lists.size(questions.?[status == 'OPEN'])}"></div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="text-muted small">Đã trả lời</div>
+                                    <div class="h5 fw-semibold mb-0 text-success"
+                                         th:text="${#lists.size(questions.?[status == 'ANSWERED'])}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <section class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                                <div>
+                                    <h5 class="fw-semibold mb-1">Câu hỏi của sinh viên</h5>
+                                    <div class="text-muted small">Giảng viên có thể theo dõi và trả lời trực tiếp.</div>
+                                </div>
+                                <span class="badge bg-primary">Giảng viên</span>
+                            </div>
+
+                            <div class="qa-tabs">
+                                <button class="qa-tab is-active" type="button" data-filter="ALL">Tất cả</button>
+                                <button class="qa-tab" type="button" data-filter="OPEN">Chưa trả lời</button>
+                                <button class="qa-tab" type="button" data-filter="ANSWERED">Đã trả lời</button>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-4">
+                                Chưa có câu hỏi nào trong lớp.
+                            </div>
+
+                            <article class="question-row" th:each="q : ${questions}" th:attr="data-status=${q.status}">
+                                <div>
+                                    <div class="fw-semibold" th:text="${q.content}"></div>
+                                    <div class="question-meta">
+                                        Hỏi bởi <span th:text="${q.student.fullName}"></span>
+                                        · <span th:text="${#temporals.format(q.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                        · <span th:text="${q.status == 'ANSWERED' ? 'Đã trả lời' : 'Chưa trả lời'}"></span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary mt-3" type="button" data-feedback-toggle>
+                                        <i class="ti ti-message-reply me-1"></i> Phản hồi
+                                    </button>
+                                    <div class="feedback-panel">
+                                        <div th:each="reply : ${q.replies}" class="p-3 rounded bg-light mb-2">
+                                            <div class="fw-semibold small mb-1">
+                                                Trả lời bởi <span th:text="${reply.responder.fullName}"></span>
+                                                <span class="badge bg-primary ms-1"
+                                                      th:if="${reply.responderRoleLabel == 'Giảng viên'}">Giảng viên</span>
+                                                <span class="badge bg-success ms-1"
+                                                      th:if="${reply.responderRoleLabel == 'Trợ giảng'}">Trợ giảng</span>
+                                                <span class="badge bg-secondary ms-1"
+                                                      th:if="${reply.responderRoleLabel == 'Sinh viên'}">Sinh viên</span>
+                                                <span class="text-muted fw-normal"
+                                                      th:text="${reply.createdAt != null ? '· ' + #temporals.format(reply.createdAt, 'dd/MM/yyyy HH:mm') : ''}"></span>
+                                            </div>
+                                            <div th:text="${reply.content}"></div>
+                                        </div>
+                                        <div th:if="${#lists.isEmpty(q.replies)}" class="text-muted small">
+                                            Chưa có phản hồi cho câu hỏi này.
+                                        </div>
+                                        <form class="answer-panel"
+                                              th:action="@{/lecturer/classes/{cid}/qna/questions/{qid}/answer(cid=${classroom.id}, qid=${q.id})}"
+                                              method="post">
+                                            <label class="form-label fw-semibold" th:for="${'lecturerAnswer' + q.id}">
+                                                Trả lời hoặc bổ sung phản hồi
+                                            </label>
+                                            <textarea class="form-control" th:id="${'lecturerAnswer' + q.id}" name="answerContent" rows="3"
+                                                      placeholder="Nhập phản hồi của giảng viên..." required></textarea>
+                                            <div class="text-end mt-3">
+                                                <button class="btn btn-primary" type="submit">Gửi phản hồi</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    <span th:if="${q.status == 'OPEN'}" class="badge bg-warning text-dark">Mới</span>
+                                    <span th:if="${q.status == 'ANSWERED'}" class="badge bg-success">Đã trả lời</span>
+                                    <form th:action="@{/lecturer/classes/{cid}/qna/questions/{qid}/delete(cid=${classroom.id}, qid=${q.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('Xóa câu hỏi này và toàn bộ phản hồi liên quan?');">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa câu hỏi">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    document.querySelectorAll('[data-feedback-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const panel = button.parentElement.querySelector('.feedback-panel');
+            if (!panel) {
+                return;
+            }
+            panel.classList.toggle('is-open');
+            button.classList.toggle('btn-primary', panel.classList.contains('is-open'));
+            button.classList.toggle('btn-outline-primary', !panel.classList.contains('is-open'));
+        });
+    });
+
+    document.querySelectorAll('.qa-tab[data-filter]').forEach((tab) => {
+        tab.addEventListener('click', () => {
+            const filter = tab.dataset.filter;
+            document.querySelectorAll('.qa-tab[data-filter]').forEach((item) => item.classList.remove('is-active'));
+            tab.classList.add('is-active');
+            document.querySelectorAll('.question-row[data-status]').forEach((row) => {
+                row.style.display = filter === 'ALL' || row.dataset.status === filter ? '' : 'none';
+            });
+        });
+    });
+</script>
+</body>
+</html>

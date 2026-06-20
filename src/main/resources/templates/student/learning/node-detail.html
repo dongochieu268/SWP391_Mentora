@@ -115,17 +115,14 @@
                                     </div>
 
                                     <div th:each="content : ${contents}" class="mb-4">
-                                        <div class="fw-semibold mb-2 text-primary"
-                                             style="font-size:14px;"
+                                        <div class="learning-content-heading mb-2"
                                              th:if="${content.title != null and !content.title.isBlank()}"
                                              th:text="${content.title}">
                                         </div>
 
                                         <div th:if="${content.contentType == 'TEXT'}"
                                              th:utext="${content.contentText}"
-                                             style="line-height:1.8;font-size:15px;padding:16px;
-                                                    background:#f8faff;border-left:3px solid #1d4ed8;
-                                                    border-radius:6px;">
+                                             class="learning-text-block">
                                         </div>
 
                                         <div th:if="${content.contentType == 'VIDEO'}"
@@ -134,17 +131,15 @@
                                         </div>
 
                                         <div th:if="${content.contentType == 'FILE'}"
-                                             class="d-flex align-items-center gap-3 p-3 rounded border"
-                                             style="background:#f8faff;">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                                                 style="width:40px;height:40px;background:#dbeafe;">
-                                                <i class="ti ti-file-text fs-5 text-primary"></i>
+                                             class="learning-resource">
+                                            <div class="learning-resource-icon">
+                                                <i class="ti ti-file-text fs-5"></i>
                                             </div>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-semibold" style="font-size:14px;"
+                                            <div>
+                                                <div class="learning-resource-title"
                                                      th:text="${content.title != null ? content.title : 'Tài liệu đính kèm'}">
                                                 </div>
-                                                <div class="text-muted" style="font-size:12px;">File học tập</div>
+                                                <div class="learning-resource-meta">File học tập</div>
                                             </div>
                                             <a th:href="${content.contentUrl}" target="_blank"
                                                class="btn btn-sm btn-outline-primary rounded-pill px-3">
@@ -153,17 +148,15 @@
                                         </div>
 
                                         <div th:if="${content.contentType == 'LINK'}"
-                                             class="d-flex align-items-center gap-3 p-3 rounded border"
-                                             style="background:#f8faff;">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                                                 style="width:40px;height:40px;background:#dbeafe;">
-                                                <i class="ti ti-link fs-5 text-primary"></i>
+                                             class="learning-resource">
+                                            <div class="learning-resource-icon">
+                                                <i class="ti ti-link fs-5"></i>
                                             </div>
-                                            <div class="flex-grow-1 overflow-hidden">
-                                                <div class="fw-semibold" style="font-size:14px;"
+                                            <div class="overflow-hidden">
+                                                <div class="learning-resource-title"
                                                      th:text="${content.title != null ? content.title : 'Liên kết'}">
                                                 </div>
-                                                <div class="text-muted text-truncate" style="font-size:12px;"
+                                                <div class="learning-resource-meta text-truncate"
                                                      th:text="${content.contentUrl}"></div>
                                             </div>
                                             <a th:href="${content.contentUrl}" target="_blank"
@@ -230,7 +223,7 @@
                                               th:text="${progress.completedNodes} + '/' + ${progress.totalNodes} + ' bài'">
                                         </span>
                                     </div>
-                                    <div class="progress" style="height: 8px;">
+                                    <div class="progress progress-compact">
                                         <div id="progressBar"
                                              class="progress-bar bg-success"
                                              role="progressbar"

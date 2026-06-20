@@ -106,6 +106,14 @@
                                         <input type="text" class="form-control" th:field="*{title}" maxlength="200" required>
                                     </div>
                                     <div class="mb-3">
+                                        <label class="form-label" for="subjectId">Môn học <span class="text-danger">*</span></label>
+                                        <select class="form-select" th:field="*{subjectId}" required>
+                                            <option value="">Chọn môn học</option>
+                                            <option th:each="subject : ${activeSubjects}" th:value="${subject.id}"
+                                                    th:text="${subject.code + ' - ' + subject.name}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label" for="description">Mô tả</label>
                                         <textarea class="form-control" th:field="*{description}" rows="3" maxlength="2000"></textarea>
                                     </div>

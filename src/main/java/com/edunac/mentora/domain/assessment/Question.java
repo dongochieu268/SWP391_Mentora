@@ -31,4 +31,18 @@ public class Question {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal score;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_bank_question_id")
+    private BankQuestion sourceBankQuestion;
+
+    @Column(name = "selection_method", nullable = false, length = 30)
+    private String selectionMethod = QuestionSelectionMethod.CUSTOM.name();
+
+    @PrePersist
+    protected void onCreate() {
+        if (selectionMethod == null || selectionMethod.isBlank()) {
+            selectionMethod = QuestionSelectionMethod.CUSTOM.name();
+        }
+    }
 }

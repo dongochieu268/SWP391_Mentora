@@ -69,7 +69,7 @@
                                         <span class="badge bg-primary" th:text="${c.contentType}">TEXT</span>
                                     </td>
                                     <td th:text="${c.title != null ? c.title : '-'}">-</td>
-                                    <td class="text-break" style="max-width: 300px;">
+                                    <td class="text-break content-preview-cell">
                                         <span th:if="${c.contentType == 'TEXT'}"
                                               th:text="${c.contentText != null and #strings.length(c.contentText) > 80 ? #strings.substring(c.contentText, 0, 80) + '...' : c.contentText}">text</span>
                                         <a th:if="${c.contentType == 'LINK' and c.contentUrl != null}"

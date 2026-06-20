@@ -116,6 +116,14 @@ public class ClassroomMemberService {
         return member.getClassroom();
     }
 
+    public ClassroomMember requireActiveMemberRecord(Integer classroomId, User student) {
+        return memberRepository
+                .findByClassroomIdAndUserIdAndStatus(
+                        classroomId, student.getId(), MemberStatus.ACTIVE.name())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Ban chua duoc duyet vao lop hoac khong co quyen truy cap."));
+    }
+
     private ClassroomMember findMemberInClass(Integer memberId, Integer classroomId) {
         return memberRepository.findByIdAndClassroomId(memberId, classroomId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành viên trong lớp."));

@@ -98,7 +98,8 @@ public class PathBuilderViewSupport {
         model.addAttribute("assessmentById", assessmentById);
         model.addAttribute("branchTestNodes", branchTestNodes);
         model.addAttribute("contentCounts", pathService.contentCounts(pathId));
-        model.addAttribute("assessments", assessmentService.findPublishedByCreator(user));
+        Integer subjectId = pathService.findById(pathId).getSubject().getId();
+        model.addAttribute("assessments", assessmentService.findPublishedByCreatorAndSubject(user, subjectId));
     }
 
     /** Xử lý các query param mở modal node (addEnd/addAfter/editNode/addBranch+tag) và set default. */

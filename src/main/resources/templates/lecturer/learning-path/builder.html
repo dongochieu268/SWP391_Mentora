@@ -88,7 +88,7 @@
                                         <span class="badge bg-secondary ms-1" th:text="${#lists.size(nodes)}">0</span>
                                     </h5>
                                     <span class="badge text-bg-light pb-badge border"><i class="ti ti-book text-primary me-1"></i>Bài học</span>
-                                    <span class="badge pb-badge" style="background:#fdf0c7;color:#856404"><i class="ti ti-git-branch me-1"></i>Test rẽ nhánh</span>
+                                    <span class="badge pb-badge pb-badge-test"><i class="ti ti-git-branch me-1"></i>Test rẽ nhánh</span>
                                     <span class="badge bg-success pb-badge">ĐẠT</span>
                                     <span class="badge bg-danger pb-badge">CHƯA ĐẠT</span>
                                 </div>
@@ -101,7 +101,7 @@
                             <div class="pb-flow">
 
                                 <div th:if="${#lists.isEmpty(nodes)}" class="text-center text-muted py-5">
-                                    <i class="ti ti-route" style="font-size:2.2rem"></i>
+                                    <i class="ti ti-route pb-empty-icon"></i>
                                     <p class="mt-2 mb-3">Lộ trình chưa có node nào.<br>Bắt đầu bằng một bài học hoặc một bài test rẽ nhánh.</p>
                                     <a th:href="@{${baseUrl}(addEnd=true)}" class="btn btn-primary">
                                         <i class="ti ti-plus me-1"></i>Thêm node đầu tiên
@@ -265,7 +265,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="pb-branch-merge"><span class="pb-line" style="height:20px"></span></div>
+                                        <div class="pb-branch-merge"><span class="pb-line pb-line-merge"></span></div>
                                     </div>
 
                                     <!-- Đường nối + (+) sau mỗi khối -->
@@ -283,7 +283,7 @@
                                 </span>
 
                                 <!-- Node nhánh mồ côi (mất node test gốc) -->
-                                <div th:if="${!#lists.isEmpty(orphanBranchNodes)}" class="alert alert-warning mt-4 w-100" style="max-width:560px">
+                                <div th:if="${!#lists.isEmpty(orphanBranchNodes)}" class="alert alert-warning mt-4 w-100 pb-orphan-alert">
                                     <strong><i class="ti ti-alert-triangle me-1"></i>Node nhánh thiếu bài test gốc:</strong>
                                     <ul class="mb-0 mt-1 small">
                                         <li th:each="on : ${orphanBranchNodes}">
@@ -301,7 +301,7 @@
                     <div class="col-lg-5" th:if="${panelAssessment != null}"
                          th:with="panelReturn=${baseUrl + '?testPanel=' + panelAssessment.id}">
                         <div class="card pb-test-panel">
-                            <div class="card-header d-flex align-items-center justify-content-between" style="background:#fffbec">
+                            <div class="card-header d-flex align-items-center justify-content-between pb-test-panel-header">
                                 <div class="me-2">
                                     <strong><i class="ti ti-pencil-question me-1"></i><span th:text="${panelAssessment.title}"></span></strong>
                                     <span class="badge ms-1"
@@ -314,6 +314,7 @@
 
                                 <!-- Meta bài test -->
                                 <form th:if="${panelCanEdit}" th:action="@{/lecturer/assessments/{id}/edit(id=${panelAssessment.id})}" method="post" class="border rounded p-2 mb-3">
+                                    <input type="hidden" name="subjectId" th:value="${panelAssessment.subject.id}">
                                     <input type="hidden" name="returnTo" th:value="${panelReturn}"/>
                                     <input type="hidden" name="type" th:value="${panelAssessment.type}"/>
                                     <input type="hidden" name="deliveryMode" th:value="${panelAssessment.deliveryMode}"/>
@@ -375,7 +376,7 @@
                                 <!-- Form thêm câu hỏi -->
                                 <form th:if="${panelCanEdit}"
                                       th:action="@{/lecturer/assessments/{id}/questions(id=${panelAssessment.id})}"
-                                      method="post" class="border rounded p-3 mb-3" style="background:#f8fafc">
+                                      method="post" class="inline-form-panel p-3 mb-3">
                                     <input type="hidden" name="returnTo" th:value="${panelReturn}"/>
                                     <input type="hidden" name="questionType" value="MULTIPLE_CHOICE"/>
                                     <strong class="small d-block mb-2"><i class="ti ti-plus me-1"></i>Thêm câu hỏi mới</strong>
@@ -467,16 +468,16 @@
                                         <div class="mb-3">
                                             <label class="form-label">Loại node</label>
                                             <div class="pb-type-pick">
-                                                <div class="pb-type-btn selected" id="typeBtnLesson" onclick="pickType('LESSON')">
+                                                <button type="button" class="pb-type-btn selected" id="typeBtnLesson" onclick="pickType('LESSON')">
                                                     <i class="ti ti-book text-primary"></i>
                                                     <strong>Bài học</strong>
                                                     <div class="small text-muted">Tài liệu, video, liên kết... cho sinh viên học</div>
-                                                </div>
-                                                <div class="pb-type-btn" id="typeBtnTest" onclick="pickType('BRANCH_TEST')">
+                                                </button>
+                                                <button type="button" class="pb-type-btn" id="typeBtnTest" onclick="pickType('BRANCH_TEST')">
                                                     <i class="ti ti-git-branch text-warning"></i>
                                                     <strong>Bài test rẽ nhánh</strong>
                                                     <div class="small text-muted">Đạt → nhánh ĐẠT, chưa đạt → nhánh CHƯA ĐẠT</div>
-                                                </div>
+                                                </button>
                                             </div>
                                         </div>
 
@@ -497,7 +498,7 @@
                                         </div>
 
                                         <!-- Chỉ hiện khi chọn "Bài test rẽ nhánh" -->
-                                        <div class="p-3 rounded border d-none" id="addTestFields" style="background:#fffbec;border-color:#f3d98a !important">
+                                        <div class="p-3 rounded border d-none pb-test-fields" id="addTestFields">
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold" for="assessmentIdAdd">
                                                     <i class="ti ti-clipboard-list me-1"></i>Bài test
@@ -509,7 +510,7 @@
                                                 </select>
                                                 <div class="form-text">Chưa có bài test phù hợp? Lưu node trước, rồi bấm "Sửa node" để tạo bài test mới ngay tại chỗ.</div>
                                             </div>
-                                            <div class="mb-0" style="max-width:240px">
+                                            <div class="mb-0 pb-score-field">
                                                 <label class="form-label fw-semibold" for="minScoreAdd">Điểm đạt (minScore)</label>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control" name="minScore" id="minScoreAdd" min="0" step="0.5" placeholder="VD: 5">
@@ -590,14 +591,14 @@
                                         <div class="mb-3" th:if="${!isBranchNode and !(isTestNode and testHasChildren)}">
                                             <label class="form-label">Loại node</label>
                                             <div class="pb-type-pick">
-                                                <div class="pb-type-btn" id="typeBtnLesson"
+                                                <button type="button" class="pb-type-btn" id="typeBtnLesson"
                                                      th:classappend="${!isTestNode} ? 'selected' : ''" onclick="pickType('LESSON')">
                                                     <i class="ti ti-book text-primary"></i><strong>Bài học</strong>
-                                                </div>
-                                                <div class="pb-type-btn" id="typeBtnTest"
+                                                </button>
+                                                <button type="button" class="pb-type-btn" id="typeBtnTest"
                                                      th:classappend="${isTestNode} ? 'selected' : ''" onclick="pickType('BRANCH_TEST')">
                                                     <i class="ti ti-git-branch text-warning"></i><strong>Bài test rẽ nhánh</strong>
-                                                </div>
+                                                </button>
                                             </div>
                                         </div>
                                         <div th:if="${isTestNode and testHasChildren}" class="alert alert-warning py-2 small mb-3">
@@ -624,9 +625,8 @@
                                             </select>
                                         </div>
 
-                                        <div class="p-3 rounded border" id="addTestFields"
-                                             th:classappend="${!isTestNode} ? 'd-none' : ''"
-                                             style="background:#fffbec;border-color:#f3d98a !important">
+                                        <div class="p-3 rounded border pb-test-fields" id="addTestFields"
+                                             th:classappend="${!isTestNode} ? 'd-none' : ''">
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold" for="assessmentIdEdit">
                                                     <i class="ti ti-clipboard-list me-1"></i>Bài test
@@ -638,7 +638,7 @@
                                                             th:selected="${nodeForm.assessmentId == a.id}"></option>
                                                 </select>
                                             </div>
-                                            <div class="mb-0" style="max-width:240px">
+                                            <div class="mb-0 pb-score-field">
                                                 <label class="form-label fw-semibold" for="minScoreEdit">Điểm đạt (minScore)</label>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control" name="minScore" id="minScoreEdit"

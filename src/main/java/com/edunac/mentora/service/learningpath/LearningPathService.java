@@ -300,19 +300,12 @@ public class LearningPathService {
         }
         java.util.Collections.swap(blocks, idx, target);
 
-        int order = 1;
         List<LearningNode> toSave = new java.util.ArrayList<>();
         for (List<LearningNode> block : blocks) {
-            for (LearningNode n : block) {
-                n.setNodeOrder(BigDecimal.valueOf(order++));
-                toSave.add(n);
-            }
+            toSave.addAll(block);
         }
-        for (LearningNode n : orphanBranches) {
-            n.setNodeOrder(BigDecimal.valueOf(order++));
-            toSave.add(n);
-        }
-        nodeRepository.saveAll(toSave);
+        toSave.addAll(orphanBranches);
+        saveWithUniqueOrders(toSave);
     }
 
     /** Gắn (hoặc cập nhật) bài test cho node BRANCH_TEST — dùng khi tạo test inline từ builder. */
@@ -441,11 +434,27 @@ public class LearningPathService {
         }
 
         if (minGap != null && minGap.compareTo(NORMALIZE_THRESHOLD) < 0) {
-            for (int i = 0; i < nodes.size(); i++) {
-                nodes.get(i).setNodeOrder(BigDecimal.valueOf(i + 1));
-            }
-            nodeRepository.saveAll(nodes);
+            saveWithUniqueOrders(nodes);
         }
+    }
+
+    private void saveWithUniqueOrders(List<LearningNode> orderedNodes) {
+        BigDecimal temporaryStart = orderedNodes.stream()
+                .map(LearningNode::getNodeOrder)
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO)
+                .add(BigDecimal.ONE);
+
+        // Free every final order before assigning it to a different row.
+        for (int i = 0; i < orderedNodes.size(); i++) {
+            orderedNodes.get(i).setNodeOrder(temporaryStart.add(BigDecimal.valueOf(i)));
+        }
+        nodeRepository.saveAllAndFlush(orderedNodes);
+
+        for (int i = 0; i < orderedNodes.size(); i++) {
+            orderedNodes.get(i).setNodeOrder(BigDecimal.valueOf(i + 1L));
+        }
+        nodeRepository.saveAllAndFlush(orderedNodes);
     }
 
     private String blankToNull(String s) {

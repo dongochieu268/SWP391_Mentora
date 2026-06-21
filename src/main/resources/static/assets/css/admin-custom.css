@@ -439,6 +439,12 @@ h6,
     min-width: 44px;
 }
 
+@media (min-width: 1200px) {
+    .close-btn.sidebartoggler {
+        display: none !important;
+    }
+}
+
 .back-link-touch,
 .text-muted.small.text-decoration-none {
     min-height: 44px;

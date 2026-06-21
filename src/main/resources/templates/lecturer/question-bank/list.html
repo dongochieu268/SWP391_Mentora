@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ngân hàng câu hỏi | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/question-bank.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+        <div class="body-wrapper-inner">
+            <main class="container-fluid">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="qb-page-head">
+                    <div>
+                        <h1>Ngân hàng câu hỏi</h1>
+                        <p>Kho câu hỏi dùng chung theo từng môn học.</p>
+                    </div>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#questionModal">
+                        <i class="ti ti-plus me-1"></i> Thêm câu hỏi
+                    </button>
+                </div>
+
+                <section class="card">
+                    <div class="card-body">
+                        <form method="get" th:action="@{/lecturer/question-bank}" class="qb-filter-grid">
+                            <select class="form-select" name="subjectId" onchange="this.form.submit()" aria-label="Môn học">
+                                <option th:each="subject : ${activeSubjects}" th:value="${subject.id}"
+                                        th:selected="${subject.id == selectedSubjectId}"
+                                        th:text="${subject.code + ' - ' + subject.name}"></option>
+                            </select>
+                            <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tìm nội dung câu hỏi...">
+                            <select class="form-select" name="type" aria-label="Loại câu hỏi">
+                                <option value="">Tất cả loại câu</option>
+                                <option th:each="item : ${questionTypes}" th:value="${item.name()}"
+                                        th:selected="${item.name() == selectedType}" th:text="${item.name()}"></option>
+                            </select>
+                            <select class="form-select" name="difficulty" aria-label="Độ khó">
+                                <option value="">Tất cả độ khó</option>
+                                <option th:each="item : ${difficultyOptions}" th:value="${item.name()}"
+                                        th:selected="${item.name() == selectedDifficulty}" th:text="${item.name()}"></option>
+                            </select>
+                            <button class="btn btn-outline-primary" type="submit"><i class="ti ti-search"></i></button>
+                        </form>
+
+                        <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-5">
+                            <i class="ti ti-database-off fs-1 d-block mb-2"></i>
+                            Chưa có câu hỏi phù hợp trong môn này.
+                        </div>
+
+                        <div class="qb-list" th:unless="${#lists.isEmpty(questions)}">
+                            <article class="qb-row" th:each="question : ${questions}">
+                                <div class="qb-content">
+                                    <h2 th:text="${question.content}"></h2>
+                                    <div class="qb-meta">
+                                        <span th:text="${question.questionType}"></span>
+                                        <span th:text="${question.difficulty}"></span>
+                                        <span th:text="${question.defaultScore + ' điểm'}"></span>
+                                        <span th:text="${#lists.size(optionsByQuestionId[question.id]) + ' đáp án'}"></span>
+                                        <span th:text="${question.createdBy.fullName}"></span>
+                                    </div>
+                                    <ol class="qb-options">
+                                        <li th:each="option : ${optionsByQuestionId[question.id]}"
+                                            th:classappend="${option.correct} ? ' is-correct'"
+                                            th:text="${option.content}"></li>
+                                    </ol>
+                                </div>
+                                <div th:if="${question.createdBy.id == user.id}" class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-light border" type="button" title="Sửa câu hỏi"
+                                            data-bs-toggle="modal" th:data-bs-target="${'#editBankQuestion' + question.id}">
+                                        <i class="ti ti-pencil"></i>
+                                    </button>
+                                    <form th:action="@{/lecturer/question-bank/questions/{id}/archive(id=${question.id})}"
+                                          method="post" onsubmit="return confirm('Lưu trữ câu hỏi này?');">
+                                        <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                        <button class="btn btn-sm btn-light border text-danger" type="submit"
+                                                title="Lưu trữ" aria-label="Lưu trữ câu hỏi"><i class="ti ti-archive"></i></button>
+                                    </form>
+                                </div>
+                                <div th:if="${question.createdBy.id == user.id}" class="modal fade"
+                                     th:id="${'editBankQuestion' + question.id}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+                                            <form class="modal-content"
+                                                  th:action="@{/lecturer/question-bank/questions/{id}/edit(id=${question.id})}" method="post">
+                                                <div class="modal-header"><h2 class="modal-title fs-5">Sửa câu hỏi trong ngân hàng</h2>
+                                                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                                    <textarea class="form-control mb-3" name="content" rows="3" th:text="${question.content}" required></textarea>
+                                                    <div class="row g-2 mb-3">
+                                                        <div class="col-md-4"><label class="form-label">Loại câu</label>
+                                                            <select class="form-select" name="questionType"><option th:each="item : ${questionTypes}"
+                                                                    th:value="${item.name()}" th:selected="${item.name() == question.questionType}" th:text="${item.name()}"></option></select></div>
+                                                        <div class="col-md-4"><label class="form-label">Độ khó</label>
+                                                            <select class="form-select" name="difficulty"><option th:each="item : ${difficultyOptions}"
+                                                                    th:value="${item.name()}" th:selected="${item.name() == question.difficulty}" th:text="${item.name()}"></option></select></div>
+                                                        <div class="col-md-4"><label class="form-label">Điểm mặc định</label>
+                                                            <input class="form-control" name="defaultScore" type="number" min="0.1" step="0.1"
+                                                                   th:value="${question.defaultScore}" required></div>
+                                                    </div>
+                                                    <div class="input-group mb-2" th:each="option, optionStat : ${optionsByQuestionId[question.id]}">
+                                                        <div class="input-group-text"><input class="form-check-input mt-0" type="radio"
+                                                                name="correctOptionIndex" th:value="${optionStat.index}" th:checked="${option.correct}"></div>
+                                                        <input class="form-control" name="optionContents" th:value="${option.content}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer"><button class="btn btn-light border" type="button" data-bs-dismiss="modal">Hủy</button>
+                                                    <button class="btn btn-primary" type="submit">Lưu thay đổi</button></div>
+                                            </form>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="questionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+            <form class="modal-content" th:action="@{/lecturer/question-bank/questions}" method="post" th:object="${form}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5">Thêm câu hỏi vào ngân hàng</h2>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Môn học</label>
+                        <select class="form-select" th:field="*{subjectId}" required>
+                            <option value="">Chọn môn học</option>
+                            <option th:each="subject : ${activeSubjects}" th:value="${subject.id}"
+                                    th:text="${subject.code + ' - ' + subject.name}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung câu hỏi</label>
+                        <textarea class="form-control" th:field="*{content}" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Loại câu hỏi</label>
+                            <select class="form-select" th:field="*{questionType}">
+                                <option th:each="item : ${questionTypes}" th:value="${item.name()}" th:text="${item.name()}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Độ khó</label>
+                            <select class="form-select" th:field="*{difficulty}">
+                                <option th:each="item : ${difficultyOptions}" th:value="${item.name()}" th:text="${item.name()}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Điểm mặc định</label>
+                            <input class="form-control" type="number" th:field="*{defaultScore}" min="0.1" step="0.1" required>
+                        </div>
+                    </div>
+                    <label class="form-label">Đáp án</label>
+                    <div id="bankOptionRows">
+                        <div class="input-group mb-2" th:each="index : ${#numbers.sequence(0, 3)}">
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="radio" name="correctOptionIndex"
+                                       th:value="${index}" th:checked="${index == 0}" aria-label="Đáp án đúng">
+                            </div>
+                            <input class="form-control" name="optionContents" th:placeholder="${'Đáp án ' + (index + 1)}"
+                                   th:required="${index < 2}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-light border" type="button" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="ti ti-database-plus me-1"></i>Thêm vào Question Bank
+                    </button>
+                </div>
+            </form>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script th:if="${openQuestionModal}">
+    document.addEventListener('DOMContentLoaded', () => bootstrap.Modal.getOrCreateInstance(document.getElementById('questionModal')).show());
+</script>
+</body>
+</html>

@@ -131,7 +131,7 @@ public class LecturerLearningPathController {
                              HttpSession session, RedirectAttributes ra) {
         User user = currentUser(session);
         try {
-            pathService.findByIdAndOwner(id, user);
+            LearningPath path = pathService.findByIdAndOwner(id, user);
             LearningNode node = pathService.getNodes(id).stream()
                     .filter(n -> n.getId().equals(nodeId))
                     .findFirst()
@@ -143,6 +143,7 @@ public class LecturerLearningPathController {
             form.setDeliveryMode(DeliveryMode.SELF_PACED.name());
             form.setDurationMinutes(30);
             form.setTotalScore(java.math.BigDecimal.TEN);
+            form.setSubjectId(path.getSubject().getId());
             Assessment created = assessmentService.create(form, user);
 
             pathService.attachAssessment(id, nodeId, created.getId(), 5, user);

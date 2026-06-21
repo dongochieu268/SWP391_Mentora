@@ -117,7 +117,7 @@
                         </div>
 
                         <div class="table-responsive d-none d-md-block">
-                            <table class="table table-hover align-middle mb-0" style="min-width: 760px;">
+                            <table class="table table-hover align-middle mb-0 table-min-760">
                                 <thead>
                                 <tr>
                                     <th>STT</th>
@@ -157,6 +157,12 @@
                                                title="Xem lộ trình"
                                                aria-label="Xem lộ trình">
                                                 <i class="ti ti-route"></i>
+                                            </a>
+                                            <a th:href="@{/student/classrooms/{id}/qna(id=${m.classroom.id})}"
+                                               class="table-action-btn"
+                                               th:title="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Câu hỏi sinh viên'"
+                                               th:aria-label="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Câu hỏi sinh viên'">
+                                                <i class="ti ti-messages"></i>
                                             </a>
                                         </div>
                                     </td>

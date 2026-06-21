@@ -9,6 +9,7 @@ import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
 import com.edunac.mentora.domain.learningpath.LearningPathStatus;
 import com.edunac.mentora.repository.branching.BranchRuleRepository;
+import com.edunac.mentora.repository.assessment.AssessmentRepository;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
@@ -41,6 +42,7 @@ public class LearningPathService {
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
     private final ClassroomRepository classroomRepository;
     private final BranchRuleRepository branchRuleRepository;
+    private final AssessmentRepository assessmentRepository;
 
     public LearningPathService(LearningPathRepository pathRepository,
                                LearningNodeRepository nodeRepository,
@@ -50,7 +52,8 @@ public class LearningPathService {
                                NodeProgressRepository nodeProgressRepository,
                                ClassroomNodeStatusRepository classroomNodeStatusRepository,
                                ClassroomRepository classroomRepository,
-                               BranchRuleRepository branchRuleRepository) {
+                               BranchRuleRepository branchRuleRepository,
+                               AssessmentRepository assessmentRepository) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
@@ -60,6 +63,7 @@ public class LearningPathService {
         this.classroomNodeStatusRepository = classroomNodeStatusRepository;
         this.classroomRepository = classroomRepository;
         this.branchRuleRepository = branchRuleRepository;
+        this.assessmentRepository = assessmentRepository;
     }
 
 
@@ -310,7 +314,7 @@ public class LearningPathService {
 
     /** Gắn (hoặc cập nhật) bài test cho node BRANCH_TEST — dùng khi tạo test inline từ builder. */
     public void attachAssessment(Integer pathId, Integer nodeId, Integer assessmentId, Integer minScore, User requester) {
-        findByIdAndOwner(pathId, requester);
+        LearningPath path = findByIdAndOwner(pathId, requester);
         LearningNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy node."));
         if (!node.getLearningPath().getId().equals(pathId)) {
@@ -318,6 +322,15 @@ public class LearningPathService {
         }
         if (!"BRANCH_TEST".equals(node.getNodeType())) {
             throw new IllegalArgumentException("Chỉ node bài test rẽ nhánh mới gắn được bài test.");
+        }
+        var assessment = assessmentRepository.findById(assessmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài test."));
+        if (!assessment.getCreatedBy().getId().equals(requester.getId())) {
+            throw new IllegalStateException("Bạn không có quyền gắn bài test này.");
+        }
+        if (assessment.getSubject() == null
+                || !assessment.getSubject().getId().equals(path.getSubject().getId())) {
+            throw new IllegalArgumentException("Bài test phải thuộc cùng môn học với lộ trình.");
         }
         BranchRule rule = branchRuleRepository.findByNodeId(nodeId).orElseGet(BranchRule::new);
         rule.setNode(node);

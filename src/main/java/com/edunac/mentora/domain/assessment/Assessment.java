@@ -1,6 +1,7 @@
 package com.edunac.mentora.domain.assessment;
 
 import com.edunac.mentora.domain.User;
+import com.edunac.mentora.domain.subject.Subject;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +43,10 @@ public class Assessment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

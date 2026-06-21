@@ -169,7 +169,7 @@ public class StudentAssessmentService {
 
         List<Integer> questionIds = questions.stream().map(Question::getId).toList();
         Map<Integer, QuestionOption> optionById = optionRepository
-                .findByQuestion_IdInOrderByQuestion_IdAscIdAsc(questionIds)
+                .findByQuestion_IdInOrderByQuestion_IdAscDisplayOrderAscIdAsc(questionIds)
                 .stream()
                 .collect(Collectors.toMap(QuestionOption::getId, Function.identity()));
 

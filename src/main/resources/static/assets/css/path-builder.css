@@ -11,7 +11,7 @@
     background: #e2e7f1; color: #8a94a6; flex-shrink: 0;
 }
 .pb-step.active { color: #1f2937; font-weight: 600; }
-.pb-step.active .pb-step-num { background: #5d87ff; color: #fff; }
+.pb-step.active .pb-step-num { background: var(--mentora-primary, #1e4db7); color: #fff; }
 .pb-step.done { color: #1f2937; }
 .pb-step.done .pb-step-num { background: #13deb9; color: #fff; }
 .pb-step + .pb-step::before {
@@ -23,7 +23,7 @@
 
 .pb-node {
     width: 100%; max-width: 460px; background: #fff; border: 1px solid #dfe5ef;
-    border-radius: 10px; padding: .85rem 1rem; box-shadow: 0 1px 3px rgba(30,41,59,.06);
+    border-radius: 8px; padding: .85rem 1rem; box-shadow: 0 1px 3px rgba(30,41,59,.06);
     position: relative; transition: box-shadow .15s; scroll-margin-top: 90px;
 }
 .pb-node:hover { box-shadow: 0 4px 14px rgba(30,41,59,.13); }
@@ -33,7 +33,7 @@
     width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
     display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem;
 }
-.pb-node--lesson .pb-node-icon { background: #ecf2ff; color: #5d87ff; }
+.pb-node--lesson .pb-node-icon { background: #e8f0fc; color: var(--mentora-primary, #1e4db7); }
 .pb-node--test { background: #fffbec; border-color: #f3d98a; }
 .pb-node--test .pb-node-icon { background: #fdf0c7; color: #ae8a08; }
 .pb-node--pass { background: #f6fdf9; border-color: #b6e2c8; }
@@ -50,10 +50,11 @@
 .pb-connector .pb-line { width: 2px; height: 16px; background: #c3cad8; }
 .pb-connector .pb-add {
     width: 26px; height: 26px; border-radius: 50%; border: 1.5px dashed #9aa6ba;
-    background: #fff; color: #5d87ff; display: inline-flex; align-items: center;
+    background: #fff; color: var(--mentora-primary, #1e4db7); display: inline-flex; align-items: center;
     justify-content: center; font-size: .85rem; text-decoration: none; transition: all .12s;
 }
-.pb-connector .pb-add:hover { background: #5d87ff; color: #fff; border-style: solid; transform: scale(1.12); }
+.pb-connector .pb-add:hover,
+.pb-connector .pb-add:focus-visible { background: var(--mentora-primary, #1e4db7); color: #fff; border-style: solid; transform: scale(1.08); }
 
 /* Khối rẽ nhánh PASS / FAIL */
 .pb-branch-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
@@ -66,7 +67,7 @@
 }
 .pb-branch-cols { display: flex; gap: 2rem; justify-content: center; width: 100%; max-width: 880px; }
 .pb-branch-col {
-    flex: 1; max-width: 420px; border-radius: 12px; padding: .75rem .75rem 1rem;
+    flex: 1; max-width: 420px; border-radius: 8px; padding: .75rem .75rem 1rem;
     display: flex; flex-direction: column; align-items: center;
 }
 .pb-branch-col--pass { background: #f0faf4; border: 1.5px solid #198754; }
@@ -82,22 +83,30 @@
 .pb-branch-empty { color: #8a94a6; font-size: .8rem; padding: .5rem 0 .25rem; text-align: center; }
 .pb-branch-merge { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .pb-branch-merge .pb-line { width: 2px; height: 16px; background: #c3cad8; }
+.pb-branch-merge .pb-line-merge { height: 20px; }
 
 /* Badge loại node */
 .pb-badge { font-size: .65rem; letter-spacing: .04em; }
+.pb-badge-test { background: #fff4d6; color: #854d0e; }
+.pb-empty-icon { font-size: 2.2rem; }
+.pb-orphan-alert { max-width: 560px; }
 
 /* Panel soạn bài test (cột phải) */
 .pb-test-panel { position: sticky; top: 1rem; }
-.pb-test-panel .pb-q-item { border-left: 3px solid #5d87ff; }
+.pb-test-panel .pb-q-item { border-left: 3px solid var(--mentora-primary, #1e4db7); }
+.pb-test-panel-header,
+.pb-test-fields { background: #fffbeb; border-color: #ead6a0 !important; }
+.pb-score-field { max-width: 240px; }
 
 /* Modal chọn loại node: 2 nút to */
 .pb-type-pick { display: flex; gap: 1rem; }
 .pb-type-pick .pb-type-btn {
-    flex: 1; border: 2px solid #dfe5ef; border-radius: 12px; padding: 1.1rem .75rem;
+    color: #111827; flex: 1; border: 2px solid #dfe5ef; border-radius: 8px; padding: 1.1rem .75rem;
     background: #fff; text-align: center; cursor: pointer; transition: all .12s;
 }
-.pb-type-pick .pb-type-btn:hover { border-color: #5d87ff; background: #f7f9ff; }
-.pb-type-pick .pb-type-btn.selected { border-color: #5d87ff; background: #ecf2ff; box-shadow: 0 0 0 3px rgba(93,135,255,.15); }
+.pb-type-pick .pb-type-btn:hover,
+.pb-type-pick .pb-type-btn:focus-visible { border-color: var(--mentora-primary, #1e4db7); background: #f7f9ff; }
+.pb-type-pick .pb-type-btn.selected { border-color: var(--mentora-primary, #1e4db7); background: #e8f0fc; box-shadow: 0 0 0 3px rgba(30,77,183,.15); }
 .pb-type-pick .pb-type-btn i { font-size: 1.7rem; display: block; margin-bottom: .35rem; }
 
 /* Responsive: nhánh xếp dọc trên mobile */
@@ -105,4 +114,6 @@
     .pb-branch-cols { flex-direction: column; align-items: center; gap: 1rem; }
     .pb-branch-split::before { display: none; }
     .pb-step + .pb-step::before { width: 20px; margin-right: .5rem; }
+    .pb-type-pick { flex-direction: column; }
+    .pb-test-panel { position: static; }
 }

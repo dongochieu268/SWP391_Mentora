@@ -71,21 +71,50 @@
                                             <i class="ti ti-key me-1"></i>Mã mời: <code th:text="${c.inviteCode}"></code>
                                         </div>
 
-                                        <!-- Trong trang chi tiết (thành viên) đã có sẵn xem node & sửa lớp,
-                                             nên ngoài lưới chỉ cần 2 nút: Xem chi tiết và Xóa. -->
+                                        <!-- Giữ thao tác chính dễ thấy, gom thao tác quản trị vào menu phụ. -->
                                         <div class="d-flex gap-2 mt-auto">
                                             <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
                                                class="btn btn-sm btn-primary flex-grow-1">
                                                 <i class="ti ti-eye me-1"></i> Xem chi tiết
                                             </a>
-                                            <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
-                                                  method="post"
-                                                  onsubmit="return confirm('Xóa lớp học này?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                        title="Xóa lớp học">
-                                                    <i class="ti ti-trash me-1"></i> Xóa
+                                            <a th:href="@{/lecturer/classes/{id}/qna(id=${c.id})}"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="Hỏi đáp"
+                                               aria-label="Hỏi đáp lớp học">
+                                                <i class="ti ti-messages"></i>
+                                            </a>
+                                            <div class="dropdown">
+                                                <button class="table-action-btn" type="button"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        title="Thao tác lớp học"
+                                                        aria-label="Thao tác lớp học">
+                                                    <i class="ti ti-dots-vertical"></i>
                                                 </button>
-                                            </form>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                           th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}">
+                                                            <i class="ti ti-list-check me-2"></i>Hiển thị node
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                           th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}">
+                                                            <i class="ti ti-edit me-2"></i>Sửa lớp học
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
+                                                              method="post"
+                                                              onsubmit="return confirm('Xóa lớp học này?');">
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="ti ti-trash me-2"></i>Xóa lớp học
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

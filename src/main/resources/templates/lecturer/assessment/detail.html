@@ -63,6 +63,13 @@
                                         <input type="text" class="form-control" th:field="*{title}" maxlength="200" required>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="subjectId" class="form-label">Môn học</label>
+                                        <select class="form-select" th:field="*{subjectId}" required>
+                                            <option th:each="subject : ${activeSubjects}" th:value="${subject.id}"
+                                                    th:text="${subject.code + ' - ' + subject.name}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="description" class="form-label">Mô tả</label>
                                         <textarea class="form-control" th:field="*{description}" rows="3" maxlength="2000"></textarea>
                                     </div>
@@ -153,13 +160,23 @@
                                             <div>
                                                 <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                                                     <span class="badge bg-light text-dark border" th:text="${'Câu ' + stat.count}"></span>
+                                                    <input th:if="${canEdit and q.sourceBankQuestion == null}" class="form-check-input"
+                                                           type="checkbox" name="questionIds" th:value="${q.id}"
+                                                           form="saveToBankForm" aria-label="Chọn để lưu vào ngân hàng">
                                                     <span class="badge bg-info text-dark" th:text="${q.difficulty}"></span>
                                                     <span class="badge bg-secondary" th:text="${q.questionType}"></span>
                                                     <span class="badge bg-primary" th:text="${q.score} + ' điểm'"></span>
+                                                    <span th:if="${q.sourceBankQuestion != null}" class="badge bg-light text-primary border"
+                                                          th:text="${q.selectionMethod == 'CUSTOM' ? 'Đã lưu vào ngân hàng' : 'Từ ngân hàng'}"></span>
                                                 </div>
                                                 <div class="fw-semibold" th:text="${q.content}"></div>
                                             </div>
-                                            <form th:if="${canEdit}"
+                                            <div th:if="${canEdit}" class="d-flex gap-1">
+                                                <button class="table-action-btn" type="button" title="Sửa bản sao câu hỏi"
+                                                        data-bs-toggle="modal" th:data-bs-target="${'#editQuestion' + q.id}">
+                                                    <i class="ti ti-pencil"></i>
+                                                </button>
+                                            <form
                                                   th:action="@{/lecturer/assessments/{aid}/questions/{qid}/delete(aid=${assessment.id},qid=${q.id})}"
                                                   method="post"
                                                   onsubmit="return confirm('Xóa câu hỏi này?');">
@@ -169,6 +186,7 @@
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
+                                            </div>
                                         </div>
 
                                         <ol class="mt-3 mb-0">
@@ -177,13 +195,62 @@
                                                 <span th:if="${opt.correct}" class="status-badge status-active ms-2">Đúng</span>
                                             </li>
                                         </ol>
+                                        <div th:if="${canEdit}" class="modal fade" th:id="${'editQuestion' + q.id}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+                                                <div class="modal-content">
+                                                    <form th:action="@{/lecturer/assessments/{aid}/questions/{qid}/edit(aid=${assessment.id},qid=${q.id})}" method="post">
+                                                        <div class="modal-header"><h2 class="modal-title fs-5">Sửa câu hỏi trong bài test</h2>
+                                                            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
+                                                        <div class="modal-body">
+                                                            <textarea class="form-control mb-3" name="content" rows="3" th:text="${q.content}" required></textarea>
+                                                            <div class="row g-2 mb-3">
+                                                                <div class="col-md-4"><label class="form-label">Độ khó</label>
+                                                                    <select class="form-select" name="difficulty"><option th:each="d : ${difficultyOptions}"
+                                                                            th:value="${d.name()}" th:selected="${d.name() == q.difficulty}" th:text="${d.name()}"></option></select></div>
+                                                                <div class="col-md-4"><label class="form-label">Loại câu</label>
+                                                                    <select class="form-select" name="questionType"><option th:each="t : ${questionTypes}"
+                                                                            th:value="${t.name()}" th:selected="${t.name() == q.questionType}" th:text="${t.name()}"></option></select></div>
+                                                                <div class="col-md-4"><label class="form-label">Điểm</label>
+                                                                    <input class="form-control" type="number" name="score" min="0.1" step="0.1" th:value="${q.score}" required></div>
+                                                            </div>
+                                                            <div class="input-group mb-2" th:each="opt, optStat : ${optionsByQuestionId[q.id]}">
+                                                                <div class="input-group-text"><input class="form-check-input mt-0" type="radio"
+                                                                        name="correctOptionIndex" th:value="${optStat.index}" th:checked="${opt.correct}"></div>
+                                                                <input class="form-control" name="optionContents" th:value="${opt.content}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer"><button class="btn btn-light border" type="button" data-bs-dismiss="modal">Hủy</button>
+                                                            <button class="btn btn-primary" type="submit">Lưu thay đổi</button></div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+                                </div>
+
+                                <form th:if="${canEdit and !#lists.isEmpty(questions)}" id="saveToBankForm"
+                                      th:action="@{/lecturer/assessments/{id}/questions/save-to-bank(id=${assessment.id})}"
+                                      method="post" class="d-flex justify-content-end mb-3">
+                                    <button class="btn btn-sm btn-outline-primary" type="submit">
+                                        <i class="ti ti-database-plus me-1"></i>Lưu câu đã chọn vào ngân hàng
+                                    </button>
+                                </form>
+
+                                <div th:if="${canEdit}" class="assessment-bank-actions mb-3">
+                                    <button class="btn btn-outline-primary" type="button"
+                                            data-bs-toggle="modal" data-bs-target="#bankQuestionModal">
+                                        <i class="ti ti-database-search me-1"></i>Chọn từ ngân hàng
+                                    </button>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            data-bs-toggle="modal" data-bs-target="#randomQuestionModal">
+                                        <i class="ti ti-dice-5 me-1"></i>Random từ ngân hàng
+                                    </button>
                                 </div>
 
                                 <!-- ===== Form thêm câu hỏi ngay tại trang (đồng bộ với panel builder lộ trình) ===== -->
                                 <form th:if="${canEdit}"
                                       th:action="@{/lecturer/assessments/{id}/questions(id=${assessment.id})}"
-                                      method="post" class="border rounded p-3 mt-3" style="background:#f8fafc">
+                                      method="post" class="inline-form-panel p-3 mt-3">
                                     <input type="hidden" name="questionType" value="MULTIPLE_CHOICE"/>
                                     <strong class="d-block mb-2"><i class="ti ti-plus me-1"></i>Thêm câu hỏi mới</strong>
                                     <label for="newQuestionContent" class="visually-hidden">Nội dung câu hỏi</label>
@@ -235,6 +302,119 @@
         </div>
     </div>
 </div>
+
+<div th:if="${canEdit}" class="modal fade" id="bankQuestionModal" tabindex="-1"
+     aria-labelledby="bankQuestionModalTitle" aria-hidden="true"
+     th:data-search-url="@{/lecturer/assessments/{id}/bank-questions(id=${assessment.id})}">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+        <form class="modal-content" id="bankImportForm"
+              th:action="@{/lecturer/assessments/{id}/questions/import(id=${assessment.id})}" method="post">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title fs-5" id="bankQuestionModalTitle">Chọn câu hỏi từ ngân hàng</h2>
+                    <p class="text-muted small mb-0">Chỉ hiển thị câu hỏi cùng môn chưa có trong bài test.</p>
+                </div>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="bank-picker-filters mb-3">
+                    <div>
+                        <label class="form-label small" for="bankSearchKeyword">Tìm câu hỏi</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="ti ti-search"></i></span>
+                            <input class="form-control" id="bankSearchKeyword" type="search"
+                                   placeholder="Nhập nội dung câu hỏi..." autocomplete="off">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label small" for="bankSearchDifficulty">Độ khó</label>
+                        <select class="form-select" id="bankSearchDifficulty">
+                            <option value="">Tất cả</option>
+                            <option th:each="d : ${difficultyOptions}" th:value="${d.name()}" th:text="${d.name()}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <span class="small text-muted" id="bankResultSummary" aria-live="polite"></span>
+                    <span class="small text-muted" id="bankPageSummary"></span>
+                </div>
+                <div class="bank-picker-list" id="bankQuestionResults" aria-live="polite"></div>
+                <div class="d-flex justify-content-between gap-2 mt-3">
+                    <button class="btn btn-sm btn-light border" type="button" id="bankPreviousPage">
+                        <i class="ti ti-chevron-left"></i>Trang trước
+                    </button>
+                    <button class="btn btn-sm btn-light border" type="button" id="bankNextPage">
+                        Trang sau<i class="ti ti-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="me-auto small fw-semibold" id="bankSelectedSummary">Đã chọn 0 câu</span>
+                <button class="btn btn-light border" type="button" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" id="bankImportSubmit" type="submit" disabled>
+                    <i class="ti ti-plus me-1"></i>Thêm câu đã chọn
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:if="${canEdit}" class="modal fade" id="randomQuestionModal" tabindex="-1"
+     aria-labelledby="randomQuestionModalTitle" aria-hidden="true"
+     th:data-preview-url="@{/lecturer/assessments/{id}/bank-questions/random-preview(id=${assessment.id})}">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
+        <form class="modal-content" id="randomQuestionForm"
+              th:action="@{/lecturer/assessments/{id}/questions/random(id=${assessment.id})}" method="post">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title fs-5" id="randomQuestionModalTitle">Random câu hỏi từ ngân hàng</h2>
+                    <p class="text-muted small mb-0">Hệ thống chỉ chọn các câu phù hợp chưa có trong bài test.</p>
+                </div>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="randomQuestionCount">Số câu</label>
+                        <input class="form-control" id="randomQuestionCount" type="number"
+                               min="1" value="5" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="randomQuestionDifficulty">Độ khó</label>
+                        <select class="form-select" id="randomQuestionDifficulty">
+                            <option value="">Tất cả</option>
+                            <option th:each="d : ${difficultyOptions}" th:value="${d.name()}" th:text="${d.name()}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-primary w-100" id="randomPreviewButton" type="button">
+                            <i class="ti ti-dice-5 me-1"></i><span>Random câu hỏi</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" name="shuffleAnswers" value="true"
+                           id="shuffleRandomAnswers" checked>
+                    <label class="form-check-label" for="shuffleRandomAnswers">Random thứ tự đáp án của mỗi câu</label>
+                </div>
+                <div class="mt-3 d-none" id="randomPreviewSection">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        <h3 class="fs-5 mb-0">Danh sách câu hỏi đã random</h3>
+                        <span class="small text-muted" id="randomPreviewSummary"></span>
+                    </div>
+                    <div class="bank-picker-list" id="randomQuestionResults" aria-live="polite"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light border" type="button" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" id="randomImportSubmit" type="submit" disabled>
+                    <i class="ti ti-plus me-1"></i>Thêm các câu đang hiển thị
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 <script>
     function addOptionRow() {
@@ -251,6 +431,234 @@
             '<input type="text" class="form-control" name="optionContents" placeholder="Đáp án ' + label + '" aria-label="Đáp án ' + label + '" required>';
         wrap.appendChild(div);
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('bankQuestionModal');
+        const form = document.getElementById('bankImportForm');
+        if (!modal || !form) return;
+
+        const keyword = document.getElementById('bankSearchKeyword');
+        const difficulty = document.getElementById('bankSearchDifficulty');
+        const results = document.getElementById('bankQuestionResults');
+        const resultSummary = document.getElementById('bankResultSummary');
+        const pageSummary = document.getElementById('bankPageSummary');
+        const selectedSummary = document.getElementById('bankSelectedSummary');
+        const submitButton = document.getElementById('bankImportSubmit');
+        const previousButton = document.getElementById('bankPreviousPage');
+        const nextButton = document.getElementById('bankNextPage');
+        const selectedIds = new Set();
+        let currentPage = 0;
+        let searchTimer;
+
+        function updateSelectedSummary() {
+            selectedSummary.textContent = 'Đã chọn ' + selectedIds.size + ' câu';
+            submitButton.disabled = selectedIds.size === 0;
+        }
+
+        function createResultItem(item) {
+            const label = document.createElement('label');
+            label.className = 'bank-picker-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'form-check-input';
+            checkbox.checked = selectedIds.has(item.id);
+            checkbox.setAttribute('aria-label', 'Chọn câu hỏi');
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked) selectedIds.add(item.id);
+                else selectedIds.delete(item.id);
+                updateSelectedSummary();
+            });
+
+            const content = document.createElement('span');
+            content.className = 'min-w-0';
+            const title = document.createElement('strong');
+            title.className = 'd-block bank-picker-content';
+            title.textContent = item.content;
+            const meta = document.createElement('small');
+            meta.className = 'text-muted';
+            meta.textContent = item.difficulty + ' · ' + item.defaultScore + ' điểm';
+            content.append(title, meta);
+            label.append(checkbox, content);
+            return label;
+        }
+
+        async function loadQuestions(page) {
+            currentPage = Math.max(page, 0);
+            results.innerHTML = '<div class="text-center text-muted py-5"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Đang tải câu hỏi...</div>';
+            previousButton.disabled = true;
+            nextButton.disabled = true;
+
+            const url = new URL(modal.dataset.searchUrl, window.location.origin);
+            url.searchParams.set('keyword', keyword.value.trim());
+            url.searchParams.set('difficulty', difficulty.value);
+            url.searchParams.set('page', currentPage);
+            url.searchParams.set('size', '10');
+
+            try {
+                const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+                if (!response.ok) throw new Error('Không thể tải câu hỏi.');
+                const data = await response.json();
+                results.replaceChildren();
+
+                if (data.items.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'text-center text-muted py-5';
+                    empty.textContent = 'Không tìm thấy câu hỏi phù hợp.';
+                    results.appendChild(empty);
+                } else {
+                    data.items.forEach(function (item) {
+                        results.appendChild(createResultItem(item));
+                    });
+                }
+
+                resultSummary.textContent = data.totalElements + ' câu phù hợp';
+                pageSummary.textContent = data.totalPages === 0
+                    ? 'Trang 0/0'
+                    : 'Trang ' + (data.page + 1) + '/' + data.totalPages;
+                previousButton.disabled = data.first;
+                nextButton.disabled = data.last;
+                currentPage = data.page;
+            } catch (error) {
+                results.innerHTML = '<div class="alert alert-danger mb-0">Không thể tải câu hỏi. Vui lòng thử lại.</div>';
+                resultSummary.textContent = '';
+                pageSummary.textContent = '';
+            }
+        }
+
+        function queueSearch() {
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(function () {
+                loadQuestions(0);
+            }, 350);
+        }
+
+        modal.addEventListener('shown.bs.modal', function () {
+            selectedIds.clear();
+            updateSelectedSummary();
+            loadQuestions(0);
+            keyword.focus();
+        });
+        keyword.addEventListener('input', queueSearch);
+        difficulty.addEventListener('change', function () { loadQuestions(0); });
+        previousButton.addEventListener('click', function () { loadQuestions(currentPage - 1); });
+        nextButton.addEventListener('click', function () { loadQuestions(currentPage + 1); });
+        form.addEventListener('submit', function (event) {
+            form.querySelectorAll('.bank-selected-id').forEach(function (input) { input.remove(); });
+            if (selectedIds.size === 0) {
+                event.preventDefault();
+                return;
+            }
+            selectedIds.forEach(function (id) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'bankQuestionIds';
+                input.value = id;
+                input.className = 'bank-selected-id';
+                form.appendChild(input);
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('randomQuestionModal');
+        const form = document.getElementById('randomQuestionForm');
+        if (!modal || !form) return;
+
+        const count = document.getElementById('randomQuestionCount');
+        const difficulty = document.getElementById('randomQuestionDifficulty');
+        const previewButton = document.getElementById('randomPreviewButton');
+        const previewButtonText = previewButton.querySelector('span');
+        const previewSection = document.getElementById('randomPreviewSection');
+        const previewSummary = document.getElementById('randomPreviewSummary');
+        const results = document.getElementById('randomQuestionResults');
+        const submitButton = document.getElementById('randomImportSubmit');
+        let previewIds = [];
+
+        function resetPreview() {
+            previewIds = [];
+            results.replaceChildren();
+            previewSection.classList.add('d-none');
+            submitButton.disabled = true;
+            previewButtonText.textContent = 'Random câu hỏi';
+        }
+
+        function createPreviewItem(item, index) {
+            const article = document.createElement('article');
+            article.className = 'random-preview-item';
+            const number = document.createElement('span');
+            number.className = 'random-preview-index';
+            number.textContent = index + 1;
+            const content = document.createElement('span');
+            content.className = 'min-w-0';
+            const title = document.createElement('strong');
+            title.className = 'd-block bank-picker-content';
+            title.textContent = item.content;
+            const meta = document.createElement('small');
+            meta.className = 'text-muted';
+            meta.textContent = item.difficulty + ' · ' + item.defaultScore + ' điểm';
+            content.append(title, meta);
+            article.append(number, content);
+            return article;
+        }
+
+        async function previewRandomQuestions() {
+            if (!count.reportValidity()) return;
+            previewButton.disabled = true;
+            submitButton.disabled = true;
+            previewSection.classList.remove('d-none');
+            results.innerHTML = '<div class="text-center text-muted py-5"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Đang random câu hỏi...</div>';
+
+            const url = new URL(modal.dataset.previewUrl, window.location.origin);
+            url.searchParams.set('count', count.value);
+            url.searchParams.set('difficulty', difficulty.value);
+
+            try {
+                const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Không thể random câu hỏi.');
+
+                previewIds = data.map(function (item) { return item.id; });
+                results.replaceChildren();
+                data.forEach(function (item, index) {
+                    results.appendChild(createPreviewItem(item, index));
+                });
+                previewSummary.textContent = data.length + ' câu';
+                previewButtonText.textContent = 'Random lại';
+                submitButton.disabled = data.length === 0;
+            } catch (error) {
+                previewIds = [];
+                results.replaceChildren();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger mb-0';
+                alert.textContent = error.message;
+                results.appendChild(alert);
+                previewSummary.textContent = '';
+            } finally {
+                previewButton.disabled = false;
+            }
+        }
+
+        modal.addEventListener('hidden.bs.modal', resetPreview);
+        count.addEventListener('change', resetPreview);
+        difficulty.addEventListener('change', resetPreview);
+        previewButton.addEventListener('click', previewRandomQuestions);
+        form.addEventListener('submit', function (event) {
+            form.querySelectorAll('.random-preview-id').forEach(function (input) { input.remove(); });
+            if (previewIds.length === 0) {
+                event.preventDefault();
+                return;
+            }
+            previewIds.forEach(function (id) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'bankQuestionIds';
+                input.value = id;
+                input.className = 'random-preview-id';
+                form.appendChild(input);
+            });
+        });
+    });
 </script>
 </body>
 </html>

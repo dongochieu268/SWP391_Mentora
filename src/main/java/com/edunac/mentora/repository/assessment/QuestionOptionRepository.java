@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface QuestionOptionRepository extends JpaRepository<QuestionOption, Integer> {
 
-    List<QuestionOption> findByQuestion_IdOrderByIdAsc(Integer questionId);
+    List<QuestionOption> findByQuestion_IdOrderByDisplayOrderAscIdAsc(Integer questionId);
 
-    List<QuestionOption> findByQuestion_IdInOrderByQuestion_IdAscIdAsc(Collection<Integer> questionIds);
+    List<QuestionOption> findByQuestion_IdInOrderByQuestion_IdAscDisplayOrderAscIdAsc(Collection<Integer> questionIds);
 
     long countByQuestion_Id(Integer questionId);
 

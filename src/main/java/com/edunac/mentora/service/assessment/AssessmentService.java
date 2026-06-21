@@ -7,6 +7,7 @@ import com.edunac.mentora.dto.QuestionForm;
 import com.edunac.mentora.repository.assessment.AssessmentRepository;
 import com.edunac.mentora.repository.assessment.QuestionOptionRepository;
 import com.edunac.mentora.repository.assessment.QuestionRepository;
+import com.edunac.mentora.repository.subject.SubjectRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +24,18 @@ public class AssessmentService {
     private final AssessmentRepository assessmentRepository;
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository optionRepository;
+    private final SubjectRepository subjectRepository;
 
     public AssessmentService(
             AssessmentRepository assessmentRepository,
             QuestionRepository questionRepository,
-            QuestionOptionRepository optionRepository
+            QuestionOptionRepository optionRepository,
+            SubjectRepository subjectRepository
     ) {
         this.assessmentRepository = assessmentRepository;
         this.questionRepository = questionRepository;
         this.optionRepository = optionRepository;
+        this.subjectRepository = subjectRepository;
     }
 
     @Transactional(readOnly = true)
@@ -43,6 +47,12 @@ public class AssessmentService {
     public List<Assessment> findPublishedByCreator(User creator) {
         return assessmentRepository.findByCreatedByIdAndStatusOrderByCreatedAtDesc(
                 creator.getId(), AssessmentStatus.PUBLISHED.name());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Assessment> findPublishedByCreatorAndSubject(User creator, Integer subjectId) {
+        return assessmentRepository.findByCreatedByIdAndStatusAndSubject_IdOrderByCreatedAtDesc(
+                creator.getId(), AssessmentStatus.PUBLISHED.name(), subjectId);
     }
 
     @Transactional(readOnly = true)
@@ -74,6 +84,11 @@ public class AssessmentService {
         Assessment assessment = findByIdAndOwner(assessmentId, requester);
         requireDraft(assessment);
         validateAssessmentForm(form);
+        if (assessment.getSubject() != null
+                && !assessment.getSubject().getId().equals(form.getSubjectId())
+                && questionRepository.countByAssessment_Id(assessmentId) > 0) {
+            throw new IllegalStateException("Không thể đổi môn học sau khi bài test đã có câu hỏi.");
+        }
         applyAssessmentForm(assessment, form);
         return assessmentRepository.save(assessment);
     }
@@ -93,6 +108,24 @@ public class AssessmentService {
 
         optionRepository.saveAll(buildOptions(savedQuestion, form));
         return savedQuestion;
+    }
+
+    public Question updateQuestion(Integer assessmentId, Integer questionId, QuestionForm form, User requester) {
+        Assessment assessment = findByIdAndOwner(assessmentId, requester);
+        requireDraft(assessment);
+        validateQuestionForm(form);
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi."));
+        if (!question.getAssessment().getId().equals(assessmentId)) {
+            throw new IllegalArgumentException("Câu hỏi không thuộc bài test này.");
+        }
+        question.setContent(form.getContent().trim());
+        question.setDifficulty(normalizeEnum(form.getDifficulty(), QuestionDifficulty.class, "Mức độ câu hỏi"));
+        question.setQuestionType(normalizeEnum(form.getQuestionType(), QuestionType.class, "Loại câu hỏi"));
+        question.setScore(form.getScore());
+        optionRepository.deleteByQuestion_Id(questionId);
+        optionRepository.saveAll(buildOptions(question, form));
+        return questionRepository.save(question);
     }
 
     public void deleteQuestion(Integer assessmentId, Integer questionId, User requester) {
@@ -129,6 +162,7 @@ public class AssessmentService {
         clone.setTotalScore(original.getTotalScore());
         clone.setStatus(AssessmentStatus.DRAFT.name());
         clone.setCreatedBy(requester);
+        clone.setSubject(original.getSubject());
         Assessment savedClone = assessmentRepository.save(clone);
 
         List<Question> questions = questionRepository.findByAssessment_IdOrderByIdAsc(original.getId());
@@ -139,14 +173,17 @@ public class AssessmentService {
             clonedQuestion.setDifficulty(question.getDifficulty());
             clonedQuestion.setQuestionType(question.getQuestionType());
             clonedQuestion.setScore(question.getScore());
+            clonedQuestion.setSourceBankQuestion(question.getSourceBankQuestion());
+            clonedQuestion.setSelectionMethod(question.getSelectionMethod());
             Question savedQuestion = questionRepository.save(clonedQuestion);
 
             List<QuestionOption> clonedOptions = new ArrayList<>();
-            for (QuestionOption option : optionRepository.findByQuestion_IdOrderByIdAsc(question.getId())) {
+            for (QuestionOption option : optionRepository.findByQuestion_IdOrderByDisplayOrderAscIdAsc(question.getId())) {
                 QuestionOption clonedOption = new QuestionOption();
                 clonedOption.setQuestion(savedQuestion);
                 clonedOption.setContent(option.getContent());
                 clonedOption.setCorrect(option.isCorrect());
+                clonedOption.setDisplayOrder(option.getDisplayOrder());
                 clonedOptions.add(clonedOption);
             }
             optionRepository.saveAll(clonedOptions);
@@ -173,7 +210,7 @@ public class AssessmentService {
         for (Question question : questions) {
             result.put(question.getId(), new ArrayList<>());
         }
-        for (QuestionOption option : optionRepository.findByQuestion_IdInOrderByQuestion_IdAscIdAsc(questionIds)) {
+        for (QuestionOption option : optionRepository.findByQuestion_IdInOrderByQuestion_IdAscDisplayOrderAscIdAsc(questionIds)) {
             result.computeIfAbsent(option.getQuestion().getId(), ignored -> new ArrayList<>()).add(option);
         }
         return result;
@@ -182,6 +219,7 @@ public class AssessmentService {
     public AssessmentForm toForm(Assessment assessment) {
         AssessmentForm form = new AssessmentForm();
         form.setId(assessment.getId());
+        form.setSubjectId(assessment.getSubject() == null ? null : assessment.getSubject().getId());
         form.setTitle(assessment.getTitle());
         form.setDescription(assessment.getDescription());
         form.setType(assessment.getType());
@@ -198,6 +236,9 @@ public class AssessmentService {
         assessment.setDeliveryMode(normalizeEnum(form.getDeliveryMode(), DeliveryMode.class, "Hình thức làm bài"));
         assessment.setDurationMinutes(form.getDurationMinutes());
         assessment.setTotalScore(form.getTotalScore());
+        assessment.setSubject(subjectRepository.findById(form.getSubjectId())
+                .filter(subject -> subject.isActive())
+                .orElseThrow(() -> new IllegalArgumentException("Vui lòng chọn một môn học đang hoạt động.")));
     }
 
     private void validateAssessmentForm(AssessmentForm form) {
@@ -206,6 +247,9 @@ public class AssessmentService {
         }
         if (form.getTitle() == null || form.getTitle().isBlank()) {
             throw new IllegalArgumentException("Tên bài test không được để trống.");
+        }
+        if (form.getSubjectId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn môn học cho bài test.");
         }
         if (form.getTitle().trim().length() > 200) {
             throw new IllegalArgumentException("Tên bài test tối đa 200 ký tự.");
@@ -254,6 +298,7 @@ public class AssessmentService {
     private List<QuestionOption> buildOptions(Question question, QuestionForm form) {
         List<QuestionOption> options = new ArrayList<>();
         List<String> optionContents = form.getOptionContents();
+        int displayOrder = 0;
         for (int i = 0; i < optionContents.size(); i++) {
             String content = optionContents.get(i);
             if (content == null || content.isBlank()) {
@@ -264,12 +309,16 @@ public class AssessmentService {
             option.setQuestion(question);
             option.setContent(content.trim());
             option.setCorrect(i == form.getCorrectOptionIndex());
+            option.setDisplayOrder(displayOrder++);
             options.add(option);
         }
         return options;
     }
 
     private void validatePublishable(Assessment assessment) {
+        if (assessment.getSubject() == null) {
+            throw new IllegalStateException("Bài test phải thuộc một môn học trước khi publish.");
+        }
         List<Question> questions = questionRepository.findByAssessment_IdOrderByIdAsc(assessment.getId());
         if (questions.isEmpty()) {
             throw new IllegalStateException("Cần ít nhất 1 câu hỏi trước khi publish bài test.");

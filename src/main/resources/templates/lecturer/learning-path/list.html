@@ -73,7 +73,7 @@
                                         <div class="list-group list-group-flush">
                                             <div class="list-group-item lp-path-item d-flex align-items-center justify-content-between gap-3"
                                                  th:each="p : ${subjectPaths}">
-                                                <div style="min-width: 0;">
+                                                <div class="min-w-0">
                                                     <div class="fw-bold fs-6 text-dark mb-1" th:text="${p.name}"></div>
                                                     <div class="text-muted small mb-1"
                                                          th:if="${p.description != null and !#strings.isEmpty(p.description)}"
@@ -112,7 +112,7 @@
                                                                 </form>
                                                             </li>
                                                             <li th:unless="${!pathsWithClassroom.contains(p.id)}">
-                                                                <span class="dropdown-item text-muted disabled" style="cursor: not-allowed;"
+                                                                <span class="dropdown-item text-muted disabled"
                                                                       title="Lộ trình đang được lớp học sử dụng">
                                                                     <i class="ti ti-lock me-2"></i> Không thể xóa
                                                                 </span>

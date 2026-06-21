@@ -23,4 +23,7 @@ public class QuestionOption {
 
     @Column(name = "is_correct", nullable = false)
     private boolean correct;
+
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder = 0;
 }

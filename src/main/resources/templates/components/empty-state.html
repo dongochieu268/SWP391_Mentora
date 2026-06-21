@@ -11,7 +11,7 @@
 <tr th:fragment="emptyRow(message, colspan)">
   <td th:attr="colspan=${colspan}" class="text-center py-5">
     <div class="d-flex flex-column align-items-center gap-2 text-muted">
-      <i class="ti ti-inbox" style="font-size: 2rem;"></i>
+      <i class="ti ti-inbox empty-state-icon"></i>
       <span th:text="${message}">Không có dữ liệu.</span>
     </div>
   </td>

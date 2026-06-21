@@ -10,4 +10,7 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
     List<Assessment> findByCreatedByIdOrderByCreatedAtDesc(Integer createdById);
 
     List<Assessment> findByCreatedByIdAndStatusOrderByCreatedAtDesc(Integer createdById, String status);
+
+    List<Assessment> findByCreatedByIdAndStatusAndSubject_IdOrderByCreatedAtDesc(
+            Integer createdById, String status, Integer subjectId);
 }

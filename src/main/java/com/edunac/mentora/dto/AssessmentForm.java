@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class AssessmentForm {
 
     private Integer id;
+    private Integer subjectId;
     private String title;
     private String description;
     private String type;
@@ -14,6 +15,14 @@ public class AssessmentForm {
 
     public Integer getId() {
         return id;
+    }
+
+    public Integer getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(Integer subjectId) {
+        this.subjectId = subjectId;
     }
 
     public void setId(Integer id) {

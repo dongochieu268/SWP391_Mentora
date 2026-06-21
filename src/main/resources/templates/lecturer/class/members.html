@@ -41,6 +41,10 @@
                            class="btn btn-outline-primary btn-sm">
                             <i class="ti ti-list-check me-1"></i> Hiển thị node
                         </a>
+                        <a th:href="@{/lecturer/classes/{id}/qna(id=${classroom.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-messages me-1"></i> Hỏi đáp
+                        </a>
                         <a th:href="@{/lecturer/classes/{id}/edit(id=${classroom.id})}"
                            class="btn btn-outline-primary btn-sm">
                             <i class="ti ti-edit me-1"></i> Sửa lớp học

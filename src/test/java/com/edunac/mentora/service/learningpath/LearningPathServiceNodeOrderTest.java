@@ -4,6 +4,7 @@ import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
 import com.edunac.mentora.dto.LearningNodeForm;
+import com.edunac.mentora.repository.assessment.AssessmentRepository;
 import com.edunac.mentora.repository.branching.BranchRuleRepository;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
@@ -60,6 +61,7 @@ class LearningPathServiceNodeOrderTest {
         ClassroomNodeStatusRepository classroomNodeStatusRepository = mock(ClassroomNodeStatusRepository.class);
         ClassroomRepository classroomRepository = mock(ClassroomRepository.class);
         BranchRuleRepository branchRuleRepository = mock(BranchRuleRepository.class);
+        AssessmentRepository assessmentRepository = mock(AssessmentRepository.class);
 
         owner = new User();
         owner.setId(7);
@@ -86,7 +88,8 @@ class LearningPathServiceNodeOrderTest {
                 nodeProgressRepository,
                 classroomNodeStatusRepository,
                 classroomRepository,
-                branchRuleRepository
+                branchRuleRepository,
+                assessmentRepository
         );
     }
 

@@ -30,27 +30,25 @@ Mentora là hệ thống quản lý học tập được xây dựng cho môn SW
 - Đặt câu hỏi trong Q&A của lớp.
 - Trả lời Q&A khi được giảng viên gán vai trò TA.
 
-## Hình ảnh minh họa luồng chính
+## Điểm nổi bật của Mentora
 
-| Đăng nhập | Admin dashboard |
-| --- | --- |
-| ![Màn hình đăng nhập](docs/images/readme-flow/01-login.png) | ![Admin dashboard](docs/images/readme-flow/02-admin-dashboard.png) |
+### 1. Xây dựng lộ trình học phân nhánh
 
-| Quản lý tài khoản | Quản lý môn học |
-| --- | --- |
-| ![Admin quản lý tài khoản](docs/images/readme-flow/03-admin-accounts.png) | ![Admin quản lý môn học](docs/images/readme-flow/04-admin-subjects.png) |
+Giảng viên có thể thiết kế lộ trình học theo node bài học và bài kiểm tra rẽ nhánh. Hệ thống hỗ trợ tự động điều hướng sinh viên dựa trên kết quả đánh giá (ĐẠT/CHƯA ĐẠT).
 
-| Giảng viên tạo lộ trình | Giảng viên tạo lớp |
-| --- | --- |
-| ![Form tạo lộ trình học](docs/images/readme-flow/06-lecturer-learning-path-form.png) | ![Wizard tạo lớp học](docs/images/readme-flow/07-lecturer-class-wizard.png) |
+![Path Builder](docs/images/readme-flow/11-lecturer-path-builder.png)
 
-| Ngân hàng câu hỏi | Sinh viên tham gia lớp |
-| --- | --- |
-| ![Giảng viên quản lý ngân hàng câu hỏi](docs/images/readme-flow/08-lecturer-question-bank.png) | ![Sinh viên nhập mã tham gia lớp](docs/images/readme-flow/10-student-classrooms.png) |
+### 2. Hỏi đáp trong lớp học
 
-| Giảng viên dashboard | Sinh viên dashboard |
-| --- | --- |
-| ![Dashboard giảng viên](docs/images/readme-flow/05-lecturer-dashboard.png) | ![Dashboard sinh viên](docs/images/readme-flow/09-student-dashboard.png) |
+Sinh viên có thể đặt câu hỏi, yêu cầu hỗ trợ từ giảng viên hoặc trợ giảng. Tính năng Q&A giúp duy trì sự tương tác và hỗ trợ học tập trong lớp.
+
+![Q&A lớp học](docs/images/readme-flow/12-student-qna.png)
+
+### 3. Sinh viên học bài và lưu tiến độ
+
+Mỗi node học tập bao gồm video hướng dẫn, ghi chú trọng tâm và tài liệu tham khảo. Sinh viên có thể đánh dấu bài đã hoàn thành và theo dõi tiến độ học tập.
+
+![Sinh viên học bài](docs/images/readme-flow/13-student-lesson-video.png)
 
 ## Công nghệ sử dụng
 
@@ -115,6 +113,8 @@ STUDENT
 Ứng dụng không tự tạo schema vì `spring.jpa.hibernate.ddl-auto=none`, nên cần chạy script SQL trước khi start project.
 
 ## Chạy dự án
+
+Mở terminal/PowerShell tại **thư mục gốc của dự án** (nơi có `mvnw.cmd`, `pom.xml` và `src/`), rồi chạy:
 
 Trên Windows:
 

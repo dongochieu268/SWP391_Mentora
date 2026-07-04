@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Q&A | Mentora Showcase</title>
+  <link rel="stylesheet" href="../../src/main/resources/static/assets/css/styles.min.css">
+  <link rel="stylesheet" href="./readme-showcase.css">
+</head>
+<body>
+<div class="page-wrapper showcase-page" id="main-wrapper" data-layout="vertical">
+  <aside class="left-sidebar">
+    <div>
+      <div class="brand-logo d-flex align-items-center justify-content-between">
+        <a href="#" class="text-nowrap logo-img">
+          <img src="../../src/main/resources/static/assets/images/logos/logo.svg" alt="mentora">
+        </a>
+      </div>
+      <nav class="sidebar-nav scroll-sidebar">
+        <ul id="sidebarnav">
+          <li class="nav-small-cap"><span class="hide-menu">Sinh viên</span></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="#"><i class="ti ti-home"></i><span class="hide-menu">Dashboard</span></a></li>
+          <li class="nav-small-cap"><span class="hide-menu">Học tập</span></li>
+          <li class="sidebar-item"><a class="sidebar-link active" href="#"><i class="ti ti-school"></i><span class="hide-menu">Lớp học của tôi</span></a></li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="body-wrapper">
+    <header class="app-header">
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="navbar-collapse justify-content-end px-0">
+          <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+            <li class="nav-item">
+              <img src="../../src/main/resources/static/assets/images/profile/user-3.jpg" alt="avatar" width="35" height="35" class="rounded-circle">
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <div class="body-wrapper-inner">
+      <div class="container-fluid">
+        <div class="mb-4">
+          <a href="#" class="text-muted small"><i class="ti ti-arrow-left me-1"></i>Danh sách lớp học</a>
+          <h4 class="fw-semibold mt-2 mb-1">Hỏi đáp lớp PRJ301</h4>
+          <p class="text-muted mb-0">SE1842 - Java Web Application Development</p>
+        </div>
+
+        <div class="qa-shell">
+          <aside class="card">
+            <div class="card-body">
+              <h6 class="fw-semibold mb-3">Thông tin lớp</h6>
+              <div class="class-summary">
+                <div class="fw-semibold">SE1842 - PRJ301</div>
+                <div class="text-muted small mt-1">PRJ301 - Java Web Application Development</div>
+                <div class="text-muted small mt-1">Giảng viên: Nguyễn Minh Quân</div>
+                <div class="mt-3">
+                  <span class="role-pill is-ta">Trợ giảng sinh viên</span>
+                </div>
+              </div>
+              <div class="d-grid gap-2 mt-3">
+                <button class="btn btn-outline-primary btn-sm"><i class="ti ti-route me-1"></i>Lộ trình</button>
+                <button class="btn btn-outline-secondary btn-sm"><i class="ti ti-school me-1"></i>Lớp học của tôi</button>
+              </div>
+              <div class="metric-card mt-3">
+                <div class="text-muted small">Câu hỏi tuần này</div>
+                <div class="fs-5 fw-bold">12</div>
+                <div class="small text-success"><i class="ti ti-check me-1"></i>8 câu đã có phản hồi</div>
+              </div>
+            </div>
+          </aside>
+
+          <section class="card">
+            <div class="card-body">
+              <div class="status-banner">
+                Bạn đang là trợ giảng sinh viên của lớp này. Bạn có thể trả lời câu hỏi của sinh viên và giúp lớp học phản hồi nhanh hơn.
+              </div>
+
+              <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                <div>
+                  <h5 class="fw-semibold mb-1">Trả lời hỏi đáp</h5>
+                  <p class="text-muted mb-0 small">Theo dõi câu hỏi mở, phản hồi từ sinh viên và trạng thái đã trả lời.</p>
+                </div>
+                <span class="role-pill is-ta">Trợ giảng</span>
+              </div>
+
+              <div class="qa-tabs">
+                <button class="qa-tab is-active" type="button">Tất cả</button>
+                <button class="qa-tab" type="button">Chưa trả lời</button>
+                <button class="qa-tab" type="button">Đã trả lời</button>
+              </div>
+
+              <article class="question-row">
+                <div>
+                  <div class="fw-semibold">Em bị lỗi 403 khi submit form đánh dấu hoàn thành node, nguyên nhân thường là gì ạ?</div>
+                  <div class="question-meta">Hỏi bởi Trần Hoàng Nam · 03/07/2026 09:20 · Đã trả lời</div>
+                  <button class="btn btn-sm btn-primary mt-3" type="button"><i class="ti ti-message-reply me-1"></i>Phản hồi</button>
+                  <div class="feedback-panel">
+                    <div class="p-3 rounded bg-light mb-2">
+                      <div class="fw-semibold small mb-1">
+                        Trả lời bởi Phạm Gia Hân
+                        <span class="badge bg-success ms-1">Trợ giảng</span>
+                        <span class="text-muted fw-normal">· 03/07/2026 09:35</span>
+                      </div>
+                      <div>Kiểm tra CSRF token trong thẻ meta và header `X-CSRF-TOKEN` khi gọi fetch. Nếu token rỗng, request POST sẽ bị chặn.</div>
+                    </div>
+                    <div class="p-3 rounded bg-light">
+                      <div class="fw-semibold small mb-1">
+                        Trả lời bởi Lê Minh Anh
+                        <span class="badge bg-secondary ms-1">Sinh viên</span>
+                        <span class="text-muted fw-normal">· 03/07/2026 09:42</span>
+                      </div>
+                      <div>Mình thêm `method: 'POST'` và header đúng như hướng dẫn thì chạy được rồi.</div>
+                    </div>
+                  </div>
+                </div>
+                <span class="badge bg-success align-self-start">Đã trả lời</span>
+              </article>
+
+              <article class="question-row">
+                <div>
+                  <div class="fw-semibold">Sau bài checkpoint, nếu không đạt thì hệ thống mở nhánh ôn tập như thế nào?</div>
+                  <div class="question-meta">Hỏi bởi Nguyễn Thu Hà · 03/07/2026 10:05 · Chưa trả lời</div>
+                  <button class="btn btn-sm btn-outline-primary mt-3" type="button"><i class="ti ti-message-reply me-1"></i>Phản hồi</button>
+                  <div class="feedback-panel">
+                    <form class="qa-compose">
+                      <label class="form-label fw-semibold" for="taAnswer">Gửi phản hồi cho câu hỏi này</label>
+                      <textarea class="form-control" id="taAnswer" rows="3">Khi điểm bài test dưới ngưỡng đạt, roadmap sẽ hiển thị các node thuộc nhánh CHƯA ĐẠT để em học lại phần còn yếu trước khi quay về luồng chính.</textarea>
+                      <div class="text-end mt-3">
+                        <button class="btn btn-success" type="button">Gửi phản hồi</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+                <span class="badge bg-warning text-dark align-self-start">Mới</span>
+              </article>
+
+              <article class="question-row">
+                <div>
+                  <div class="fw-semibold">Em muốn xem lại video bài JPA sau khi đã hoàn thành node thì có được không?</div>
+                  <div class="question-meta">Hỏi bởi Võ Anh Khoa · 02/07/2026 21:16 · Đã trả lời</div>
+                </div>
+                <span class="badge bg-success align-self-start">Đã trả lời</span>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

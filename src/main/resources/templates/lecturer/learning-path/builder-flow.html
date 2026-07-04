@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+                            <!-- ===== SƠ ĐỒ DỌC ===== -->
+                            <div th:fragment="builderFlow(baseUrl)" class="pb-flow">
+
+                                <div th:if="${#lists.isEmpty(nodes)}" class="text-center text-muted py-5">
+                                    <i class="ti ti-route pb-empty-icon"></i>
+                                    <p class="mt-2 mb-3">Lộ trình chưa có node nào.<br>Bắt đầu bằng một bài học hoặc một bài test rẽ nhánh.</p>
+                                    <a th:href="@{${baseUrl}(addEnd=true)}" class="btn btn-primary">
+                                        <i class="ti ti-plus me-1"></i>Thêm node đầu tiên
+                                    </a>
+                                </div>
+
+                                <th:block th:each="node, stat : ${mainNodes}"
+                                          th:with="rule=${ruleByNode[node.id]},
+                                                   ruleAssessment=${rule != null ? assessmentById[rule.assessmentId] : null},
+                                                   passList=${passByOwner[node.id]},
+                                                   failList=${failByOwner[node.id]},
+                                                   isTest=${node.nodeType == 'BRANCH_TEST'}">
+
+                                    <!-- NODE CARD (luồng chính) -->
+                                    <div class="pb-node" th:id="'node-' + ${node.id}"
+                                         th:classappend="${isTest} ? 'pb-node--test' : 'pb-node--lesson'">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="pb-node-icon">
+                                                <i th:class="${isTest} ? 'ti ti-git-branch' : 'ti ti-book'"></i>
+                                            </span>
+                                            <div class="flex-grow-1">
+                                                <p class="pb-node-title" th:text="${node.title}"></p>
+                                                <p class="pb-node-desc" th:unless="${isTest}">
+                                                    <span th:text="${contentCounts[node.id] ?: 0} + ' nội dung'"></span>
+                                                    <span th:if="${node.prerequisite != null}"
+                                                          th:text="' · tiên quyết: ' + ${node.prerequisite.title}"></span>
+                                                </p>
+                                                <p class="pb-node-desc" th:if="${isTest}">
+                                                    <th:block th:if="${rule != null and ruleAssessment != null}">
+                                                        Bài test: <strong th:text="${ruleAssessment.title}"></strong>
+                                                        <span class="badge pb-badge ms-1"
+                                                              th:classappend="${ruleAssessment.status == 'PUBLISHED'} ? 'text-bg-success' : 'text-bg-secondary'"
+                                                              th:text="${ruleAssessment.status}"></span>
+                                                        · Điểm đạt: ≥ <span th:text="${rule.minScore}"></span>
+                                                    </th:block>
+                                                    <th:block th:if="${rule == null or ruleAssessment == null}">
+                                                        <i class="ti ti-alert-triangle text-warning"></i> Chưa gắn bài test
+                                                    </th:block>
+                                                </p>
+                                            </div>
+                                            <div class="pb-node-actions">
+                                                <form th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/move(id=${path.id},nid=${node.id})}" method="post">
+                                                    <input type="hidden" name="dir" value="up"/>
+                                                    <input type="hidden" name="returnTo" th:value="${mode == 'wizard'} ? ${baseUrl} : null"/>
+                                                    <button type="submit" class="btn btn-outline-secondary" title="Di chuyển lên"
+                                                            th:disabled="${stat.first}"><i class="ti ti-chevron-up"></i></button>
+                                                </form>
+                                                <form th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/move(id=${path.id},nid=${node.id})}" method="post">
+                                                    <input type="hidden" name="dir" value="down"/>
+                                                    <input type="hidden" name="returnTo" th:value="${mode == 'wizard'} ? ${baseUrl} : null"/>
+                                                    <button type="submit" class="btn btn-outline-secondary" title="Di chuyển xuống"
+                                                            th:disabled="${stat.last}"><i class="ti ti-chevron-down"></i></button>
+                                                </form>
+                                                <a th:href="@{${baseUrl}(editNode=${node.id})}" class="btn btn-outline-primary" title="Sửa node">
+                                                    <i class="ti ti-edit"></i>
+                                                </a>
+                                                <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/contents(nid=${node.id})}"
+                                                   class="btn btn-outline-secondary" title="Quản lý nội dung bài học">
+                                                    <i class="ti ti-files"></i>
+                                                </a>
+                                                <form th:if="${isTest and rule == null}"
+                                                      th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/create-test(id=${path.id},nid=${node.id})}"
+                                                      method="post">
+                                                    <input type="hidden" name="returnTo" th:value="${mode == 'wizard'} ? ${baseUrl} : null"/>
+                                                    <button type="submit" class="btn btn-warning"
+                                                            title="Tạo bài test nháp và soạn câu hỏi ngay tại đây">
+                                                        <i class="ti ti-pencil-plus me-1"></i>Tạo bài test
+                                                    </button>
+                                                </form>
+                                                <a th:if="${isTest and rule != null}"
+                                                   th:href="@{${baseUrl}(testPanel=${rule.assessmentId})}"
+                                                   class="btn btn-warning"
+                                                   th:title="${ruleAssessment != null and ruleAssessment.status == 'PUBLISHED'} ? 'Xem câu hỏi' : 'Soạn câu hỏi'">
+                                                    <i class="ti ti-pencil-question me-1"></i>
+                                                    <th:block th:text="${ruleAssessment != null and ruleAssessment.status == 'PUBLISHED'} ? 'Xem câu hỏi' : 'Soạn câu hỏi'"></th:block>
+                                                </a>
+                                                <form th:if="${!hasClassroom}"
+                                                      th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/delete(id=${path.id},nid=${node.id})}"
+                                                      method="post" onsubmit="return confirm('Xóa node này?');">
+                                                    <input type="hidden" name="returnTo" th:value="${mode == 'wizard'} ? ${baseUrl} : null"/>
+                                                    <button type="submit" class="btn btn-outline-danger" title="Xóa node">
+                                                        <i class="ti ti-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- KHỐI RẼ NHÁNH dưới node BRANCH_TEST -->
+                                    <div class="pb-branch-wrap" th:if="${isTest}">
+                                        <div class="pb-branch-split"></div>
+                                        <div class="pb-branch-cols">
+                                            <!-- Nhánh ĐẠT -->
+                                            <div class="pb-branch-col pb-branch-col--pass">
+                                                <span class="pb-branch-label"><i class="ti ti-check me-1"></i>ĐẠT<th:block th:if="${rule != null}"> (≥ <span th:text="${rule.minScore}"></span> điểm)</th:block></span>
+                                                <div th:if="${passList == null or #lists.isEmpty(passList)}" class="pb-branch-empty">
+                                                    Chưa có bài học cho sinh viên đạt
+                                                </div>
+                                                <th:block th:each="bn, bstat : ${passList}">
+                                                    <div class="pb-node pb-node--pass" th:id="'node-' + ${bn.id}">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="pb-node-icon"><i class="ti ti-book"></i></span>
+                                                            <div class="flex-grow-1">
+                                                                <p class="pb-node-title" th:text="${bn.title}"></p>
+                                                                <p class="pb-node-desc" th:text="${contentCounts[bn.id] ?: 0} + ' nội dung'"></p>
+                                                            </div>
+                                                            <div class="pb-node-actions">
+                                                                <a th:href="@{${baseUrl}(editNode=${bn.id})}" class="btn btn-outline-primary" title="Sửa node"><i class="ti ti-edit"></i></a>
+                                                                <a th:href="@{/lecturer/nodes/{nid}/contents(nid=${bn.id})}" class="btn btn-outline-secondary" title="Quản lý nội dung"><i class="ti ti-files"></i></a>
+                                                                <form th:if="${!hasClassroom}"
+                                                                      th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/delete(id=${path.id},nid=${bn.id})}"
+                                                                      method="post" onsubmit="return confirm('Xóa node này?');">
+                                                                    <input type="hidden" name="returnTo" th:value="${mode == 'wizard'} ? ${baseUrl} : null"/>
+                                                                    <button type="submit" class="btn btn-outline-danger" title="Xóa node"><i class="ti ti-trash"></i></button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="pb-connector" th:unless="${bstat.last}"><span class="pb-line"></span></div>
+                                                </th:block>
+                                                <div class="pb-connector">
+                                                    <span class="pb-line"></span>
+                                                    <a class="pb-add" th:href="@{${baseUrl}(addBranch=${node.id},tag='PASS')}" title="Thêm bài cho nhánh ĐẠT">
+                                                        <i class="ti ti-plus"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <!-- Nhánh CHƯA ĐẠT -->
+                                            <div class="pb-branch-col pb-branch-col--fail">
+                                                <span class="pb-branch-label"><i class="ti ti-x me-1"></i>CHƯA ĐẠT</span>
+                                                <div th:if="${failList == null or #lists.isEmpty(failList)}" class="pb-branch-empty">
+                                                    Chưa có bài học cho sinh viên chưa đạt
+                                                </div>
+                                                <th:block th:each="bn, bstat : ${failList}">
+                                                    <div class="pb-node pb-node--fail" th:id="'node-' + ${bn.id}">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="pb-node-icon"><i class="ti ti-book"></i></span>
+                                                            <div class="flex-grow-1">
+                                                                <p class="pb-node-title" th:text="${bn.title}"></p>
+                                                                <p class="pb-node-desc" th:text="${contentCounts[bn.id] ?: 0} + ' nội dung'"></p>
+                                                            </div>
+                                                            <div class="pb-node-actions">
+                                                                <a th:href="@{${baseUrl}(editNode=${bn.id})}" class="btn btn-outline-primary" title="Sửa node"><i class="ti ti-edit"></i></a>
+                                                                <a th:href="@{/lecturer/nodes/{nid}/contents(nid=${bn.id})}" class="btn btn-outline-secondary" title="Quản lý nội dung"><i class="ti ti-files"></i></a>
+                                                                <form th:if="${!hasClassroom}"
+                                                                      th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/delete(id=${path.id},nid=${bn.id})}"
+                                                                      method="post" onsubmit="return confirm('Xóa node này?');">
+                                                                    <input type="hidden" name="returnTo" th:value="${mode == 'wizard'} ? ${baseUrl} : null"/>
+                                                                    <button type="submit" class="btn btn-outline-danger" title="Xóa node"><i class="ti ti-trash"></i></button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="pb-connector" th:unless="${bstat.last}"><span class="pb-line"></span></div>
+                                                </th:block>
+                                                <div class="pb-connector">
+                                                    <span class="pb-line"></span>
+                                                    <a class="pb-add" th:href="@{${baseUrl}(addBranch=${node.id},tag='FAIL')}" title="Thêm bài cho nhánh CHƯA ĐẠT">
+                                                        <i class="ti ti-plus"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="pb-branch-merge"><span class="pb-line pb-line-merge"></span></div>
+                                    </div>
+
+                                    <!-- Đường nối + (+) sau mỗi khối -->
+                                    <div class="pb-connector">
+                                        <span class="pb-line" th:unless="${isTest}"></span>
+                                        <a class="pb-add" th:href="@{${baseUrl}(addAfter=${blockLastId[node.id]})}" title="Thêm node tại đây">
+                                            <i class="ti ti-plus"></i>
+                                        </a>
+                                        <span class="pb-line" th:unless="${stat.last}"></span>
+                                    </div>
+                                </th:block>
+
+                                <span class="badge text-bg-light border mt-1" th:unless="${#lists.isEmpty(nodes)}">
+                                    <i class="ti ti-flag-check me-1 text-success"></i>Kết thúc lộ trình
+                                </span>
+
+                                <!-- Node nhánh mồ côi (mất node test gốc) -->
+                                <div th:if="${!#lists.isEmpty(orphanBranchNodes)}" class="alert alert-warning mt-4 w-100 pb-orphan-alert">
+                                    <strong><i class="ti ti-alert-triangle me-1"></i>Node nhánh thiếu bài test gốc:</strong>
+                                    <ul class="mb-0 mt-1 small">
+                                        <li th:each="on : ${orphanBranchNodes}">
+                                            <span th:text="${on.title}"></span> —
+                                            <a th:href="@{${baseUrl}(editNode=${on.id})}">sửa node</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+</body>
+</html>

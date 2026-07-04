@@ -30,6 +30,7 @@ Mentora là hệ thống quản lý học tập được xây dựng cho môn SW
 - Đặt câu hỏi trong Q&A của lớp.
 - Trả lời Q&A khi được giảng viên gán vai trò TA.
 
+<<<<<<< HEAD
 ## Điểm nổi bật của Mentora
 
 ### 1. Xây dựng lộ trình học phân nhánh

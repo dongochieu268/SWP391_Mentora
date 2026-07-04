@@ -1,6 +1,7 @@
 package com.edunac.mentora.domain.assessment;
 
 import com.edunac.mentora.domain.User;
+import com.edunac.mentora.domain.level.Material;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +35,12 @@ public class BankQuestion {
 
     @Column(name = "question_type", nullable = false, length = 30)
     private String questionType;
+
+    // NULL = not tagged to any material, invisible to level tests.
+    // Invariant: material.subject == questionBank.subject (enforced at tag time).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "material_id")
+    private Material material;
 
     @Column(name = "default_score", nullable = false, precision = 10, scale = 2)
     private BigDecimal defaultScore;

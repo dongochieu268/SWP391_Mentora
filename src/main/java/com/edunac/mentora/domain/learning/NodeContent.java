@@ -1,6 +1,7 @@
 package com.edunac.mentora.domain.learning;
 
 import com.edunac.mentora.domain.learningpath.LearningNode;
+import com.edunac.mentora.domain.level.Material;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -13,9 +14,15 @@ public class NodeContent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    // Nullable: a content item can belong to a Material without a node.
+    // DB CHECK ck_node_content_owner requires node_id or material_id set.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "node_id", nullable = false)
+    @JoinColumn(name = "node_id")
     private LearningNode node;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "material_id")
+    private Material material;
 
     @Column(name = "content_type", nullable = false, length = 20)
     private String contentType;
@@ -59,6 +66,14 @@ public class NodeContent {
 
     public void setNode(LearningNode node) {
         this.node = node;
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
+
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 
     public String getContentType() {

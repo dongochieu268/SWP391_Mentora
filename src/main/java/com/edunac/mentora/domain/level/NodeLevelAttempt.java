@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * One student's single attempt at one level. Status reuses the existing
  * AttemptStatus (IN_PROGRESS, SUBMITTED) — grading is immediate at submit.
- * Selected answers are never persisted; only the resulting score is stored.
+ * Selected options are persisted on AttemptQuestionOption (rev 2026-07-05).
  */
 @Entity
 @Table(name = "node_level_attempts",
@@ -53,6 +53,16 @@ public class NodeLevelAttempt {
 
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
+
+    // Evaluated against passingScore AT SUBMIT TIME, then immutable — later
+    // changes to the level's passingScore never rewrite past attempts (L3 §9).
+    @Column(nullable = false)
+    private boolean passed;
+
+    // Set ONLY by the timeout auto-finalize path; display-only until
+    // durationMinutes enforcement ships (deferred post-defense, rev 06b).
+    @Column(name = "timed_out", nullable = false)
+    private boolean timedOut;
 
     @PrePersist
     protected void onCreate() {

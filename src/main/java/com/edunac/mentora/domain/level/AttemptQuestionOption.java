@@ -30,4 +30,10 @@ public class AttemptQuestionOption {
 
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
+
+    // Written once at submit time for level tests only (rev 2026-07-05) -
+    // reverses the "answers never persisted" convention of the standalone
+    // Assessment flow, to power student/lecturer per-question review.
+    @Column(nullable = false)
+    private boolean selected;
 }

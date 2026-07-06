@@ -128,10 +128,11 @@ public class StudentAssessmentService {
         branchRuleRepository
                 .findByAssessmentAndPath(saved.getAssessment().getId(), pathId)
                 .ifPresent(rule ->
-                        nodeProgressService.markBranchTestCompleted(
+                        nodeProgressService.markNodeCompleted(
                                 saved.getStudent().getId(),
                                 rule.getNode().getId(),
-                                saved.getClassroom().getId()
+                                saved.getClassroom().getId(),
+                                score
                         )
                 );
 

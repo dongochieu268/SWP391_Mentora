@@ -162,6 +162,10 @@
                                                    class="btn btn-outline-secondary" title="Quản lý nội dung bài học">
                                                     <i class="ti ti-files"></i>
                                                 </a>
+                                                <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/levels(nid=${node.id})}"
+                                                   class="btn btn-outline-info" title="Cấu hình level">
+                                                    <i class="ti ti-layers-subtract"></i>
+                                                </a>
                                                 <form th:if="${isTest and rule == null}"
                                                       th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/create-test(id=${path.id},nid=${node.id})}"
                                                       method="post">

@@ -194,7 +194,9 @@
 
                                 <p class="small text-muted mb-4" th:if="${progress.bestScore != null}">
                                     Điểm cao nhất: <strong th:text="${progress.bestScore}"></strong>
-                                    (Level <strong th:text="${progress.bestLevelNumber}"></strong>)
+                                    <th:block th:if="${progress.bestLevelNumber != null}">
+                                        (Level <strong th:text="${progress.bestLevelNumber}"></strong>)
+                                    </th:block>
                                 </p>
 
                                 <!-- Nút hoàn thành chỉ hiện với node LESSON -->

@@ -41,9 +41,16 @@
 .pb-node--fail { background: #fff7f7; border-color: #f0bcbc; }
 .pb-node--fail .pb-node-icon { background: #fdecec; color: #dc3545; }
 
-.pb-node-actions { display: flex; gap: .25rem; flex-wrap: wrap; justify-content: flex-end; }
+.pb-node-actions { display: flex; gap: .25rem; flex-wrap: nowrap; flex-shrink: 0; justify-content: flex-end; }
 .pb-node-actions .btn { --bs-btn-padding-y: .15rem; --bs-btn-padding-x: .45rem; --bs-btn-font-size: .75rem; }
 .pb-node-actions form { display: inline; margin: 0; }
+
+/* Không để mô tả dài đẩy nhóm nút xuống dòng: cột trái co giãn, chữ tự xuống dòng trong cột */
+.pb-node > .d-flex { align-items: flex-start; }
+.pb-node > .d-flex > .flex-grow-1 { min-width: 0; }
+.pb-node .pb-node-title,
+.pb-node .pb-node-desc { overflow-wrap: break-word; word-break: break-word; }
+.pb-node .pb-node-icon { margin-top: .1rem; }
 
 /* Đường nối dọc + nút (+) chèn node */
 .pb-connector { display: flex; flex-direction: column; align-items: center; }
@@ -116,4 +123,8 @@
     .pb-step + .pb-step::before { width: 20px; margin-right: .5rem; }
     .pb-type-pick { flex-direction: column; }
     .pb-test-panel { position: static; }
+    /* Nhiều icon action không đủ chỗ trên màn hẹp: thu nhỏ nút, cho phép cuộn ngang thay vì xuống dòng */
+    .pb-node-actions { gap: .15rem; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+    .pb-node-actions::-webkit-scrollbar { display: none; }
+    .pb-node-actions .btn { --bs-btn-padding-x: .35rem; }
 }

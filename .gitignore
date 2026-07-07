@@ -34,3 +34,7 @@ build/
 
 ### Uploaded files ###
 uploads/
+
+### Local workspace artifacts ###
+.worktrees/
+docs/research/

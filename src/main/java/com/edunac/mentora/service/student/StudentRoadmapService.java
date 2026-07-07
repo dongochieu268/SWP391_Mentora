@@ -60,10 +60,13 @@ public class StudentRoadmapService {
         List<LearningNode> pathNodes = nodeRepository
                 .findByLearningPathIdOrderByNodeOrderAsc(pathId);
 
+        List<NodeLevel> levels = nodeLevelRepository.findByLearningNode_IdInOrderByLevelNumberAsc(
+                pathNodes.stream().map(LearningNode::getId).toList());
+
         Map<Integer, String>       visibilityMap  = loadVisibilityMap(classroomId);
         Map<Integer, NodeProgress> progressMap    = loadProgressMap(classroomId, student.getId());
-        Map<Integer, Long>         levelCountMap  = loadLevelCountMap(pathNodes);
-        Map<Integer, BigDecimal>   masteryMaxMap  = loadMasteryMaxScoreMap(pathNodes);
+        Map<Integer, Long>         levelCountMap  = buildLevelCountMap(levels);
+        Map<Integer, BigDecimal>   masteryMaxMap  = buildMasteryMaxScoreMap(levels);
 
         int visibleCount          = 0;
         int completedVisibleCount = 0;
@@ -153,10 +156,9 @@ public class StudentRoadmapService {
         return map;
     }
 
-    private Map<Integer, Long> loadLevelCountMap(List<LearningNode> pathNodes) {
-        List<Integer> nodeIds = pathNodes.stream().map(LearningNode::getId).toList();
+    private Map<Integer, Long> buildLevelCountMap(List<NodeLevel> levels) {
         Map<Integer, Long> map = new HashMap<>();
-        for (NodeLevel level : nodeLevelRepository.findByLearningNode_IdInOrderByLevelNumberAsc(nodeIds)) {
+        for (NodeLevel level : levels) {
             Integer nodeId = level.getLearningNode().getId();
             map.merge(nodeId, 1L, Long::sum);
         }
@@ -169,9 +171,7 @@ public class StudentRoadmapService {
      * node whose levels are ALL non-startable contributes no entry (excluded from
      * both the earned and possible score totals).
      */
-    private Map<Integer, BigDecimal> loadMasteryMaxScoreMap(List<LearningNode> pathNodes) {
-        List<Integer> nodeIds = pathNodes.stream().map(LearningNode::getId).toList();
-        List<NodeLevel> levels = nodeLevelRepository.findByLearningNode_IdInOrderByLevelNumberAsc(nodeIds);
+    private Map<Integer, BigDecimal> buildMasteryMaxScoreMap(List<NodeLevel> levels) {
         if (levels.isEmpty()) return Map.of();
 
         List<Integer> levelIds = levels.stream().map(NodeLevel::getId).toList();

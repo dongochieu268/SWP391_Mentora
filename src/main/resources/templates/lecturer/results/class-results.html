@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kết quả học tập | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-semibold mb-1">
+                            Kết quả học tập — <span th:text="${classroom.name}"></span>
+                        </h5>
+                        <p class="text-muted small mb-0">
+                            Môn: <span th:text="${classroom.subject.code + ' - ' + classroom.subject.name}"></span>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/{id}/members(id=${classroom.id})}, 'Quay lại')}"></a>
+                    </div>
+                </div>
+
+                <!-- Bảng học sinh: bấm cả hàng để xem chi tiết -->
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title fw-semibold mb-1">
+                            <i class="ti ti-chart-bar text-primary me-1"></i>
+                            Học sinh
+                            <span class="badge bg-primary ms-1" th:text="${#lists.size(results.rows)}"></span>
+                        </h6>
+                        <p class="text-muted small mb-3">Bấm vào học sinh để xem tiến độ và bài làm chi tiết.</p>
+
+                        <div th:if="${#lists.isEmpty(results.rows)}" class="text-muted small">
+                            Lớp chưa có học sinh nào.
+                        </div>
+
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(results.rows)}">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Học sinh</th>
+                                    <th class="text-center">Tổng điểm</th>
+                                    <th class="text-center">Hoàn thành</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="row, stat : ${results.rows}"
+                                    th:data-href="@{/lecturer/classes/{cid}/results/students/{sid}(cid=${classroom.id}, sid=${row.member.user.id})}"
+                                    style="cursor: pointer;">
+                                    <td th:text="${stat.count}"></td>
+                                    <td>
+                                        <span class="fw-semibold" th:text="${row.member.user.fullName}"></span>
+                                        <div class="text-muted small" th:text="${row.member.user.email}"></div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span th:if="${row.totalBestScore != null}" class="fw-semibold"
+                                              th:text="${row.totalBestScore}"></span>
+                                        <span th:if="${row.totalBestScore == null}" class="text-muted">Chưa làm</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-semibold"
+                                              th:text="${row.completedCount} + '/' + ${results.nodeCount}"></span>
+                                        <span class="text-muted small"
+                                              th:if="${results.nodeCount > 0}"
+                                              th:text="'(' + ${#numbers.formatDecimal(row.completedCount * 100.0 / results.nodeCount, 0, 0)} + '%)'"></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    document.querySelectorAll('tr[data-href]').forEach(function (row) {
+        row.addEventListener('click', function () {
+            window.location = row.dataset.href;
+        });
+    });
+</script>
+</body>
+</html>

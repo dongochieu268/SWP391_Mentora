@@ -37,6 +37,10 @@
                         </p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
+                        <a th:href="@{/lecturer/classes/{id}/results(id=${classroom.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-chart-bar me-1"></i> Kết quả học tập
+                        </a>
                         <a th:href="@{/lecturer/classes/{id}/nodes(id=${classroom.id})}"
                            class="btn btn-outline-primary btn-sm">
                             <i class="ti ti-list-check me-1"></i> Hiển thị node

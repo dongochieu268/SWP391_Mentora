@@ -119,6 +119,10 @@ public class NodeProgressService {
                             studentId, currentNode.getPrerequisite().getId(), classroomId);
         }
 
+        NodeProgress progress = nodeProgressRepository
+                .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
+                .orElse(null);
+
         return NodeProgressResponse.builder()
                 .nodeId(nodeId)
                 .nodeTitle(currentNode.getTitle())
@@ -127,6 +131,8 @@ public class NodeProgressService {
                 .completedNodes((int) completedNodes)
                 .progressPercent(percent)
                 .prerequisiteMet(prerequisiteMet)
+                .bestScore(progress != null ? progress.getBestScore() : null)
+                .bestLevelNumber(progress != null ? progress.getBestLevelNumber() : null)
                 .build();
     }
 

@@ -177,7 +177,7 @@
                             <div class="card-body p-4 text-center">
                                 <h6 class="fw-bold mb-3">Trạng thái bài học</h6>
 
-                                <div id="statusBadge" class="mb-4">
+                                <div id="statusBadge" class="mb-2">
                                     <span th:if="${progress.completed}"
                                           class="status-badge status-active">
                                         <i class="ti ti-check me-1"></i> Đã hoàn thành
@@ -191,6 +191,11 @@
                                         <i class="ti ti-clock me-1"></i> Chưa hoàn thành
                                     </span>
                                 </div>
+
+                                <p class="small text-muted mb-4" th:if="${progress.bestScore != null}">
+                                    Điểm cao nhất: <strong th:text="${progress.bestScore}"></strong>
+                                    (Level <strong th:text="${progress.bestLevelNumber}"></strong>)
+                                </p>
 
                                 <!-- Nút hoàn thành chỉ hiện với node LESSON -->
                                 <!-- Node BRANCH_TEST: hoàn thành tự động sau khi submit bài test -->
@@ -245,6 +250,47 @@
                             <a th:if="${nextNodeId != null}"
                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
                                class="btn btn-outline-primary w-50 ms-auto">Bài tiếp →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Lịch sử làm bài theo level (S6) ── -->
+                <div class="row mt-3" th:if="${not #lists.isEmpty(levelHistory)}">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3">Lịch sử làm bài theo level</h6>
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Level</th>
+                                            <th>Số lượt đã thi</th>
+                                            <th>Điểm cao nhất</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="lvl : ${levelHistory}">
+                                            <td>
+                                                Level <span th:text="${lvl.levelNumber}"></span>
+                                                <span th:if="${lvl.title != null}" class="text-muted small"
+                                                      th:text="'– ' + ${lvl.title}"></span>
+                                            </td>
+                                            <td th:text="${lvl.attemptCount}"></td>
+                                            <td>
+                                                <span th:if="${lvl.attempted}"
+                                                      th:text="${lvl.bestScore} + '/' + ${lvl.maxScore}"></span>
+                                                <span th:unless="${lvl.attempted}">—</span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${!lvl.attempted}" class="status-badge status-inactive">Chưa làm</span>
+                                                <span th:if="${lvl.attempted and lvl.passed}" class="status-badge status-active">Đạt</span>
+                                                <span th:if="${lvl.attempted and !lvl.passed}" class="status-badge status-pending">Chưa đạt</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

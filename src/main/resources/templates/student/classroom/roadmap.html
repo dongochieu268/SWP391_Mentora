@@ -28,20 +28,40 @@
                             <span class="badge bg-info text-dark" th:text="${classroom.subject.code}"></span>
                             <span class="text-muted" th:text="${classroom.learningPath.name}"></span>
                         </div>
-                        <div class="mt-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small fw-semibold">Tiến độ hoàn thành</span>
-                                <span class="small text-muted"
-                                      th:text="${roadmap.completedVisibleCount} + '/' + ${roadmap.visibleNodeCount} + ' node'"></span>
+                        <div class="row mt-3 g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small fw-semibold">Tiến độ</span>
+                                    <span class="small text-muted"
+                                          th:text="${roadmap.completedVisibleCount} + '/' + ${roadmap.visibleNodeCount} + ' bài đã học'"></span>
+                                </div>
+                                <div class="progress progress-standard">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         th:style="'width:' + ${roadmap.completionPercent} + '%'"
+                                         th:attr="aria-valuenow=${roadmap.completionPercent}"
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-1"
+                                   th:text="${roadmap.completionPercent} + '% đã học'"></p>
                             </div>
-                            <div class="progress progress-standard">
-                                <div class="progress-bar bg-success" role="progressbar"
-                                     th:style="'width:' + ${roadmap.completionPercent} + '%'"
-                                     th:attr="aria-valuenow=${roadmap.completionPercent}"
-                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small fw-semibold">Điểm</span>
+                                    <span class="small text-muted" th:if="${roadmap.hasScorableNodes}"
+                                          th:text="${roadmap.totalScoreEarned} + '/' + ${roadmap.totalScorePossible}"></span>
+                                </div>
+                                <div class="progress progress-standard" th:if="${roadmap.hasScorableNodes}">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                         th:style="'width:' + ${roadmap.scorePercent} + '%'"
+                                         th:attr="aria-valuenow=${roadmap.scorePercent}"
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-1" th:if="${roadmap.hasScorableNodes}"
+                                   th:text="${roadmap.scorePercent} + '% điểm tối đa'"></p>
+                                <p class="small text-muted mb-0" th:unless="${roadmap.hasScorableNodes}">
+                                    Chưa có bài test nào.
+                                </p>
                             </div>
-                            <p class="small text-muted mb-0 mt-1"
-                               th:text="${roadmap.completionPercent} + '% hoàn thành'"></p>
                         </div>
                     </div>
                 </div>

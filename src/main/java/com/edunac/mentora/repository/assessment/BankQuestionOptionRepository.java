@@ -10,4 +10,6 @@ public interface BankQuestionOptionRepository extends JpaRepository<BankQuestion
     List<BankQuestionOption> findByBankQuestion_IdOrderByDisplayOrderAscIdAsc(Integer bankQuestionId);
     List<BankQuestionOption> findByBankQuestion_IdInOrderByBankQuestion_IdAscDisplayOrderAscIdAsc(Collection<Integer> ids);
     void deleteByBankQuestion_Id(Integer bankQuestionId);
+    List<BankQuestionOption> findByBankQuestion_Id(Integer bankQuestionId);
+
 }

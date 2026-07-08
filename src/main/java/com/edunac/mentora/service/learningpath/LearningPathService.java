@@ -18,6 +18,7 @@ import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
 import com.edunac.mentora.service.learning.NodeContentStorageService;
+import com.edunac.mentora.service.learning.NodeLevelService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,8 @@ public class LearningPathService {
     private final BranchRuleRepository branchRuleRepository;
     private final AssessmentRepository assessmentRepository;
 
+    private final NodeLevelService nodeLevelService;
+
     public LearningPathService(LearningPathRepository pathRepository,
                                LearningNodeRepository nodeRepository,
                                SubjectRepository subjectRepository,
@@ -53,7 +56,8 @@ public class LearningPathService {
                                ClassroomNodeStatusRepository classroomNodeStatusRepository,
                                ClassroomRepository classroomRepository,
                                BranchRuleRepository branchRuleRepository,
-                               AssessmentRepository assessmentRepository) {
+                               AssessmentRepository assessmentRepository,
+                               NodeLevelService nodeLevelService) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
@@ -64,6 +68,7 @@ public class LearningPathService {
         this.classroomRepository = classroomRepository;
         this.branchRuleRepository = branchRuleRepository;
         this.assessmentRepository = assessmentRepository;
+        this.nodeLevelService = nodeLevelService;
     }
 
 
@@ -146,6 +151,9 @@ public class LearningPathService {
         normalizeIfNeeded(pathId);
 
         saveBranchRuleIfNeeded(saved, form);
+
+        // L3 §7: tự sinh Level 1 mặc định khi tạo node mới
+        nodeLevelService.createDefaultLevel(saved.getId());
 
         return saved;
     }
@@ -528,6 +536,12 @@ public class LearningPathService {
                 newRule.setMinScore(oldRule.getMinScore());
                 branchRuleRepository.save(newRule);
             });
+        }
+
+        // L1 §4: clone levels + levelMaterials, KHÔNG clone attempts
+        for (LearningNode oldNode : sourceNodes) {
+            LearningNode clonedNode = nodeMap.get(oldNode.getId());
+            nodeLevelService.cloneLevels(oldNode.getId(), clonedNode.getId());
         }
 
         return savedPath;

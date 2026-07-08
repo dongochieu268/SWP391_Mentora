@@ -15,6 +15,10 @@ public interface NodeLevelRepository extends JpaRepository<NodeLevel, Integer> {
     List<NodeLevel> findByLearningNode_IdInOrderByLevelNumberAsc(List<Integer> nodeIds);
 
     Optional<NodeLevel> findByLearningNode_IdAndLevelNumber(Integer nodeId, Integer levelNumber);
+    Optional<NodeLevel> findTopByLearningNode_IdAndLevelNumberLessThanOrderByLevelNumberDesc(
+            Integer learningNodeId, Integer levelNumber);
+    Optional<NodeLevel> findTopByLearningNode_IdAndLevelNumberGreaterThanOrderByLevelNumberAsc(
+            Integer learningNodeId, Integer levelNumber);
 
     boolean existsByLearningNode_IdAndLevelNumber(Integer nodeId, Integer levelNumber);
 

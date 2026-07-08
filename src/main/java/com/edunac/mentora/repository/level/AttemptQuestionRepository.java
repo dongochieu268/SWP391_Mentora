@@ -13,7 +13,6 @@ public interface AttemptQuestionRepository extends JpaRepository<AttemptQuestion
 
     List<AttemptQuestion> findByAttempt_IdOrderByDisplayOrderAsc(Integer attemptId);
 
-    // One query for rendering/grading a whole attempt: questions + their options.
     @Query("""
             select distinct question
             from AttemptQuestion question

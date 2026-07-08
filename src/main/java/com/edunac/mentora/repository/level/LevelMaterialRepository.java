@@ -13,7 +13,6 @@ public interface LevelMaterialRepository extends JpaRepository<LevelMaterial, In
 
     boolean existsByNodeLevel_IdAndMaterial_Id(Integer nodeLevelId, Integer materialId);
 
-    // Blocks material deletion while any level still uses it (L2 §4).
     boolean existsByMaterial_Id(Integer materialId);
 
     void deleteByNodeLevel_Id(Integer nodeLevelId);

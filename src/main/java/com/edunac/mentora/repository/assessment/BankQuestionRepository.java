@@ -15,6 +15,8 @@ public interface BankQuestionRepository extends JpaRepository<BankQuestion, Inte
     List<BankQuestion> findByIdIn(Collection<Integer> ids);
 
     long countByMaterial_IdAndStatus(Integer materialId, String status);
+    List<BankQuestion> findByMaterial_IdAndStatus(Integer materialId, String status);
+
 
     @Query("""
             select bankQuestion

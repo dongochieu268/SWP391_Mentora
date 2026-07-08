@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' | Mentora'">Cấu hình level | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <!-- Flash messages -->
+                <div th:if="${successMessage}" class="alert alert-success py-2" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-danger py-2" th:text="${errorMessage}"></div>
+
+                <!-- Header card -->
+                <div class="card mb-3">
+                    <div class="card-body py-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div>
+                                <a th:replace="~{components/back-button :: backButton(${pathBackUrl}, 'Quay lại lộ trình')}"></a>
+                                <h4 class="card-title mb-1 mt-2" th:text="${node.title}">Node title</h4>
+                                <p class="text-muted mb-0 small">
+                                    Lộ trình:
+                                    <span th:text="${node.learningPath != null ? node.learningPath.name : '-'}">Path</span>
+                                    <span th:if="${node.learningPath != null and node.learningPath.subject != null}">
+                                        · Môn: <span th:text="${node.learningPath.subject.name}">Subject</span>
+                                    </span>
+                                </p>
+                            </div>
+                            <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id}, addLevel=true)}"
+                               class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i> Thêm level
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách level -->
+                <div th:if="${#lists.isEmpty(levels)}" class="card mb-3">
+                    <div class="card-body text-center text-muted py-5">
+                        <i class="ti ti-layers-subtract fs-2 d-block mb-2"></i>
+                        Node này chưa có level nào.
+                        <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id}, addLevel=true)}">Thêm level đầu tiên.</a>
+                    </div>
+                </div>
+
+                <div th:each="level : ${levels}" class="card mb-3">
+                    <div class="card-header d-flex align-items-center justify-content-between py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary fs-6"
+                                  th:text="'Level ' + ${level.levelNumber}">Level 1</span>
+                            <strong th:text="${level.title != null ? level.title : '(không có tên)'}">Cơ bản</strong>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/lecturer/nodes/{nid}/levels(nid=${node.id}, editLevel=${level.id})}"
+                               class="btn btn-sm btn-outline-primary" title="Sửa level">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            <form th:action="@{/lecturer/nodes/{nid}/levels/{lid}/delete(nid=${node.id},lid=${level.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('Xóa level này? Thao tác không thể hoàn tác.')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa level">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Thông số level -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Điểm tối đa</small>
+                                <strong th:text="${level.maxScore.stripTrailingZeros().toPlainString()}">10</strong>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Ngưỡng qua level</small>
+                                <strong th:text="${level.passingScore.stripTrailingZeros().toPlainString()}">5</strong>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Số lần thử</small>
+                                <strong th:text="${level.maxAttempts != null ? level.maxAttempts : 'Không giới hạn'}">∞</strong>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Tổng câu hỏi</small>
+                                <strong th:text="${totalQuestionsByLevel[level.id] != null ? totalQuestionsByLevel[level.id] : 0}">0</strong>
+                            </div>
+                        </div>
+
+                        <!-- Cảnh báo 0 câu hỏi (L4 §4) -->
+                        <div th:if="${#lists.isEmpty(level.levelMaterials)}"
+                             class="alert alert-warning py-2 small mb-3">
+                            <i class="ti ti-alert-triangle me-1"></i>
+                            Level này chưa có tài liệu nào — sẽ tạo đề 0 câu hỏi.
+                        </div>
+
+                        <!-- Bảng tài liệu của level -->
+                        <div th:if="${!#lists.isEmpty(level.levelMaterials)}">
+                            <h6 class="mb-2 fw-semibold">Tài liệu & câu hỏi</h6>
+                            <div class="table-responsive mb-2">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>Tài liệu</th>
+                                        <th class="text-center">Câu cấu hình</th>
+                                        <th class="text-center">Câu trong ngân hàng</th>
+                                        <th class="text-center">Trạng thái</th>
+                                        <th class="text-end">Xóa</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="lm : ${level.levelMaterials}">
+                                        <td th:text="${lm.material.title}">Material</td>
+                                        <td class="text-center" th:text="${lm.questionCount}">5</td>
+                                        <td class="text-center"
+                                            th:text="${bankCounts[lm.material.id] != null ? bankCounts[lm.material.id] : 0}">10</td>
+                                        <td class="text-center">
+                                            <!-- Cảnh báo thiếu câu L4 §3 -->
+                                            <span th:if="${bankCounts[lm.material.id] != null and bankCounts[lm.material.id] < lm.questionCount}"
+                                                  class="badge bg-warning text-dark"
+                                                  th:text="'Material chỉ có ' + ${bankCounts[lm.material.id]} + ' câu, ít hơn số câu đã cấu hình.'">
+                                                Thiếu câu
+                                            </span>
+                                            <span th:if="${bankCounts[lm.material.id] == null or bankCounts[lm.material.id] >= lm.questionCount}"
+                                                  class="badge bg-success">OK</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <form th:action="@{/lecturer/nodes/{nid}/levels/{lid}/materials/{mid}/remove(nid=${node.id},lid=${level.id},mid=${lm.id})}"
+                                                  method="post"
+                                                  onsubmit="return confirm('Gỡ tài liệu này khỏi level?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="ti ti-x"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Nút thêm tài liệu -->
+                        <a th:href="@{/lecturer/nodes/{nid}/levels(nid=${node.id}, addMaterial=${level.id})}"
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="ti ti-plus me-1"></i> Thêm tài liệu
+                        </a>
+                    </div>
+                </div>
+
+            </div><!-- /container-fluid -->
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: Thêm / Sửa level ===== -->
+<div class="modal fade" id="levelModal" tabindex="-1"
+     th:classappend="${openLevelModal} ? ' show' : ''"
+     th:style="${openLevelModal} ? 'display: block;' : ''"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/lecturer/nodes/{id}/levels/save(id=${node.id})}"
+                  th:object="${levelForm}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title"
+                        th:text="${levelForm.id != null} ? 'Sửa level' : 'Thêm level mới'">Level</h5>
+                    <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id})}"
+                       class="btn-close" aria-label="Đóng"></a>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" th:field="*{id}"/>
+                    <input type="hidden" th:field="*{nodeId}"/>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số thứ tự (levelNumber) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" th:field="*{levelNumber}"
+                               min="1" required placeholder="Vd: 1, 2, 3…">
+                        <div class="form-text">Phải là số nguyên ≥ 1 và chưa tồn tại trong node này.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên level</label>
+                        <input type="text" class="form-control" th:field="*{title}"
+                               maxlength="255" placeholder="Vd: Cơ bản, Nâng cao…">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Điểm tối đa <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" th:field="*{maxScore}"
+                                   step="0.01" min="0.01" required placeholder="Vd: 10">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Ngưỡng qua level <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" th:field="*{passingScore}"
+                                   step="0.01" min="0.01" required placeholder="Vd: 5">
+                            <div class="form-text">Phải ≤ điểm tối đa.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số lần thử tối đa</label>
+                        <input type="number" class="form-control" th:field="*{maxAttempts}"
+                               min="1" placeholder="Để trống = không giới hạn">
+                    </div>
+
+                    <!-- durationMinutes ẩn khỏi UI (deferred post-defense, work-plan §8) -->
+                </div>
+                <div class="modal-footer">
+                    <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id})}"
+                       class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:if="${openLevelModal}" class="modal-backdrop fade show"></div>
+
+<!-- ===== MODAL: Thêm tài liệu vào level ===== -->
+<div class="modal fade" id="materialModal" tabindex="-1"
+     th:classappend="${openMaterialModal} ? ' show' : ''"
+     th:style="${openMaterialModal} ? 'display: block;' : ''"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/lecturer/nodes/{nid}/levels/{lid}/materials(nid=${node.id},lid=${materialModalLevelId})}"
+                  th:object="${materialForm}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm tài liệu vào level</h5>
+                    <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id})}"
+                       class="btn-close" aria-label="Đóng"></a>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" th:field="*{levelId}"/>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tài liệu <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{materialId}" required>
+                            <option value="">-- Chọn tài liệu --</option>
+                            <option th:each="m : ${availableMaterials}"
+                                    th:value="${m.id}"
+                                    th:text="${m.title + ' (' + (bankCounts[m.id] != null ? bankCounts[m.id] : 0) + ' câu)'}">
+                                Material
+                            </option>
+                        </select>
+                        <div th:if="${#lists.isEmpty(availableMaterials)}" class="form-text text-warning">
+                            Chưa có tài liệu nào cho môn học này. Hãy tạo tài liệu trước.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số câu hỏi lấy từ tài liệu này <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" th:field="*{questionCount}"
+                               min="1" required placeholder="Vd: 5">
+                        <div class="form-text">Hệ thống sẽ lấy ngẫu nhiên đúng số câu này.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id})}"
+                       class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:if="${openMaterialModal}" class="modal-backdrop fade show"></div>
+
+<script th:src="@{/assets/js/app.min.js}"></script>
+</body>
+</html>

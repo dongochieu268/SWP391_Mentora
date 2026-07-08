@@ -147,6 +147,36 @@ public class NodeProgressService {
     }
 
 
+    public void updateOnAttemptSubmitted(Integer nodeId, Integer studentId, Integer classroomId,
+                                         Integer levelNumber, BigDecimal score) {
+        NodeProgress progress = nodeProgressRepository
+                .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
+                .orElseGet(() -> {
+                    NodeProgress np = new NodeProgress();
+                    User s = new User(); s.setId(studentId);
+                    np.setStudent(s);
+                    LearningNode n = new LearningNode(); n.setId(nodeId);
+                    np.setLearningNode(n);
+                    Classroom c = new Classroom(); c.setId(classroomId);
+                    np.setClassroom(c);
+                    np.setCompleted(false);
+                    return np;
+                });
+
+        if (!progress.isCompleted()) {
+            progress.setCompleted(true);
+            progress.setCompletedAt(LocalDateTime.now());
+        }
+
+        if (progress.getBestScore() == null || score.compareTo(progress.getBestScore()) > 0) {
+            progress.setBestScore(score);
+            progress.setBestLevelNumber(levelNumber);
+        }
+
+        nodeProgressRepository.save(progress);
+    }
+
+
     private void ensureActiveMember(Integer studentId, Integer classroomId) {
         boolean isMember = classroomMemberRepository
                 .existsByClassroomIdAndUserIdAndStatus(classroomId, studentId, "ACTIVE");

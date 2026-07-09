@@ -19,10 +19,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -68,9 +72,19 @@ public class LecturerResultService {
 
     @Getter
     @AllArgsConstructor
+    public static class NodeAggregate {
+        private final LearningNode node;
+        private final BigDecimal averageBestScore;   // null khi chưa ai có điểm
+        private final long passedCount;
+        private final int passedPercent;
+    }
+
+    @Getter
+    @AllArgsConstructor
     public static class ClassResults {
         private final List<StudentRow> rows;
         private final int nodeCount;
+        private final List<NodeAggregate> nodeAggregates;
     }
 
     @Getter
@@ -129,7 +143,43 @@ public class LecturerResultService {
             rows.add(new StudentRow(member, completedCount, totalBestScore));
         }
 
-        return new ClassResults(rows, nodes.size());
+        return new ClassResults(rows, nodes.size(), buildNodeAggregates(classroomId, nodes, members));
+    }
+
+    /* ------------------------------------------------------------------
+       L5 §5 — tổng hợp theo node: điểm trung bình + tỉ lệ đã đạt
+       ------------------------------------------------------------------ */
+    private List<NodeAggregate> buildNodeAggregates(Integer classroomId,
+                                                    List<LearningNode> nodes,
+                                                    List<ClassroomMember> members) {
+        Map<Integer, List<NodeProgress>> progressByNode =
+                nodeProgressRepository.findByClassroom_Id(classroomId).stream()
+                        .collect(Collectors.groupingBy(NodeProgress::getNodeId));
+
+        Map<Integer, Set<Integer>> passedStudentsByNode = new HashMap<>();
+        for (NodeLevelAttempt attempt : attemptRepository.findByClassroom_Id(classroomId)) {
+            if (!attempt.isPassed()) continue;
+            Integer nodeId = attempt.getNodeLevel().getLearningNode().getId();
+            passedStudentsByNode.computeIfAbsent(nodeId, k -> new HashSet<>())
+                    .add(attempt.getStudent().getId());
+        }
+
+        int activeCount = members.size();
+        List<NodeAggregate> aggregates = new ArrayList<>();
+        for (LearningNode node : nodes) {
+            List<BigDecimal> scores = progressByNode.getOrDefault(node.getId(), List.of()).stream()
+                    .map(NodeProgress::getBestScore)
+                    .filter(Objects::nonNull)
+                    .toList();
+            BigDecimal average = scores.isEmpty() ? null
+                    : scores.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                            .divide(BigDecimal.valueOf(scores.size()), 2, RoundingMode.HALF_UP);
+            long passedCount = passedStudentsByNode.getOrDefault(node.getId(), Set.of()).size();
+            int passedPercent = activeCount == 0 ? 0
+                    : (int) Math.round(passedCount * 100.0 / activeCount);
+            aggregates.add(new NodeAggregate(node, average, passedCount, passedPercent));
+        }
+        return aggregates;
     }
 
     /* ------------------------------------------------------------------

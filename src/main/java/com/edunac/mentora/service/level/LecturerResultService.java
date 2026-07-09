@@ -183,6 +183,55 @@ public class LecturerResultService {
     }
 
     /* ------------------------------------------------------------------
+       L6 §3 — xuất CSV: mỗi dòng một (học sinh × node)
+       ------------------------------------------------------------------ */
+    public String buildResultsCsv(Classroom classroom) {
+        Integer classroomId = classroom.getId();
+        List<LearningNode> nodes = nodeRepository
+                .findByLearningPathIdOrderByNodeOrderAsc(classroom.getLearningPath().getId());
+        List<ClassroomMember> members = memberService.getActiveMembers(classroomId);
+
+        Map<Integer, Map<Integer, NodeProgress>> progressByStudentAndNode =
+                nodeProgressRepository.findByClassroom_Id(classroomId).stream()
+                        .collect(Collectors.groupingBy(NodeProgress::getStudentId,
+                                Collectors.toMap(NodeProgress::getNodeId, p -> p, (a, b) -> a)));
+
+        Map<Integer, Map<Integer, Long>> submittedCountByStudentAndNode =
+                attemptRepository.findByClassroom_Id(classroomId).stream()
+                        .filter(NodeLevelAttempt::isSubmitted)
+                        .collect(Collectors.groupingBy(a -> a.getStudent().getId(),
+                                Collectors.groupingBy(a -> a.getNodeLevel().getLearningNode().getId(),
+                                        Collectors.counting())));
+
+        StringBuilder csv = new StringBuilder();
+        csv.append("Học sinh,Email,Node,Level tốt nhất,Điểm tốt nhất,Số lượt đã nộp\n");
+        for (ClassroomMember member : members) {
+            Integer studentId = member.getUser().getId();
+            Map<Integer, NodeProgress> progressByNode =
+                    progressByStudentAndNode.getOrDefault(studentId, Map.of());
+            Map<Integer, Long> countByNode =
+                    submittedCountByStudentAndNode.getOrDefault(studentId, Map.of());
+            for (LearningNode node : nodes) {
+                NodeProgress progress = progressByNode.get(node.getId());
+                csv.append(csvField(member.getUser().getFullName())).append(',')
+                        .append(csvField(member.getUser().getEmail())).append(',')
+                        .append(csvField(node.getTitle())).append(',')
+                        .append(progress != null && progress.getBestLevelNumber() != null
+                                ? progress.getBestLevelNumber().toString() : "").append(',')
+                        .append(progress != null && progress.getBestScore() != null
+                                ? progress.getBestScore().toPlainString() : "").append(',')
+                        .append(countByNode.getOrDefault(node.getId(), 0L)).append('\n');
+            }
+        }
+        return csv.toString();
+    }
+
+    private String csvField(String value) {
+        if (value == null) return "";
+        return '"' + value.replace("\"", "\"\"") + '"';
+    }
+
+    /* ------------------------------------------------------------------
        L5 §2 — one student's attempt history per level of each node
        ------------------------------------------------------------------ */
     public StudentDetail getStudentDetail(Classroom classroom, Integer studentId) {

@@ -5,11 +5,16 @@ import com.edunac.mentora.domain.classroom.Classroom;
 import com.edunac.mentora.service.classroom.ClassroomService;
 import com.edunac.mentora.service.level.LecturerResultService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequestMapping("/lecturer/classes/{classroomId}/results")
@@ -60,6 +65,25 @@ public class LecturerResultController {
         model.addAttribute("user", user);
         model.addAttribute("activePage", "classes");
         return "lecturer/results/attempt-detail";
+    }
+
+    // L6 §3 — xuất CSV bảng điểm của lớp.
+    @GetMapping("/export.csv")
+    public ResponseEntity<byte[]> exportCsv(@PathVariable Integer classroomId,
+                                            HttpSession session) {
+        Classroom classroom = classroomService.findForTeacher(classroomId, currentUser(session));
+        String csv = resultService.buildResultsCsv(classroom);
+        // BOM để Excel mở đúng tiếng Việt.
+        byte[] bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] body = csv.getBytes(StandardCharsets.UTF_8);
+        byte[] payload = new byte[bom.length + body.length];
+        System.arraycopy(bom, 0, payload, 0, bom.length);
+        System.arraycopy(body, 0, payload, bom.length, body.length);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"ket-qua-lop-" + classroomId + ".csv\"")
+                .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+                .body(payload);
     }
 
     private User currentUser(HttpSession session) {

@@ -52,6 +52,10 @@ public class Classroom {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    public boolean isCompleted() {
+        return ClassroomStatus.COMPLETED.name().equals(status);
+    }
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

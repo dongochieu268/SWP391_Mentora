@@ -4,16 +4,21 @@ import com.edunac.mentora.domain.branching.BranchRule;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
+import com.edunac.mentora.domain.level.LevelMaterial;
 import com.edunac.mentora.domain.level.NodeLevel;
 import com.edunac.mentora.domain.level.NodeLevelAttempt;
 import com.edunac.mentora.dto.NodeProgressResponse;
 import com.edunac.mentora.dto.StudentNodeLevelHistoryView;
+import com.edunac.mentora.dto.StudentNodeLevelStatusView;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
+import com.edunac.mentora.repository.level.AttemptGrantRepository;
+import com.edunac.mentora.repository.level.LevelMaterialRepository;
 import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.repository.level.NodeLevelRepository;
 import com.edunac.mentora.service.branching.BranchRuleService;
 import com.edunac.mentora.service.learning.NodeContentService;
 import com.edunac.mentora.service.learning.NodeProgressService;
+import com.edunac.mentora.service.level.NodeLevelAttemptService;
 import com.edunac.mentora.service.student.StudentRoadmapService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +49,9 @@ public class StudentLearningController {
     private final BranchRuleService branchRuleService;
     private final NodeLevelRepository nodeLevelRepository;
     private final NodeLevelAttemptRepository nodeLevelAttemptRepository;
+    private final LevelMaterialRepository levelMaterialRepository;
+    private final AttemptGrantRepository attemptGrantRepository;
+    private final NodeLevelAttemptService nodeLevelAttemptService;
 
     @GetMapping("/classrooms/{classroomId}/nodes")
     public String viewLearningPath(@PathVariable Integer classroomId) {
@@ -91,6 +99,11 @@ public class StudentLearningController {
         List<StudentNodeLevelHistoryView> levelHistory =
                 buildLevelHistory(nodeId, currentUser.getId(), classroomId);
 
+        List<StudentNodeLevelStatusView> levelStatus =
+                buildLevelStatusList(nodeId, currentUser.getId(), classroomId);
+        boolean hasStartableLevel = levelStatus.stream()
+                .anyMatch(StudentNodeLevelStatusView::isHasQuestions);
+
         model.addAttribute("user", currentUser);
         model.addAttribute("activePage", "classrooms");
         model.addAttribute("node", node);
@@ -100,6 +113,8 @@ public class StudentLearningController {
         model.addAttribute("prevNodeId", prevNodeId);
         model.addAttribute("nextNodeId", nextNodeId);
         model.addAttribute("levelHistory", levelHistory);
+        model.addAttribute("levelStatus", levelStatus);
+        model.addAttribute("hasStartableLevel", hasStartableLevel);
 
         // Fix: nếu node là BRANCH_TEST thì truyền thêm branchRule vào model
         // để node-detail.html hiển thị nút "Làm bài test" thay vì nội dung thông thường
@@ -173,6 +188,46 @@ public class StudentLearningController {
             result.add(new StudentNodeLevelHistoryView(
                     level.getLevelNumber(), level.getTitle(), level.getMaxScore(), level.getPassingScore(),
                     levelAttempts.size(), bestScore, passed));
+        }
+        return result;
+    }
+
+    /**
+     * S2: trạng thái nút "Start Test" mỗi level — khóa theo level trước chưa
+     * qua (isNextLevelUnlocked, S4 §5), hết lượt (maxAttempts + attempt_grants),
+     * hoặc chưa có câu hỏi (OQ2: node mà mọi level đều 0 câu hỏi = lesson
+     * thường, hoàn thành tay — hasQuestions cho phép caller phát hiện case đó).
+     */
+    private List<StudentNodeLevelStatusView> buildLevelStatusList(
+            Integer nodeId, Integer studentId, Integer classroomId) {
+
+        List<NodeLevel> levels = nodeLevelRepository.findByLearningNode_IdOrderByLevelNumberAsc(nodeId);
+        if (levels.isEmpty()) return List.of();
+
+        List<Integer> levelIds = levels.stream().map(NodeLevel::getId).toList();
+        Map<Integer, Integer> questionCountByLevel = new HashMap<>();
+        for (LevelMaterial lm : levelMaterialRepository.findByNodeLevel_IdIn(levelIds)) {
+            questionCountByLevel.merge(lm.getNodeLevel().getId(), lm.getQuestionCount(), Integer::sum);
+        }
+
+        List<StudentNodeLevelStatusView> result = new ArrayList<>();
+        for (NodeLevel level : levels) {
+            boolean hasQuestions = questionCountByLevel.getOrDefault(level.getId(), 0) >= 1;
+            boolean unlocked = nodeLevelAttemptService.isNextLevelUnlocked(level.getId(), studentId, classroomId);
+
+            boolean hasAttemptsLeft = true;
+            if (level.getMaxAttempts() != null) {
+                long currentCount = nodeLevelAttemptRepository
+                        .countByNodeLevel_IdAndStudent_IdAndClassroom_Id(level.getId(), studentId, classroomId);
+                int extraAttempts = attemptGrantRepository
+                        .sumExtraAttempts(level.getId(), studentId, classroomId);
+                hasAttemptsLeft = currentCount < level.getMaxAttempts() + extraAttempts;
+            }
+
+            result.add(new StudentNodeLevelStatusView(
+                    level.getId(), level.getLevelNumber(), level.getTitle(),
+                    level.getMaxScore(), level.getPassingScore(),
+                    hasQuestions, unlocked, hasAttemptsLeft));
         }
         return result;
     }

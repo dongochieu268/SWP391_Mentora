@@ -32,14 +32,44 @@
                     <div>
                         <h5 class="fw-semibold mb-1">
                             Kết quả học tập — <span th:text="${classroom.name}"></span>
+                            <th:block th:if="${classroom.completed}">
+                                <th:block th:replace="~{components/status-badge :: statusBadge(${classroom.status})}"></th:block>
+                            </th:block>
                         </h5>
                         <p class="text-muted small mb-0">
                             Môn: <span th:text="${classroom.subject.code + ' - ' + classroom.subject.name}"></span>
                         </p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
+                        <a th:href="@{/lecturer/classes/{id}/results/export.csv(id=${classroom.id})}"
+                           class="btn btn-outline-primary">
+                            <i class="ti ti-download me-1"></i> Xuất CSV
+                        </a>
+                        <!-- L6: kết thúc lớp, mở lại được -->
+                        <form th:unless="${classroom.completed}"
+                              th:action="@{/lecturer/classes/{id}/complete(id=${classroom.id})}"
+                              method="post"
+                              onsubmit="return confirm('Kết thúc lớp học? Học sinh sẽ không thể bắt đầu lượt làm bài mới. Bạn có thể mở lại lớp sau.');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="ti ti-flag-check me-1"></i> Kết thúc lớp
+                            </button>
+                        </form>
+                        <form th:if="${classroom.completed}"
+                              th:action="@{/lecturer/classes/{id}/reopen(id=${classroom.id})}"
+                              method="post"
+                              onsubmit="return confirm('Mở lại lớp học này?');">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="ti ti-lock-open me-1"></i> Mở lại lớp
+                            </button>
+                        </form>
                         <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/{id}/members(id=${classroom.id})}, 'Quay lại')}"></a>
                     </div>
+                </div>
+
+                <div th:if="${classroom.completed}" class="alert alert-info py-2 small">
+                    <i class="ti ti-info-circle me-1"></i>
+                    Lớp đã kết thúc — học sinh không thể bắt đầu lượt làm bài mới; lượt đang làm dở vẫn được nộp.
+                    Bảng dưới đây là bảng điểm tổng kết của lớp.
                 </div>
 
                 <!-- Bảng học sinh: bấm cả hàng để xem chi tiết -->

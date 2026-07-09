@@ -18,6 +18,23 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
+                <!-- L6: nhắc tổng kết lớp khi học kỳ đã hết -->
+                <div th:if="${expiredClasses != null and not #lists.isEmpty(expiredClasses)}"
+                     class="alert alert-warning">
+                    <div class="fw-semibold mb-1">
+                        <i class="ti ti-calendar-x me-1"></i>
+                        Học kỳ đã kết thúc — tổng kết lớp
+                    </div>
+                    <ul class="mb-0 small">
+                        <li th:each="c : ${expiredClasses}">
+                            <span th:text="${c.name}"></span>
+                            <span class="text-muted" th:text="'(' + ${c.semester.name} + ')'"></span>
+                            —
+                            <a th:href="@{/lecturer/classes/{id}/results(id=${c.id})}">xem kết quả &amp; kết thúc lớp</a>
+                        </li>
+                    </ul>
+                </div>
+
                 <!-- Welcome -->
                 <div class="card mb-4">
                     <div class="card-body">

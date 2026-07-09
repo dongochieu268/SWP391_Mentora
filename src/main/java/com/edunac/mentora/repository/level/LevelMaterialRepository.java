@@ -11,6 +11,8 @@ public interface LevelMaterialRepository extends JpaRepository<LevelMaterial, In
 
     List<LevelMaterial> findByNodeLevel_Id(Integer nodeLevelId);
 
+    List<LevelMaterial> findByNodeLevel_IdIn(List<Integer> nodeLevelIds);
+
     boolean existsByNodeLevel_IdAndMaterial_Id(Integer nodeLevelId, Integer materialId);
 
     boolean existsByMaterial_Id(Integer materialId);

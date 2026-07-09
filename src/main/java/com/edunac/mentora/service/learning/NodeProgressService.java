@@ -95,7 +95,7 @@ public class NodeProgressService {
 
 
         long totalNodes     = nodeProgressRepository
-                .countRelevantNodesForStudent(studentId, classroomId);
+                .countRelevantNodesForStudent(classroomId);
         long completedNodes = nodeProgressRepository
                 .countCompletedNodesForStudent(studentId, classroomId);
 

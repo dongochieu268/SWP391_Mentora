@@ -11,11 +11,9 @@ import java.util.List;
 @Repository
 public interface AttemptGrantRepository extends JpaRepository<AttemptGrant, Integer> {
 
-    // L5 §5 / L7: audit list on the student detail screen, newest first.
     List<AttemptGrant> findByNodeLevel_IdAndStudent_IdAndClassroom_IdOrderByGrantedAtDesc(
             Integer nodeLevelId, Integer studentId, Integer classroomId);
 
-    // S3 §4: attempt limit becomes maxAttempts + sum(extraAttempts).
     @Query("""
             select coalesce(sum(g.extraAttempts), 0)
             from AttemptGrant g

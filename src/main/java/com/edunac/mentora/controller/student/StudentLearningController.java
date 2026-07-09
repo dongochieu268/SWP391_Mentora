@@ -118,7 +118,7 @@ public class StudentLearningController {
 
         try {
             NodeProgressResponse result = nodeProgressService
-                    .markNodeCompleted(currentUser.getId(), nodeId, classroomId);
+                    .markNodeCompleted(currentUser.getId(), nodeId, classroomId, null);
             return ResponseEntity.ok(result);
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());

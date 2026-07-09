@@ -13,6 +13,7 @@ import com.edunac.mentora.service.classroom.ClassroomMemberService;
 import com.edunac.mentora.service.learning.NodeProgressService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -127,13 +128,20 @@ public class StudentAssessmentService {
 
         branchRuleRepository
                 .findByAssessmentAndPath(saved.getAssessment().getId(), pathId)
-                .ifPresent(rule ->
-                        nodeProgressService.markBranchTestCompleted(
+                .ifPresent(rule -> {
+                    try {
+                        nodeProgressService.markNodeCompleted(
                                 saved.getStudent().getId(),
                                 rule.getNode().getId(),
-                                saved.getClassroom().getId()
-                        )
-                );
+                                saved.getClassroom().getId(),
+                                score
+                        );
+                    } catch (ResponseStatusException e) {
+                        // Node visibility/prerequisite state must never roll back an
+                        // already-graded, already-saved attempt — this is a best-effort
+                        // progress update, not a precondition for the submission itself.
+                    }
+                });
 
         return saved;
     }

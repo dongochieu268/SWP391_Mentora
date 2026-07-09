@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class NodeProgressService {
 
 
     public NodeProgressResponse markNodeCompleted(
-            Integer studentId, Integer nodeId, Integer classroomId) {
+            Integer studentId, Integer nodeId, Integer classroomId, BigDecimal score) {
 
         ensureActiveMember(studentId, classroomId);
         ensureNodeVisible(nodeId, classroomId);
@@ -52,18 +53,12 @@ public class NodeProgressService {
             }
         }
 
-        saveCompleted(studentId, nodeId, classroomId);
+        saveCompleted(studentId, nodeId, classroomId, score);
         return buildProgressResponse(studentId, classroomId, nodeId);
     }
 
 
-    public void markBranchTestCompleted(
-            Integer studentId, Integer nodeId, Integer classroomId) {
-        saveCompleted(studentId, nodeId, classroomId);
-    }
-
-
-    void saveCompleted(Integer studentId, Integer nodeId, Integer classroomId) {
+    void saveCompleted(Integer studentId, Integer nodeId, Integer classroomId, BigDecimal score) {
         NodeProgress progress = nodeProgressRepository
                 .findByStudent_IdAndLearningNode_IdAndClassroom_Id(
                         studentId, nodeId, classroomId)
@@ -79,9 +74,21 @@ public class NodeProgressService {
                     return np;
                 });
 
+        boolean changed = false;
+
         if (!progress.isCompleted()) {
             progress.setCompleted(true);
             progress.setCompletedAt(LocalDateTime.now());
+            changed = true;
+        }
+
+        if (score != null
+                && (progress.getBestScore() == null || score.compareTo(progress.getBestScore()) > 0)) {
+            progress.setBestScore(score);
+            changed = true;
+        }
+
+        if (changed) {
             nodeProgressRepository.save(progress);
         }
     }

@@ -62,12 +62,30 @@
                         </div>
 
                         <div th:each="levelResult : ${nodeResult.levels}" class="mb-3">
-                            <div class="fw-semibold small mb-2">
-                                Level <span th:text="${levelResult.level.levelNumber}"></span>
-                                <span th:if="${levelResult.level.title != null}"
-                                      th:text="'— ' + ${levelResult.level.title}"></span>
-                                <span class="text-muted fw-normal"
-                                      th:text="'(đạt từ ' + ${levelResult.level.passingScore} + '/' + ${levelResult.level.maxScore} + ')'"></span>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="fw-semibold small">
+                                    Level <span th:text="${levelResult.level.levelNumber}"></span>
+                                    <span th:if="${levelResult.level.title != null}"
+                                          th:text="'— ' + ${levelResult.level.title}"></span>
+                                    <span class="text-muted fw-normal"
+                                          th:text="'(đạt từ ' + ${levelResult.level.passingScore} + '/' + ${levelResult.level.maxScore} + ')'"></span>
+                                </div>
+                                <!-- L7: cấp lượt per-student — chỉ với level có giới hạn lượt -->
+                                <div th:if="${levelResult.level.maxAttempts != null}"
+                                     class="d-flex align-items-center gap-2">
+                                    <span class="text-muted small"
+                                          th:text="'Lượt: ' + ${#lists.size(levelResult.attempts)} + '/' + (${levelResult.level.maxAttempts} + ${levelResult.extraAttempts})"></span>
+                                    <span th:if="${levelResult.extraAttempts > 0}"
+                                          class="badge bg-warning-subtle text-warning"
+                                          th:text="'+' + ${levelResult.extraAttempts} + ' đã cấp'"></span>
+                                    <form th:action="@{/lecturer/classes/{cid}/results/students/{sid}/levels/{lid}/grants(cid=${classroom.id}, sid=${detail.member.user.id}, lid=${levelResult.level.id})}"
+                                          method="post" class="mb-0"
+                                          onsubmit="return confirm('Cấp thêm 1 lượt làm bài cho học sinh này ở level này?');">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                            <i class="ti ti-plus me-1"></i>1 lượt
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <div th:if="${#lists.isEmpty(levelResult.attempts)}" class="text-muted small mb-2">

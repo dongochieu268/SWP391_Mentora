@@ -4,8 +4,13 @@ import com.edunac.mentora.domain.branching.BranchRule;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.learningpath.LearningNode;
+import com.edunac.mentora.domain.level.NodeLevel;
+import com.edunac.mentora.domain.level.NodeLevelAttempt;
 import com.edunac.mentora.dto.NodeProgressResponse;
+import com.edunac.mentora.dto.StudentNodeLevelHistoryView;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
+import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
+import com.edunac.mentora.repository.level.NodeLevelRepository;
 import com.edunac.mentora.service.branching.BranchRuleService;
 import com.edunac.mentora.service.learning.NodeContentService;
 import com.edunac.mentora.service.learning.NodeProgressService;
@@ -20,7 +25,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -33,6 +42,8 @@ public class StudentLearningController {
     private final LearningNodeRepository learningNodeRepository;
     private final StudentRoadmapService roadmapService;
     private final BranchRuleService branchRuleService;
+    private final NodeLevelRepository nodeLevelRepository;
+    private final NodeLevelAttemptRepository nodeLevelAttemptRepository;
 
     @GetMapping("/classrooms/{classroomId}/nodes")
     public String viewLearningPath(@PathVariable Integer classroomId) {
@@ -77,6 +88,9 @@ public class StudentLearningController {
         Integer nextNodeId = currentIndex < allNodes.size() - 1
                 ? allNodes.get(currentIndex + 1).getId() : null;
 
+        List<StudentNodeLevelHistoryView> levelHistory =
+                buildLevelHistory(nodeId, currentUser.getId(), classroomId);
+
         model.addAttribute("user", currentUser);
         model.addAttribute("activePage", "classrooms");
         model.addAttribute("node", node);
@@ -85,6 +99,7 @@ public class StudentLearningController {
         model.addAttribute("classroomId", classroomId);
         model.addAttribute("prevNodeId", prevNodeId);
         model.addAttribute("nextNodeId", nextNodeId);
+        model.addAttribute("levelHistory", levelHistory);
 
         // Fix: nếu node là BRANCH_TEST thì truyền thêm branchRule vào model
         // để node-detail.html hiển thị nút "Làm bài test" thay vì nội dung thông thường
@@ -123,5 +138,42 @@ public class StudentLearningController {
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         }
+    }
+
+    private List<StudentNodeLevelHistoryView> buildLevelHistory(
+            Integer nodeId, Integer studentId, Integer classroomId) {
+
+        List<NodeLevel> levels = nodeLevelRepository.findByLearningNode_IdOrderByLevelNumberAsc(nodeId);
+        if (levels.isEmpty()) return List.of();
+
+        Map<Integer, List<NodeLevelAttempt>> attemptsByLevel = new HashMap<>();
+        for (NodeLevelAttempt attempt : nodeLevelAttemptRepository
+                .findByNodeLevel_LearningNode_IdAndStudent_IdAndClassroom_IdOrderByNodeLevel_LevelNumberAscAttemptNumberAsc(
+                        nodeId, studentId, classroomId)) {
+            attemptsByLevel
+                    .computeIfAbsent(attempt.getNodeLevel().getId(), k -> new ArrayList<>())
+                    .add(attempt);
+        }
+
+        List<StudentNodeLevelHistoryView> result = new ArrayList<>();
+        for (NodeLevel level : levels) {
+            List<NodeLevelAttempt> levelAttempts =
+                    attemptsByLevel.getOrDefault(level.getId(), List.of());
+
+            BigDecimal bestScore = null;
+            boolean passed = false;
+            for (NodeLevelAttempt attempt : levelAttempts) {
+                if (!attempt.isSubmitted()) continue;
+                if (bestScore == null || attempt.getScore().compareTo(bestScore) > 0) {
+                    bestScore = attempt.getScore();
+                }
+                if (attempt.isPassed()) passed = true;
+            }
+
+            result.add(new StudentNodeLevelHistoryView(
+                    level.getLevelNumber(), level.getTitle(), level.getMaxScore(), level.getPassingScore(),
+                    levelAttempts.size(), bestScore, passed));
+        }
+        return result;
     }
 }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,4 +19,6 @@ public class NodeProgressResponse {
     private int completedNodes;
     private double progressPercent;
     private boolean prerequisiteMet;
+    private BigDecimal bestScore;
+    private Integer bestLevelNumber;
 }

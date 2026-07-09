@@ -137,6 +137,34 @@ public class LecturerClassroomController {
         }
     }
 
+    // L6 — Kết thúc lớp: chuyển COMPLETED rồi dẫn thẳng tới trang tổng kết.
+    @PostMapping("/{id}/complete")
+    public String complete(@PathVariable Integer id,
+                           HttpSession session,
+                           RedirectAttributes ra) {
+        try {
+            classroomService.complete(id, currentUser(session));
+            ra.addFlashAttribute("success", "Đã kết thúc lớp học.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/classes/" + id + "/results";
+    }
+
+    // L6 §4 — mở lại lớp đã kết thúc (khôi phục khi bấm nhầm).
+    @PostMapping("/{id}/reopen")
+    public String reopen(@PathVariable Integer id,
+                         HttpSession session,
+                         RedirectAttributes ra) {
+        try {
+            classroomService.reopen(id, currentUser(session));
+            ra.addFlashAttribute("success", "Đã mở lại lớp học.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/classes/" + id + "/results";
+    }
+
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Integer id,
                          HttpSession session,

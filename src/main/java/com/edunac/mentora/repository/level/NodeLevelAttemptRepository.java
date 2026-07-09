@@ -26,6 +26,10 @@ public interface NodeLevelAttemptRepository extends JpaRepository<NodeLevelAttem
 
     boolean existsByNodeLevel_LearningNode_Id(Integer nodeId);
 
+    // Whole-class attempt list: per-node aggregate row (L5 §5) + CSV export (L6 §3).
+    List<NodeLevelAttempt> findByClassroom_Id(Integer classroomId);
+
+    // Attempt history across all levels of a node (S6, L5).
     List<NodeLevelAttempt> findByNodeLevel_LearningNode_IdAndStudent_IdAndClassroom_IdOrderByNodeLevel_LevelNumberAscAttemptNumberAsc(
             Integer nodeId, Integer studentId, Integer classroomId);
 

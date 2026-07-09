@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kết quả học sinh | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-semibold mb-1" th:text="${detail.member.user.fullName}"></h5>
+                        <p class="text-muted small mb-0">
+                            <span th:text="${detail.member.user.email}"></span>
+                            &nbsp;|&nbsp; Lớp: <span th:text="${classroom.name}"></span>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/{id}/results(id=${classroom.id})}, 'Quay lại')}"></a>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(detail.nodes)}" class="card">
+                    <div class="card-body text-muted small">
+                        Lộ trình của lớp chưa có node nào có level để hiển thị lịch sử làm bài.
+                    </div>
+                </div>
+
+                <!-- Mỗi node một card, trong đó mỗi level một bảng attempt -->
+                <div class="card mb-4" th:each="nodeResult : ${detail.nodes}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="card-title fw-semibold mb-0">
+                                <i class="ti ti-map-pin text-primary me-1"></i>
+                                <span th:text="${nodeResult.node.title}"></span>
+                            </h6>
+                            <div th:if="${nodeResult.progress != null and nodeResult.progress.bestScore != null}">
+                                <span class="badge bg-primary-subtle text-primary"
+                                      th:text="'Tốt nhất: Lv ' + ${nodeResult.progress.bestLevelNumber} + ' · ' + ${nodeResult.progress.bestScore}"></span>
+                            </div>
+                        </div>
+
+                        <div th:each="levelResult : ${nodeResult.levels}" class="mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="fw-semibold small">
+                                    Level <span th:text="${levelResult.level.levelNumber}"></span>
+                                    <span th:if="${levelResult.level.title != null}"
+                                          th:text="'— ' + ${levelResult.level.title}"></span>
+                                    <span class="text-muted fw-normal"
+                                          th:text="'(đạt từ ' + ${levelResult.level.passingScore} + '/' + ${levelResult.level.maxScore} + ')'"></span>
+                                </div>
+                                <!-- L7: cấp lượt per-student — chỉ với level có giới hạn lượt -->
+                                <div th:if="${levelResult.level.maxAttempts != null}"
+                                     class="d-flex align-items-center gap-2">
+                                    <span class="text-muted small"
+                                          th:text="'Lượt: ' + ${#lists.size(levelResult.attempts)} + '/' + (${levelResult.level.maxAttempts} + ${levelResult.extraAttempts})"></span>
+                                    <span th:if="${levelResult.extraAttempts > 0}"
+                                          class="badge bg-warning-subtle text-warning"
+                                          th:text="'+' + ${levelResult.extraAttempts} + ' đã cấp'"></span>
+                                    <form th:action="@{/lecturer/classes/{cid}/results/students/{sid}/levels/{lid}/grants(cid=${classroom.id}, sid=${detail.member.user.id}, lid=${levelResult.level.id})}"
+                                          method="post" class="mb-0"
+                                          onsubmit="return confirm('Cấp thêm 1 lượt làm bài cho học sinh này ở level này?');">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                            <i class="ti ti-plus me-1"></i>1 lượt
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(levelResult.attempts)}" class="text-muted small mb-2">
+                                Chưa làm.
+                            </div>
+
+                            <div class="table-responsive" th:unless="${#lists.isEmpty(levelResult.attempts)}">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>Lượt</th>
+                                        <th>Điểm</th>
+                                        <th>Trạng thái</th>
+                                        <th>Nộp lúc</th>
+                                        <th class="text-end">Đề đã nhận</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="a : ${levelResult.attempts}">
+                                        <td th:text="${a.attemptNumber}"></td>
+                                        <td>
+                                            <span th:if="${a.score != null}" class="fw-semibold"
+                                                  th:text="${a.score} + '/' + ${levelResult.level.maxScore}"></span>
+                                            <span th:if="${a.score == null}" class="text-muted">—</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${a.submitted}" class="badge bg-light text-dark">Đã nộp</span>
+                                            <span th:unless="${a.submitted}" class="badge bg-warning text-dark">Đang làm</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${a.submittedAt != null}"
+                                                  th:text="${#temporals.format(a.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            <span th:if="${a.submittedAt == null}" class="text-muted">—</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <a th:if="${a.submitted}"
+                                               th:href="@{/lecturer/classes/{cid}/results/attempts/{aid}(cid=${classroom.id}, aid=${a.id})}"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="ti ti-eye me-1"></i> Xem đề
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

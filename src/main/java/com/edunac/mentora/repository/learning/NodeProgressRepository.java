@@ -14,6 +14,8 @@ public interface NodeProgressRepository extends JpaRepository<NodeProgress, Inte
 
     List<NodeProgress> findByClassroom_IdAndStudent_Id(Integer classroomId, Integer studentId);
 
+    List<NodeProgress> findByClassroom_Id(Integer classroomId);
+
     Optional<NodeProgress> findByStudent_IdAndLearningNode_IdAndClassroom_Id(
             Integer studentId, Integer nodeId, Integer classroomId);
 

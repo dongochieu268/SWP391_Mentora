@@ -115,9 +115,10 @@ public class NodeProgressService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Node không tồn tại"));
 
-        boolean isCompleted = nodeProgressRepository
-                .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
-                        studentId, nodeId, classroomId);
+        NodeProgress progress = nodeProgressRepository
+                .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
+                .orElse(null);
+        boolean isCompleted = progress != null && progress.isCompleted();
 
         boolean prerequisiteMet = true;
         if (currentNode.getPrerequisite() != null) {
@@ -134,6 +135,8 @@ public class NodeProgressService {
                 .completedNodes((int) completedNodes)
                 .progressPercent(percent)
                 .prerequisiteMet(prerequisiteMet)
+                .bestScore(progress != null ? progress.getBestScore() : null)
+                .bestLevelNumber(progress != null ? progress.getBestLevelNumber() : null)
                 .build();
     }
 

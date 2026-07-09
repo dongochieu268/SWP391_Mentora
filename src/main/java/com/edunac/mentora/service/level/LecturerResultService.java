@@ -1,14 +1,17 @@
 package com.edunac.mentora.service.level;
 
+import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.classroom.Classroom;
 import com.edunac.mentora.domain.classroom.ClassroomMember;
 import com.edunac.mentora.domain.learning.NodeProgress;
 import com.edunac.mentora.domain.learningpath.LearningNode;
+import com.edunac.mentora.domain.level.AttemptGrant;
 import com.edunac.mentora.domain.level.AttemptQuestion;
 import com.edunac.mentora.domain.level.NodeLevel;
 import com.edunac.mentora.domain.level.NodeLevelAttempt;
 import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
+import com.edunac.mentora.repository.level.AttemptGrantRepository;
 import com.edunac.mentora.repository.level.AttemptQuestionRepository;
 import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.repository.level.NodeLevelRepository;
@@ -42,6 +45,7 @@ public class LecturerResultService {
     private final NodeProgressRepository nodeProgressRepository;
     private final NodeLevelAttemptRepository attemptRepository;
     private final AttemptQuestionRepository attemptQuestionRepository;
+    private final AttemptGrantRepository attemptGrantRepository;
     private final ClassroomMemberService memberService;
 
     public LecturerResultService(LearningNodeRepository nodeRepository,
@@ -49,12 +53,14 @@ public class LecturerResultService {
                                  NodeProgressRepository nodeProgressRepository,
                                  NodeLevelAttemptRepository attemptRepository,
                                  AttemptQuestionRepository attemptQuestionRepository,
+                                 AttemptGrantRepository attemptGrantRepository,
                                  ClassroomMemberService memberService) {
         this.nodeRepository = nodeRepository;
         this.nodeLevelRepository = nodeLevelRepository;
         this.nodeProgressRepository = nodeProgressRepository;
         this.attemptRepository = attemptRepository;
         this.attemptQuestionRepository = attemptQuestionRepository;
+        this.attemptGrantRepository = attemptGrantRepository;
         this.memberService = memberService;
     }
 
@@ -92,6 +98,7 @@ public class LecturerResultService {
     public static class LevelResult {
         private final NodeLevel level;
         private final List<NodeLevelAttempt> attempts;
+        private final int extraAttempts;   // tổng lượt đã cấp thêm (L7)
     }
 
     @Getter
@@ -258,7 +265,10 @@ public class LecturerResultService {
 
             List<LevelResult> levelResults = levels.stream()
                     .map(level -> new LevelResult(level,
-                            attemptsByLevel.getOrDefault(level.getId(), List.of())))
+                            attemptsByLevel.getOrDefault(level.getId(), List.of()),
+                            level.getMaxAttempts() == null ? 0
+                                    : attemptGrantRepository.sumExtraAttempts(
+                                            level.getId(), studentId, classroom.getId())))
                     .toList();
 
             NodeProgress progress = nodeProgressRepository
@@ -285,5 +295,36 @@ public class LecturerResultService {
         }
         return new AttemptDetail(attempt,
                 attemptQuestionRepository.findWithOptionsByAttemptId(attemptId));
+    }
+
+    /* ------------------------------------------------------------------
+       L7 — cấp thêm lượt cho một (học sinh, level)
+       ------------------------------------------------------------------ */
+    @Transactional
+    public void grantExtraAttempt(Classroom classroom, User lecturer,
+                                  Integer studentId, Integer levelId) {
+        ClassroomMember member = memberService.getActiveMembers(classroom.getId()).stream()
+                .filter(m -> m.getUser().getId().equals(studentId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy học sinh trong lớp này."));
+
+        NodeLevel level = nodeLevelRepository.findById(levelId)
+                .filter(l -> l.getLearningNode().getLearningPath().getId()
+                        .equals(classroom.getLearningPath().getId()))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy level trong lộ trình của lớp này."));
+        if (level.getMaxAttempts() == null) {
+            throw new IllegalStateException(
+                    "Level không giới hạn số lần thử — không cần cấp thêm lượt.");
+        }
+
+        AttemptGrant grant = new AttemptGrant();
+        grant.setNodeLevel(level);
+        grant.setStudent(member.getUser());
+        grant.setClassroom(classroom);
+        grant.setExtraAttempts(1);
+        grant.setGrantedBy(lecturer);
+        attemptGrantRepository.save(grant);
     }
 }

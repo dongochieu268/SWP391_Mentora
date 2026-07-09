@@ -12,7 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.charset.StandardCharsets;
 
@@ -84,6 +86,24 @@ public class LecturerResultController {
                         "attachment; filename=\"ket-qua-lop-" + classroomId + ".csv\"")
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(payload);
+    }
+
+    // L7 — cấp thêm 1 lượt làm bài cho một học sinh trên một level.
+    @PostMapping("/students/{studentId}/levels/{levelId}/grants")
+    public String grantExtraAttempt(@PathVariable Integer classroomId,
+                                    @PathVariable Integer studentId,
+                                    @PathVariable Integer levelId,
+                                    HttpSession session,
+                                    RedirectAttributes ra) {
+        User user = currentUser(session);
+        Classroom classroom = classroomService.findForTeacher(classroomId, user);
+        try {
+            resultService.grantExtraAttempt(classroom, user, studentId, levelId);
+            ra.addFlashAttribute("success", "Đã cấp thêm 1 lượt.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/lecturer/classes/" + classroomId + "/results/students/" + studentId;
     }
 
     private User currentUser(HttpSession session) {

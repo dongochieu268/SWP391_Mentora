@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Material | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/question-bank.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <main class="container-fluid">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="qb-page-head">
+                    <div>
+                        <h1>Material</h1>
+                        <p>&#272;&#243;ng g&#243;i n&#7897;i dung h&#7885;c v&#224; pool c&#226;u h&#7887;i theo t&#7915;ng ch&#7911; &#273;&#7873;.</p>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-xl-4">
+                        <section class="card h-100">
+                            <div class="card-body">
+                                <form method="get" th:action="@{/lecturer/materials}" class="mb-4">
+                                    <label class="form-label" for="subjectFilter">M&#244;n h&#7885;c</label>
+                                    <div class="d-flex gap-2">
+                                        <select class="form-select" id="subjectFilter" name="subjectId"
+                                                onchange="this.form.submit()">
+                                            <option th:if="${#lists.isEmpty(activeSubjects)}" value="">
+                                                Ch&#432;a c&#243; m&#244;n ACTIVE
+                                            </option>
+                                            <option th:each="subject : ${activeSubjects}" th:value="${subject.id}"
+                                                    th:selected="${subject.id == selectedSubjectId}"
+                                                    th:text="${subject.code + ' - ' + subject.name}"></option>
+                                        </select>
+                                        <button class="btn btn-outline-primary" type="submit"
+                                                title="L&#7885;c" aria-label="L&#7885;c">
+                                            <i class="ti ti-filter"></i>
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                    <h2 class="fs-5 mb-0">Material</h2>
+                                    <a class="btn btn-primary btn-sm"
+                                       th:href="@{/lecturer/materials(subjectId=${selectedSubjectId})}">
+                                        <i class="ti ti-plus me-1"></i>T&#7841;o m&#7899;i
+                                    </a>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between text-muted small mb-2">
+                                    <span>Danh s&#225;ch theo m&#244;n</span>
+                                    <span><span th:text="${#lists.size(materials)}">0</span> m&#7909;c</span>
+                                </div>
+
+                                <div th:if="${#lists.isEmpty(materials)}" class="text-center text-muted py-5 border rounded">
+                                    <i class="ti ti-folders fs-5 d-block mb-2"></i>
+                                    Ch&#432;a c&#243; material cho m&#244;n n&#224;y.
+                                </div>
+
+                                <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(materials)}">
+                                    <a class="list-group-item list-group-item-action px-0 py-3"
+                                       th:each="material : ${materials}"
+                                       th:classappend="${selectedMaterial != null and selectedMaterial.id == material.id} ? ' active px-3 rounded'"
+                                       th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${material.id})}">
+                                        <div class="d-flex align-items-start justify-content-between gap-2">
+                                            <div>
+                                                <div class="fw-semibold" th:text="${material.title}">Material</div>
+                                                <div class="small"
+                                                     th:classappend="${selectedMaterial != null and selectedMaterial.id == material.id} ? ' text-white-50' : ' text-muted'">
+                                                    <span th:if="${material.description != null and !#strings.isEmpty(material.description)}"
+                                                          th:text="${material.description}">Description</span>
+                                                    <span th:if="${material.description == null or #strings.isEmpty(material.description)}">
+                                                        Ch&#432;a c&#243; m&#244; t&#7843;
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <i class="ti ti-chevron-right mt-1"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-xl-8">
+                        <section class="card">
+                            <div class="card-body">
+                                <div id="material-summary"
+                                     class="d-flex flex-wrap align-items-start justify-content-between gap-3 pb-3 border-bottom">
+                                    <div>
+                                        <p class="text-uppercase text-muted small fw-semibold mb-1">Material &#273;ang l&#224;m vi&#7879;c</p>
+                                        <h2 class="fs-4 mb-1" th:if="${selectedMaterial != null}" th:text="${selectedMaterial.title}">
+                                            Material
+                                        </h2>
+                                        <h2 class="fs-4 mb-1" th:if="${selectedMaterial == null}">
+                                            T&#7841;o material m&#7899;i
+                                        </h2>
+                                        <p class="text-muted mb-0" th:if="${selectedMaterial != null}">
+                                            <span th:if="${selectedMaterial.description != null and !#strings.isEmpty(selectedMaterial.description)}"
+                                                  th:text="${selectedMaterial.description}">Description</span>
+                                            <span th:if="${selectedMaterial.description == null or #strings.isEmpty(selectedMaterial.description)}">
+                                                Ch&#432;a c&#243; m&#244; t&#7843;.
+                                            </span>
+                                        </p>
+                                        <p class="text-muted mb-0" th:if="${selectedMaterial == null}">
+                                            Nh&#7853;p th&#244;ng tin c&#417; b&#7843;n tr&#432;&#7899;c, sau &#273;&#243; th&#234;m n&#7897;i dung v&#224; c&#226;u h&#7887;i.
+                                        </p>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="ti ti-file-text me-1"></i>
+                                            <span th:text="${#lists.size(materialContents)}">0</span> n&#7897;i dung
+                                        </span>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="ti ti-help-circle me-1"></i>
+                                            <span th:text="${#lists.size(materialQuestions)}">0</span> c&#226;u h&#7887;i
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <ul class="nav nav-tabs mt-3" id="materialTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="material-info-tab" data-bs-toggle="tab"
+                                                data-bs-target="#material-info-pane" type="button" role="tab"
+                                                aria-controls="material-info-pane" aria-selected="true">
+                                            <i class="ti ti-info-circle me-1"></i>Th&#244;ng tin
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="material-content-tab" data-bs-toggle="tab"
+                                                data-bs-target="#material-content-pane" type="button" role="tab"
+                                                aria-controls="material-content-pane" aria-selected="false">
+                                            <i class="ti ti-files me-1"></i>N&#7897;i dung h&#7885;c
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="material-questions-tab" data-bs-toggle="tab"
+                                                data-bs-target="#material-questions-pane" type="button" role="tab"
+                                                aria-controls="material-questions-pane" aria-selected="false">
+                                            <i class="ti ti-help me-1"></i>C&#226;u h&#7887;i
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content pt-4" id="materialTabsContent">
+                                    <div class="tab-pane fade show active" id="material-info-pane" role="tabpanel"
+                                         aria-labelledby="material-info-tab" tabindex="0">
+                                        <div class="row g-4">
+                                            <div class="col-lg-8">
+                                                <h3 class="fs-5 mb-3">
+                                                    <span th:if="${selectedMaterial != null}">S&#7917;a material</span>
+                                                    <span th:if="${selectedMaterial == null}">T&#7841;o material</span>
+                                                </h3>
+                                                <form th:action="${selectedMaterial != null} ? @{/lecturer/materials/{id}/edit(id=${selectedMaterial.id})} : @{/lecturer/materials}"
+                                                      th:object="${form}" method="post">
+                                                    <input type="hidden" th:field="*{id}">
+                                                    <input type="hidden" th:field="*{subjectId}">
+                                                    <div class="mb-3">
+                                                        <label class="form-label" for="title">T&#234;n material</label>
+                                                        <input class="form-control" id="title" th:field="*{title}"
+                                                               maxlength="255" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label" for="description">M&#244; t&#7843;</label>
+                                                        <textarea class="form-control" id="description"
+                                                                  th:field="*{description}" rows="5"></textarea>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <button class="btn btn-primary" type="submit">
+                                                            <i class="ti ti-device-floppy me-1"></i>L&#432;u
+                                                        </button>
+                                                        <a class="btn btn-light border"
+                                                           th:href="@{/lecturer/materials(subjectId=${selectedSubjectId})}"
+                                                           th:if="${selectedMaterial != null}">
+                                                            <i class="ti ti-plus me-1"></i>T&#7841;o m&#7899;i
+                                                        </a>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="col-lg-4" th:if="${selectedMaterial != null}">
+                                                <div class="border rounded p-3">
+                                                    <h4 class="fs-6 mb-2">V&#249;ng nguy hi&#7875;m</h4>
+                                                    <p class="text-muted small">
+                                                        Ch&#7881; x&#243;a &#273;&#432;&#7907;c khi material ch&#432;a g&#7855;n v&#7899;i level v&#224; ch&#432;a c&#243; n&#7897;i dung.
+                                                    </p>
+                                                    <form th:action="@{/lecturer/materials/{id}/delete(id=${selectedMaterial.id})}"
+                                                          method="post"
+                                                          onsubmit="return confirm('X&#243;a material n&#224;y?');">
+                                                        <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                                        <button class="btn btn-outline-danger w-100" type="submit">
+                                                            <i class="ti ti-trash me-1"></i>X&#243;a material
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="material-content-pane" role="tabpanel"
+                                         aria-labelledby="material-content-tab" tabindex="0">
+                                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                            <div>
+                                                <h3 class="fs-5 mb-1">N&#7897;i dung h&#7885;c c&#7911;a material</h3>
+                                                <p class="text-muted small mb-0">T&#7841;o c&#225;c m&#7909;c TEXT, LINK, VIDEO ho&#7863;c FILE cho material.</p>
+                                            </div>
+                                            <span class="badge bg-light text-dark border">
+                                                <span th:text="${#lists.size(materialContents)}">0</span> m&#7909;c
+                                            </span>
+                                        </div>
+
+                                        <div th:if="${selectedMaterial == null}" class="text-center text-muted py-5 border rounded">
+                                            Ch&#7885;n ho&#7863;c t&#7841;o material &#273;&#7875; th&#234;m n&#7897;i dung.
+                                        </div>
+
+                                        <div th:if="${selectedMaterial != null}">
+                                            <form th:action="@{/lecturer/materials/{id}/contents/save(id=${selectedMaterial.id})}"
+                                                  th:object="${contentForm}" method="post" enctype="multipart/form-data"
+                                                  class="row g-3 mb-4 pb-4 border-bottom">
+                                                <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                                <input type="hidden" th:field="*{id}">
+                                                <input type="hidden" th:field="*{materialId}">
+                                                <div class="col-md-4">
+                                                    <label class="form-label" for="contentType">Lo&#7841;i n&#7897;i dung</label>
+                                                    <select class="form-select" id="contentType" th:field="*{contentType}" required>
+                                                        <option value="TEXT">TEXT</option>
+                                                        <option value="LINK">LINK</option>
+                                                        <option value="VIDEO">VIDEO</option>
+                                                        <option value="FILE">FILE</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <label class="form-label" for="contentTitle">Ti&#234;u &#273;&#7873;</label>
+                                                    <input class="form-control" id="contentTitle" th:field="*{title}" maxlength="200">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label" for="displayOrder">Th&#7913; t&#7921;</label>
+                                                    <input class="form-control" id="displayOrder" type="number"
+                                                           th:field="*{displayOrder}" min="1" required>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label" for="contentText">N&#7897;i dung TEXT</label>
+                                                    <textarea class="form-control" id="contentText" th:field="*{contentText}" rows="3"></textarea>
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <label class="form-label" for="contentUrl">URL LINK</label>
+                                                    <input class="form-control" id="contentUrl" type="url"
+                                                           th:field="*{contentUrl}" maxlength="1000" placeholder="https://...">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <label class="form-label" for="mediaFile">T&#7843;i file/video</label>
+                                                    <input class="form-control" id="mediaFile" name="mediaFile" type="file">
+                                                </div>
+                                                <div class="col-12">
+                                                    <button class="btn btn-primary" type="submit">
+                                                        <i class="ti ti-device-floppy me-1"></i>
+                                                        <span th:if="${contentForm.id == null}">Th&#234;m n&#7897;i dung</span>
+                                                        <span th:if="${contentForm.id != null}">C&#7853;p nh&#7853;t n&#7897;i dung</span>
+                                                    </button>
+                                                    <a class="btn btn-light border ms-2"
+                                                       th:if="${contentForm.id != null}"
+                                                       th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${selectedMaterial.id})}">
+                                                        H&#7911;y s&#7917;a
+                                                    </a>
+                                                </div>
+                                            </form>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Lo&#7841;i</th>
+                                                        <th>Ti&#234;u &#273;&#7873;</th>
+                                                        <th>N&#7897;i dung / T&#7879;p</th>
+                                                        <th>Th&#7913; t&#7921;</th>
+                                                        <th class="text-end">Thao t&#225;c</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr th:if="${#lists.isEmpty(materialContents)}">
+                                                        <td colspan="5" class="text-center text-muted py-4">
+                                                            Material n&#224;y ch&#432;a c&#243; n&#7897;i dung h&#7885;c.
+                                                        </td>
+                                                    </tr>
+                                                    <tr th:each="content : ${materialContents}">
+                                                        <td><span class="badge bg-primary" th:text="${content.contentType}">TEXT</span></td>
+                                                        <td th:text="${content.title != null ? content.title : '-'}">-</td>
+                                                        <td class="text-break">
+                                                            <span th:if="${content.contentType == 'TEXT'}"
+                                                                  th:text="${content.contentText != null and #strings.length(content.contentText) > 100 ? #strings.substring(content.contentText, 0, 100) + '...' : content.contentText}">Text</span>
+                                                            <a th:if="${content.contentType != 'TEXT' and content.contentUrl != null}"
+                                                               th:href="${content.contentUrl}" target="_blank" rel="noopener"
+                                                               th:text="${content.contentUrl}">File</a>
+                                                            <span th:if="${content.contentType != 'TEXT' and content.contentUrl == null}">-</span>
+                                                        </td>
+                                                        <td th:text="${content.displayOrder}">1</td>
+                                                        <td class="text-end">
+                                                            <a class="btn btn-sm btn-light border me-1"
+                                                               th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${selectedMaterial.id}, contentEditId=${content.id})}"
+                                                               title="S&#7917;a n&#7897;i dung"
+                                                               aria-label="S&#7917;a n&#7897;i dung">
+                                                                <i class="ti ti-edit"></i>
+                                                            </a>
+                                                            <form th:action="@{/lecturer/materials/{id}/contents/delete/{contentId}(id=${selectedMaterial.id}, contentId=${content.id})}"
+                                                                  method="post" class="d-inline"
+                                                                  onsubmit="return confirm('X&#243;a n&#7897;i dung n&#224;y?');">
+                                                                <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                                                <button class="btn btn-sm btn-outline-danger" type="submit"
+                                                                        title="X&#243;a n&#7897;i dung"
+                                                                        aria-label="X&#243;a n&#7897;i dung">
+                                                                    <i class="ti ti-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="material-questions-pane" role="tabpanel"
+                                         aria-labelledby="material-questions-tab" tabindex="0">
+                                        <div th:if="${selectedMaterial == null}" class="text-center text-muted py-5 border rounded">
+                                            Ch&#7885;n material tr&#432;&#7899;c khi g&#7855;n c&#226;u h&#7887;i.
+                                        </div>
+
+                                        <div th:if="${selectedMaterial != null}">
+                                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                                <div>
+                                                    <h3 class="fs-5 mb-1">C&#226;u h&#7887;i thu&#7897;c material</h3>
+                                                    <p class="text-muted small mb-0">C&#225;c c&#226;u &#273;ang &#273;&#432;&#7907;c d&#249;ng trong material n&#224;y.</p>
+                                                </div>
+                                                <span class="badge bg-light text-dark border">
+                                                    <span th:text="${#lists.size(materialQuestions)}">0</span> c&#226;u
+                                                </span>
+                                            </div>
+
+                                            <form th:action="@{/lecturer/materials/{id}/questions/unassign(id=${selectedMaterial.id})}"
+                                                  method="post" class="mb-4 pb-4 border-bottom">
+                                                <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead>
+                                                        <tr>
+                                                            <th style="width:44px"></th>
+                                                            <th>N&#7897;i dung</th>
+                                                            <th>&#272;&#7897; kh&#243;</th>
+                                                            <th>Lo&#7841;i</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr th:if="${#lists.isEmpty(materialQuestions)}">
+                                                            <td colspan="4" class="text-center text-muted py-4">
+                                                                Material n&#224;y ch&#432;a c&#243; c&#226;u h&#7887;i.
+                                                            </td>
+                                                        </tr>
+                                                        <tr th:each="question : ${materialQuestions}">
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox" name="questionIds"
+                                                                       th:value="${question.id}">
+                                                            </td>
+                                                            <td class="text-break" th:text="${question.content}">Question</td>
+                                                            <td>
+                                                                <span class="badge bg-light text-dark border"
+                                                                      th:text="${question.difficulty}">MEDIUM</span>
+                                                            </td>
+                                                            <td th:text="${question.questionType}">MULTIPLE_CHOICE</td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button class="btn btn-outline-danger mt-3" type="submit"
+                                                        th:disabled="${#lists.isEmpty(materialQuestions)}">
+                                                    <i class="ti ti-unlink me-1"></i>G&#7905; c&#226;u &#273;&#227; ch&#7885;n
+                                                </button>
+                                            </form>
+
+                                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                                <div>
+                                                    <h3 class="fs-5 mb-1">Ng&#226;n h&#224;ng c&#226;u h&#7887;i c&#249;ng m&#244;n</h3>
+                                                    <p class="text-muted small mb-0">Tick c&#225;c c&#226;u c&#7847;n &#273;&#432;a v&#224;o material &#273;ang ch&#7885;n.</p>
+                                                </div>
+                                                <span class="badge bg-light text-dark border">
+                                                    <span th:text="${#lists.size(bankQuestions)}">0</span> c&#226;u
+                                                </span>
+                                            </div>
+
+                                            <form th:action="@{/lecturer/materials/{id}/questions/assign(id=${selectedMaterial.id})}"
+                                                  method="post">
+                                                <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead>
+                                                        <tr>
+                                                            <th style="width:44px"></th>
+                                                            <th>N&#7897;i dung</th>
+                                                            <th>&#272;&#7897; kh&#243;</th>
+                                                            <th>Material hi&#7879;n t&#7841;i</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr th:if="${#lists.isEmpty(bankQuestions)}">
+                                                            <td colspan="4" class="text-center text-muted py-4">
+                                                                Ch&#432;a c&#243; c&#226;u h&#7887;i trong ng&#226;n h&#224;ng c&#7911;a m&#244;n n&#224;y.
+                                                            </td>
+                                                        </tr>
+                                                        <tr th:each="question : ${bankQuestions}">
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox" name="questionIds"
+                                                                       th:value="${question.id}"
+                                                                       th:checked="${assignedQuestionIds.contains(question.id)}">
+                                                            </td>
+                                                            <td class="text-break" th:text="${question.content}">Question</td>
+                                                            <td>
+                                                                <span class="badge bg-light text-dark border"
+                                                                      th:text="${question.difficulty}">MEDIUM</span>
+                                                            </td>
+                                                            <td>
+                                                                <span th:if="${question.material != null}" th:text="${question.material.title}">Material</span>
+                                                                <span th:if="${question.material == null}" class="text-muted">Ch&#432;a g&#7855;n</span>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button class="btn btn-primary mt-3" type="submit"
+                                                        th:disabled="${#lists.isEmpty(bankQuestions)}">
+                                                    <i class="ti ti-link me-1"></i>G&#7855;n c&#226;u &#273;&#227; ch&#7885;n
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

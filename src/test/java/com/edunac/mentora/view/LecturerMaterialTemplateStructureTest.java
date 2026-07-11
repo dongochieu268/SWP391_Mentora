@@ -33,6 +33,12 @@ class LecturerMaterialTemplateStructureTest {
         assertTrue(template.contains("material-content-pane"));
         assertTrue(template.contains("material-questions-pane"));
         assertTrue(template.contains("material-summary"));
+        assertTrue(template.contains("newMaterial=true"));
+        assertTrue(template.contains("js-content-field"));
+        assertTrue(template.contains("data-content-types=\"TEXT\""));
+        assertTrue(template.contains("data-content-types=\"LINK\""));
+        assertTrue(template.contains("data-content-types=\"VIDEO,FILE\""));
+        assertTrue(template.contains("syncContentFields"));
     }
 
     @Test

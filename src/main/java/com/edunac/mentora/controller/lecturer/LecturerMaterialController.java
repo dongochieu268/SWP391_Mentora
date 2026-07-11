@@ -49,6 +49,7 @@ public class LecturerMaterialController {
     @GetMapping
     public String list(@RequestParam(required = false) Integer subjectId,
                        @RequestParam(required = false) Integer materialId,
+                       @RequestParam(defaultValue = "false") boolean newMaterial,
                        @RequestParam(required = false) Integer contentEditId,
                        HttpSession session,
                        Model model) {
@@ -56,7 +57,7 @@ public class LecturerMaterialController {
         List<Subject> subjects = subjectService.getActiveSubjects();
         Integer selectedSubjectId = selectedSubjectId(subjectId, subjects);
         List<Material> materials = materialService.findBySubject(selectedSubjectId);
-        Material selectedMaterial = selectMaterial(materials, materialId);
+        Material selectedMaterial = selectMaterial(materials, materialId, newMaterial);
         List<BankQuestion> materialQuestions = selectedMaterial == null
                 ? List.of()
                 : materialService.findQuestionsByMaterial(selectedMaterial.getId(), user);
@@ -105,7 +106,7 @@ public class LecturerMaterialController {
         if (bindingResult.hasErrors()) {
             ra.addFlashAttribute("error", firstValidationError(bindingResult));
             ra.addFlashAttribute("form", form);
-            return redirectToSubject(form.getSubjectId());
+            return redirectToNewMaterial(form.getSubjectId());
         }
         try {
             materialService.create(form.getSubjectId(), form.getTitle(), form.getDescription(), currentUser(session));
@@ -114,7 +115,7 @@ public class LecturerMaterialController {
             ra.addFlashAttribute("error", e.getMessage());
             ra.addFlashAttribute("form", form);
         }
-        return redirectToSubject(form.getSubjectId());
+        return redirectToNewMaterial(form.getSubjectId());
     }
 
     @PostMapping("/{id}/edit")
@@ -229,7 +230,10 @@ public class LecturerMaterialController {
         return subjects.stream().findFirst().map(Subject::getId).orElse(null);
     }
 
-    private Material selectMaterial(List<Material> materials, Integer requestedMaterialId) {
+    private Material selectMaterial(List<Material> materials, Integer requestedMaterialId, boolean newMaterial) {
+        if (newMaterial) {
+            return null;
+        }
         if (materials == null || materials.isEmpty()) {
             return null;
         }
@@ -264,6 +268,10 @@ public class LecturerMaterialController {
 
     private String redirectToMaterial(Integer subjectId, Integer materialId) {
         return redirectToSubject(subjectId) + "&materialId=" + materialId;
+    }
+
+    private String redirectToNewMaterial(Integer subjectId) {
+        return redirectToSubject(subjectId) + "&newMaterial=true";
     }
 
     private User currentUser(HttpSession session) {

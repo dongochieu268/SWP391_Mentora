@@ -77,7 +77,7 @@ class LecturerMaterialControllerTest {
         when(questionBankService.findActiveBySubject(subject.getId(), null, null, null)).thenReturn(List.of(bankQuestion));
 
         ExtendedModelMap model = new ExtendedModelMap();
-        String view = controller.list(subject.getId(), material.getId(), null, session, model);
+        String view = controller.list(subject.getId(), material.getId(), false, null, session, model);
 
         assertEquals("lecturer/material/list", view);
         assertEquals("materials", model.get("activePage"));
@@ -108,7 +108,7 @@ class LecturerMaterialControllerTest {
         when(nodeContentService.toForm(content)).thenReturn(editForm);
 
         ExtendedModelMap model = new ExtendedModelMap();
-        String view = controller.list(subject.getId(), material.getId(), content.getId(), session, model);
+        String view = controller.list(subject.getId(), material.getId(), false, content.getId(), session, model);
 
         assertEquals("lecturer/material/list", view);
         assertSame(editForm, model.get("contentForm"));
@@ -116,7 +116,25 @@ class LecturerMaterialControllerTest {
     }
 
     @Test
-    void createMaterialRedirectsToMaterialListForSubject() {
+    void listCanStayInCreateModeEvenWhenSubjectHasMaterials() {
+        Material material = new Material();
+        material.setId(11);
+        when(subjectService.getActiveSubjects()).thenReturn(List.of(subject));
+        when(materialService.findBySubject(subject.getId())).thenReturn(List.of(material));
+        when(questionBankService.findActiveBySubject(subject.getId(), null, null, null)).thenReturn(List.of());
+
+        ExtendedModelMap model = new ExtendedModelMap();
+        String view = controller.list(subject.getId(), null, true, null, session, model);
+
+        assertEquals("lecturer/material/list", view);
+        assertEquals(null, model.get("selectedMaterial"));
+        MaterialForm form = (MaterialForm) model.get("form");
+        assertEquals(subject.getId(), form.getSubjectId());
+        assertEquals(null, form.getId());
+    }
+
+    @Test
+    void createMaterialRedirectsToNewMaterialModeForFastSequentialEntry() {
         MaterialForm form = new MaterialForm();
         form.setSubjectId(subject.getId());
         form.setTitle("OOP Basics");
@@ -129,7 +147,7 @@ class LecturerMaterialControllerTest {
                 new RedirectAttributesModelMap()
         );
 
-        assertEquals("redirect:/lecturer/materials?subjectId=3", redirect);
+        assertEquals("redirect:/lecturer/materials?subjectId=3&newMaterial=true", redirect);
         verify(materialService).create(subject.getId(), "OOP Basics", "Encapsulation", lecturer);
     }
 

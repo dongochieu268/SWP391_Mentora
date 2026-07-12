@@ -17,6 +17,12 @@ public interface NodeContentRepository extends JpaRepository<NodeContent, Intege
 
     boolean existsByNode_Id(Integer nodeId);
 
+    List<NodeContent> findByMaterial_IdOrderByDisplayOrderAscIdAsc(Integer materialId);
+
+    Optional<NodeContent> findByIdAndMaterial_Id(Integer id, Integer materialId);
+
+    boolean existsByMaterial_Id(Integer materialId);
+
     @Query("""
             SELECT DISTINCT nc.node.id FROM NodeContent nc
             WHERE nc.node.learningPath.id = :pathId

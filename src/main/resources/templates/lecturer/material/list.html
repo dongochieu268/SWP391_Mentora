@@ -428,18 +428,12 @@
             </div>
             <div class="modal-body">
                 <div class="row g-2 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-8">
                         <label class="form-label small" for="materialQuestionSearch">T&#236;m c&#226;u h&#7887;i</label>
                         <input class="form-control" id="materialQuestionSearch" type="search"
                                placeholder="Nh&#7853;p n&#7897;i dung c&#226;u h&#7887;i">
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label small" for="materialQuestionTypeFilter">Lo&#7841;i</label>
-                        <select class="form-select" id="materialQuestionTypeFilter">
-                            <option value="">T&#7845;t c&#7843; lo&#7841;i</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label small" for="materialQuestionDifficultyFilter">&#272;&#7897; kh&#243;</label>
                         <select class="form-select" id="materialQuestionDifficultyFilter">
                             <option value="">T&#7845;t c&#7843; &#273;&#7897; kh&#243;</option>
@@ -461,24 +455,23 @@
                             <th style="width:44px"></th>
                             <th>N&#7897;i dung</th>
                             <th>&#272;&#7897; kh&#243;</th>
-                            <th>Lo&#7841;i</th>
                             <th>Material hi&#7879;n t&#7841;i</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:if="${#lists.isEmpty(bankQuestions)}">
-                            <td colspan="5" class="text-center text-muted py-4">
+                            <td colspan="4" class="text-center text-muted py-4">
                                 Ch&#432;a c&#243; c&#226;u h&#7887;i trong ng&#226;n h&#224;ng c&#7911;a m&#244;n n&#224;y.
                             </td>
                         </tr>
                         <tr class="d-none" data-question-empty-row>
-                            <td colspan="5" class="text-center text-muted py-4">
+                            <td colspan="4" class="text-center text-muted py-4">
                                 Kh&#244;ng c&#243; c&#226;u h&#7887;i ph&#249; h&#7907;p v&#7899;i b&#7897; l&#7885;c.
                             </td>
                         </tr>
                         <tr th:each="question : ${bankQuestions}"
                             data-question-bank-row="true"
-                            th:attr="data-question-content=${question.content != null ? #strings.toLowerCase(question.content) : ''},data-question-type=${question.questionType},data-question-difficulty=${question.difficulty}">
+                            th:attr="data-question-content=${question.content != null ? #strings.toLowerCase(question.content) : ''},data-question-difficulty=${question.difficulty}">
                             <td>
                                 <input class="form-check-input" type="checkbox" name="questionIds"
                                        th:value="${question.id}"
@@ -489,7 +482,6 @@
                                 <span class="badge bg-light text-dark border"
                                       th:text="${question.difficulty}">MEDIUM</span>
                             </td>
-                            <td th:text="${question.questionType}">MULTIPLE_CHOICE</td>
                             <td>
                                 <span th:if="${question.material != null}" th:text="${question.material.title}">Material</span>
                                 <span th:if="${question.material == null}" class="text-muted">Ch&#432;a g&#7855;n</span>
@@ -547,7 +539,6 @@
 
         const questionRows = Array.from(document.querySelectorAll('[data-question-bank-row]'));
         const questionSearch = document.getElementById('materialQuestionSearch');
-        const questionTypeFilter = document.getElementById('materialQuestionTypeFilter');
         const questionDifficultyFilter = document.getElementById('materialQuestionDifficultyFilter');
         const previousQuestionPage = document.getElementById('materialQuestionPreviousPage');
         const nextQuestionPage = document.getElementById('materialQuestionNextPage');
@@ -571,22 +562,17 @@
                 });
         }
 
-        addFilterOptions(questionTypeFilter, new Set(questionRows.map(function (row) {
-            return row.dataset.questionType || '';
-        })));
         addFilterOptions(questionDifficultyFilter, new Set(questionRows.map(function (row) {
             return row.dataset.questionDifficulty || '';
         })));
 
         function syncMaterialQuestionPicker() {
             const keyword = (questionSearch ? questionSearch.value : '').trim().toLowerCase();
-            const selectedType = questionTypeFilter ? questionTypeFilter.value : '';
             const selectedDifficulty = questionDifficultyFilter ? questionDifficultyFilter.value : '';
             const matches = questionRows.filter(function (row) {
                 const matchesKeyword = !keyword || (row.dataset.questionContent || '').includes(keyword);
-                const matchesType = !selectedType || row.dataset.questionType === selectedType;
                 const matchesDifficulty = !selectedDifficulty || row.dataset.questionDifficulty === selectedDifficulty;
-                return matchesKeyword && matchesType && matchesDifficulty;
+                return matchesKeyword && matchesDifficulty;
             });
             const totalPages = Math.max(1, Math.ceil(matches.length / questionPageSize));
             questionPage = Math.min(questionPage, totalPages);
@@ -616,7 +602,7 @@
             }
         }
 
-        [questionSearch, questionTypeFilter, questionDifficultyFilter].forEach(function (control) {
+        [questionSearch, questionDifficultyFilter].forEach(function (control) {
             if (!control) {
                 return;
             }

@@ -42,6 +42,21 @@ class LecturerMaterialTemplateStructureTest {
     }
 
     @Test
+    void questionBankPickerIsSeparatedIntoSearchableModal() throws IOException {
+        String template = resource("templates/lecturer/material/list.html");
+
+        assertTrue(template.contains("data-bs-target=\"#materialQuestionPickerModal\""));
+        assertTrue(template.contains("id=\"materialQuestionPickerModal\""));
+        assertTrue(template.contains("id=\"materialQuestionSearch\""));
+        assertTrue(template.contains("id=\"materialQuestionTypeFilter\""));
+        assertTrue(template.contains("id=\"materialQuestionDifficultyFilter\""));
+        assertTrue(template.contains("id=\"materialQuestionPreviousPage\""));
+        assertTrue(template.contains("id=\"materialQuestionNextPage\""));
+        assertTrue(template.contains("data-question-bank-row"));
+        assertTrue(template.contains("syncMaterialQuestionPicker"));
+    }
+
+    @Test
     void materialPageDoesNotContainMojibakeText() throws IOException {
         String template = resource("templates/lecturer/material/list.html");
 

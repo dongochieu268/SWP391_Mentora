@@ -158,10 +158,6 @@
                                                 <a th:href="@{${baseUrl}(editNode=${node.id})}" class="btn btn-outline-primary" title="Sửa node">
                                                     <i class="ti ti-edit"></i>
                                                 </a>
-                                                <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/contents(nid=${node.id})}"
-                                                   class="btn btn-outline-secondary" title="Quản lý nội dung bài học">
-                                                    <i class="ti ti-files"></i>
-                                                </a>
                                                 <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/levels(nid=${node.id})}"
                                                    class="btn btn-outline-info" title="Cấu hình level">
                                                     <i class="ti ti-layers-subtract"></i>
@@ -214,7 +210,6 @@
                                                             </div>
                                                             <div class="pb-node-actions">
                                                                 <a th:href="@{${baseUrl}(editNode=${bn.id})}" class="btn btn-outline-primary" title="Sửa node"><i class="ti ti-edit"></i></a>
-                                                                <a th:href="@{/lecturer/nodes/{nid}/contents(nid=${bn.id})}" class="btn btn-outline-secondary" title="Quản lý nội dung"><i class="ti ti-files"></i></a>
                                                                 <form th:if="${!hasClassroom}"
                                                                       th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/delete(id=${path.id},nid=${bn.id})}"
                                                                       method="post" onsubmit="return confirm('Xóa node này?');">
@@ -246,7 +241,6 @@
                                                             </div>
                                                             <div class="pb-node-actions">
                                                                 <a th:href="@{${baseUrl}(editNode=${bn.id})}" class="btn btn-outline-primary" title="Sửa node"><i class="ti ti-edit"></i></a>
-                                                                <a th:href="@{/lecturer/nodes/{nid}/contents(nid=${bn.id})}" class="btn btn-outline-secondary" title="Quản lý nội dung"><i class="ti ti-files"></i></a>
                                                                 <form th:if="${!hasClassroom}"
                                                                       th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/delete(id=${path.id},nid=${bn.id})}"
                                                                       method="post" onsubmit="return confirm('Xóa node này?');">

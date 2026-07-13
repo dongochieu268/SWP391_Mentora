@@ -7,10 +7,7 @@ import com.edunac.mentora.repository.assessment.AssessmentAttemptRepository;
 import com.edunac.mentora.repository.assessment.AssessmentRepository;
 import com.edunac.mentora.repository.assessment.QuestionOptionRepository;
 import com.edunac.mentora.repository.assessment.QuestionRepository;
-import com.edunac.mentora.repository.branching.BranchRuleRepository;
-import com.edunac.mentora.service.branching.StudentBranchService;
 import com.edunac.mentora.service.classroom.ClassroomMemberService;
-import com.edunac.mentora.service.learning.NodeProgressService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +20,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Bài test SELF_PACED độc lập (Assessment đứng riêng — OQ1: giữ lại cho non-level
+ * quizzes). Trigger branching cũ (assignBranch / markBranchTestCompleted) đã được
+ * gỡ khỏi scope này (node-levels work-plan, phần level-test — admin): chỉ gỡ điểm
+ * gọi, KHÔNG xóa file/class branching (StudentBranchService, BranchRuleRepository
+ * vẫn còn nguyên trong domain/branching, service/branching, repository/branching
+ * cho tới bước 7 — gỡ branching toàn bộ, thuộc phần `results`/Hiếu).
+ */
 @Service
 @Transactional
 public class StudentAssessmentService {
@@ -32,28 +37,19 @@ public class StudentAssessmentService {
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository optionRepository;
     private final ClassroomMemberService memberService;
-    private final StudentBranchService studentBranchService;
-    private final BranchRuleRepository branchRuleRepository;
-    private final NodeProgressService nodeProgressService;
 
     public StudentAssessmentService(
             AssessmentRepository assessmentRepository,
             AssessmentAttemptRepository attemptRepository,
             QuestionRepository questionRepository,
             QuestionOptionRepository optionRepository,
-            ClassroomMemberService memberService,
-            StudentBranchService studentBranchService,
-            BranchRuleRepository branchRuleRepository,
-            NodeProgressService nodeProgressService
+            ClassroomMemberService memberService
     ) {
         this.assessmentRepository = assessmentRepository;
         this.attemptRepository = attemptRepository;
         this.questionRepository = questionRepository;
         this.optionRepository = optionRepository;
         this.memberService = memberService;
-        this.studentBranchService = studentBranchService;
-        this.branchRuleRepository = branchRuleRepository;
-        this.nodeProgressService = nodeProgressService;
     }
 
     @Transactional(readOnly = true)
@@ -113,29 +109,7 @@ public class StudentAssessmentService {
         attempt.setScore(score);
         attempt.setStatus(AttemptStatus.SUBMITTED.name());
         attempt.setSubmittedAt(LocalDateTime.now());
-        AssessmentAttempt saved = attemptRepository.save(attempt);
-
-        Integer pathId = saved.getClassroom().getLearningPath().getId();
-
-        studentBranchService.assignBranch(
-                saved.getAssessment().getId(),
-                saved.getClassroom().getId(),
-                pathId,
-                saved.getStudent().getId(),
-                score.intValue()
-        );
-
-        branchRuleRepository
-                .findByAssessmentAndPath(saved.getAssessment().getId(), pathId)
-                .ifPresent(rule ->
-                        nodeProgressService.markBranchTestCompleted(
-                                saved.getStudent().getId(),
-                                rule.getNode().getId(),
-                                saved.getClassroom().getId()
-                        )
-                );
-
-        return saved;
+        return attemptRepository.save(attempt);
     }
 
     @Transactional(readOnly = true)

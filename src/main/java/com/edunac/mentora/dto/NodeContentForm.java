@@ -8,8 +8,9 @@ public class NodeContentForm {
 
     private Integer id;
 
-    @NotNull(message = "Node không hợp lệ")
     private Integer nodeId;
+
+    private Integer materialId;
 
     @NotBlank(message = "Loại nội dung không được để trống")
     private String contentType = "TEXT";
@@ -39,6 +40,14 @@ public class NodeContentForm {
 
     public void setNodeId(Integer nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public Integer getMaterialId() {
+        return materialId;
+    }
+
+    public void setMaterialId(Integer materialId) {
+        this.materialId = materialId;
     }
 
     public String getContentType() {

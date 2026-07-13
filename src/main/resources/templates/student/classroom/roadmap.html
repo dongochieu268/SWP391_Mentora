@@ -28,20 +28,40 @@
                             <span class="badge bg-info text-dark" th:text="${classroom.subject.code}"></span>
                             <span class="text-muted" th:text="${classroom.learningPath.name}"></span>
                         </div>
-                        <div class="mt-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small fw-semibold">Tiến độ hoàn thành</span>
-                                <span class="small text-muted"
-                                      th:text="${roadmap.completedVisibleCount} + '/' + ${roadmap.visibleNodeCount} + ' node'"></span>
+                        <div class="row mt-3 g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small fw-semibold">Tiến độ</span>
+                                    <span class="small text-muted"
+                                          th:text="${roadmap.completedVisibleCount} + '/' + ${roadmap.visibleNodeCount} + ' bài đã học'"></span>
+                                </div>
+                                <div class="progress progress-standard">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         th:style="'width:' + ${roadmap.completionPercent} + '%'"
+                                         th:attr="aria-valuenow=${roadmap.completionPercent}"
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-1"
+                                   th:text="${roadmap.completionPercent} + '% đã học'"></p>
                             </div>
-                            <div class="progress progress-standard">
-                                <div class="progress-bar bg-success" role="progressbar"
-                                     th:style="'width:' + ${roadmap.completionPercent} + '%'"
-                                     th:attr="aria-valuenow=${roadmap.completionPercent}"
-                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small fw-semibold">Điểm</span>
+                                    <span class="small text-muted" th:if="${roadmap.hasScorableNodes}"
+                                          th:text="${roadmap.totalScoreEarned} + '/' + ${roadmap.totalScorePossible}"></span>
+                                </div>
+                                <div class="progress progress-standard" th:if="${roadmap.hasScorableNodes}">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                         th:style="'width:' + ${roadmap.scorePercent} + '%'"
+                                         th:attr="aria-valuenow=${roadmap.scorePercent}"
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-1" th:if="${roadmap.hasScorableNodes}"
+                                   th:text="${roadmap.scorePercent} + '% điểm tối đa'"></p>
+                                <p class="small text-muted mb-0" th:unless="${roadmap.hasScorableNodes}">
+                                    Chưa có bài test nào.
+                                </p>
                             </div>
-                            <p class="small text-muted mb-0 mt-1"
-                               th:text="${roadmap.completionPercent} + '% hoàn thành'"></p>
                         </div>
                     </div>
                 </div>
@@ -58,163 +78,20 @@
                             Lớp chưa có node nào trong lộ trình.
                         </div>
 
+                        <div th:if="${not #lists.isEmpty(roadmap.nodes) and roadmap.visibleNodeCount == 0}"
+                             class="text-center text-muted py-4">
+                            <i class="ti ti-eye-off fs-3 d-block mb-2"></i>
+                            Giảng viên chưa mở bài học nào.
+                        </div>
+
                         <!-- ── Node list ── -->
-                        <div th:unless="${#lists.isEmpty(roadmap.nodes)}">
+                        <div th:if="${not #lists.isEmpty(roadmap.nodes) and roadmap.visibleNodeCount > 0}">
                             <div th:each="item, stat : ${roadmap.nodes}">
 
                                 <!-- connector line (trừ node đầu tiên) -->
                                 <div class="node-connector" th:unless="${stat.first}"></div>
 
-                                <!-- =========================================================
-                                     Determine row class dựa trên branchTag của node
-                                     ========================================================= -->
-
-                                <!-- BRANCH_TEST node — nổi bật hơn -->
-                                <div th:if="${item.node.nodeType == 'BRANCH_TEST'}"
-                                     class="list-group-item px-3 py-3 border rounded roadmap-node is-branch-test mb-0"
-                                     th:classappend="${item.state.name() == 'HIDDEN'} ? ' is-hidden' : ''">
-                                    <div class="roadmap-node-row">
-                                        <div class="roadmap-node-index">
-                                            <span class="badge rounded-circle bg-warning text-dark border"
-                                                  th:text="${stat.count}"></span>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-                                                <span class="badge bg-warning text-dark node-badge-type">
-                                                    <i class="ti ti-git-branch me-1"></i>BRANCH TEST
-                                                </span>
-                                                <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
-                                                <!-- State badge -->
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa mở</span>
-                                            </div>
-                                            <p class="text-muted small mb-1" th:if="${item.node.description != null}"
-                                               th:text="${item.node.description}"></p>
-                                            <p class="small mb-0 text-muted fst-italic">
-                                                <i class="ti ti-info-circle me-1"></i>
-                                                Kết quả bài test sẽ tự động phân bạn vào luồng PASS hoặc FAIL.
-                                            </p>
-                                        </div>
-                                        <div class="roadmap-node-action">
-                                            <a th:if="${item.state.name() == 'ACCESSIBLE'}"
-                                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-warning fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-player-play me-1"></i> Làm bài
-                                            </a>
-                                            <a th:if="${item.state.name() == 'COMPLETED'}"
-                                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-outline-success fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-refresh me-1"></i> Xem lại
-                                            </a>
-                                            <button th:if="${item.locked}"
-                                                    class="btn btn-sm btn-light text-muted px-3 d-inline-flex align-items-center" disabled>
-                                                <i class="ti ti-lock me-1"></i> Khóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- PASS branch node -->
-                                <div th:if="${item.node.branchTag == 'PASS'}"
-                                     class="list-group-item px-3 py-3 border rounded roadmap-node roadmap-branch-node is-pass mb-0"
-                                     th:classappend="${item.state.name() == 'HIDDEN'} ? ' is-hidden' : ''">
-                                    <div class="roadmap-node-row">
-                                        <div class="roadmap-node-index">
-                                            <span class="badge rounded-circle bg-success border"
-                                                  th:text="${stat.count}"></span>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-                                                <span class="badge bg-success node-badge-type">
-                                                    <i class="ti ti-check me-1"></i>PASS
-                                                </span>
-                                                <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa hiển thị</span>
-                                            </div>
-                                            <p class="text-muted small mb-0" th:if="${item.node.description != null}"
-                                               th:text="${item.node.description}"></p>
-                                            <!-- Thông báo khi HIDDEN vì chưa được phân vào nhánh này -->
-                                            <p class="small mb-0 text-success fst-italic"
-                                               th:if="${item.state.name() == 'HIDDEN'}">
-                                                <i class="ti ti-info-circle me-1"></i>
-                                                Nhánh này dành cho sinh viên đạt bài test. Hãy hoàn thành bài kiểm tra rẽ nhánh trước.
-                                            </p>
-                                        </div>
-                                        <div class="roadmap-node-action">
-                                            <a th:if="${item.state.name() == 'ACCESSIBLE'}"
-                                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-success fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-player-play me-1"></i> Vào học
-                                            </a>
-                                            <a th:if="${item.state.name() == 'COMPLETED'}"
-                                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-outline-success fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-refresh me-1"></i> Xem lại
-                                            </a>
-                                            <button th:if="${item.locked}"
-                                                    class="btn btn-sm btn-light text-muted px-3 d-inline-flex align-items-center" disabled>
-                                                <i class="ti ti-lock me-1"></i> Khóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- FAIL branch node -->
-                                <div th:if="${item.node.branchTag == 'FAIL'}"
-                                     class="list-group-item px-3 py-3 border rounded roadmap-node roadmap-branch-node is-fail mb-0"
-                                     th:classappend="${item.state.name() == 'HIDDEN'} ? ' is-hidden' : ''">
-                                    <div class="roadmap-node-row">
-                                        <div class="roadmap-node-index">
-                                            <span class="badge rounded-circle bg-danger border"
-                                                  th:text="${stat.count}"></span>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-                                                <span class="badge bg-danger node-badge-type">
-                                                    <i class="ti ti-x me-1"></i>FAIL
-                                                </span>
-                                                <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
-                                                <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
-                                                <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
-                                                <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa hiển thị</span>
-                                            </div>
-                                            <p class="text-muted small mb-0" th:if="${item.node.description != null}"
-                                               th:text="${item.node.description}"></p>
-                                            <p class="small mb-0 text-danger fst-italic"
-                                               th:if="${item.state.name() == 'HIDDEN'}">
-                                                <i class="ti ti-info-circle me-1"></i>
-                                                Nhánh này dành cho sinh viên chưa đạt bài test. Hãy hoàn thành bài kiểm tra rẽ nhánh trước.
-                                            </p>
-                                        </div>
-                                        <div class="roadmap-node-action">
-                                            <a th:if="${item.state.name() == 'ACCESSIBLE'}"
-                                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-danger fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-player-play me-1"></i> Vào học
-                                            </a>
-                                            <a th:if="${item.state.name() == 'COMPLETED'}"
-                                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-outline-danger fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-refresh me-1"></i> Xem lại
-                                            </a>
-                                            <button th:if="${item.locked}"
-                                                    class="btn btn-sm btn-light text-muted px-3 d-inline-flex align-items-center" disabled>
-                                                <i class="ti ti-lock me-1"></i> Khóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- MAIN / LESSON node (branchTag == MAIN hoặc null) -->
-                                <div th:if="${item.node.branchTag == 'MAIN' or item.node.branchTag == null}"
-                                     th:unless="${item.node.nodeType == 'BRANCH_TEST'}"
-                                     class="list-group-item px-3 py-3 border rounded roadmap-node mb-0"
+                                <div class="list-group-item px-3 py-3 border rounded roadmap-node mb-0"
                                      th:classappend="${item.state.name() == 'HIDDEN'} ? ' is-hidden' : ''">
                                     <div class="roadmap-node-row">
                                         <div class="roadmap-node-index">
@@ -228,6 +105,10 @@
                                                 <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
                                                 <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
                                                 <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa mở</span>
+                                                <span th:if="${item.hasLevels}" class="badge bg-primary-subtle text-primary"
+                                                      th:text="'Lv. ' + ${item.bestLevelNumber != null ? item.bestLevelNumber : 0} + '/' + ${item.totalLevels}"></span>
+                                                <span th:if="${item.bestScore != null}" class="badge bg-light text-dark border"
+                                                      th:text="'Điểm cao nhất: ' + ${item.bestScore}"></span>
                                             </div>
                                             <p class="text-muted small mb-0"
                                                th:if="${item.node.description != null}"

@@ -231,6 +231,23 @@ public class NodeLevelService {
         levelMaterialRepository.delete(lm);
     }
 
+    // ===== NODE DELETE SUPPORT (L1 §3, L3 §6) =====
+
+    /** L1 §3 — chặn xóa node khi bất kỳ level nào của nó đã có attempt. */
+    @Transactional(readOnly = true)
+    public boolean nodeHasAttempts(Integer nodeId) {
+        return attemptRepository.existsByNodeLevel_LearningNode_Id(nodeId);
+    }
+
+    /**
+     * L3 §6 — cascade xóa toàn bộ NodeLevel (+ LevelMaterial theo orphanRemoval)
+     * của một node. Gọi từ LearningPathService.deleteNode() SAU khi đã xác nhận
+     * node không có attempt nào (nodeHasAttempts()).
+     */
+    public void deleteLevelsForNode(Integer nodeId) {
+        levelRepository.deleteAll(levelRepository.findByLearningNode_IdOrderByLevelNumberAsc(nodeId));
+    }
+
     // ===== CLONE (L1 §4) =====
 
     /**

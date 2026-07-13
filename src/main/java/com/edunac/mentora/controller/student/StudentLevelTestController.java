@@ -20,15 +20,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Luồng làm bài Level Test (S3/S4/S5). KHÔNG code timer/timeout — durationMinutes
- * enforcement bị hoãn post-defense (rev 06b), field chỉ hiển thị display-only
- * ở phía config, controller này không đọc/ghi gì liên quan đến nó.
+ * Luồng làm bài Level Test (S3/S4/S5).
  */
 @Controller
 @RequestMapping("/student/classrooms/{classroomId}/levels/{levelId}/take")
@@ -100,8 +100,22 @@ public class StudentLevelTestController {
 
             List<AttemptQuestion> questions = attemptQuestionRepository.findWithOptionsByAttemptId(attempt.getId());
 
+            // Tính số giây còn lại cho countdown timer
+            long secondsRemaining = 0;
+            if (attempt.getDeadlineAt() != null) {
+                secondsRemaining = Math.max(0,
+                        ChronoUnit.SECONDS.between(LocalDateTime.now(), attempt.getDeadlineAt()));
+            } else if (attempt.getStartedAt() != null
+                    && attempt.getNodeLevel().getDurationMinutes() != null) {
+                LocalDateTime computed = attempt.getStartedAt()
+                        .plusMinutes(attempt.getNodeLevel().getDurationMinutes());
+                secondsRemaining = Math.max(0,
+                        ChronoUnit.SECONDS.between(LocalDateTime.now(), computed));
+            }
+
             model.addAttribute("attempt", attempt);
             model.addAttribute("questions", questions);
+            model.addAttribute("secondsRemaining", secondsRemaining);
             model.addAttribute("classroomId", classroomId);
             model.addAttribute("levelId", levelId);
             model.addAttribute("nodeId", nodeId);

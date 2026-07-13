@@ -32,6 +32,15 @@
                                 <span class="badge bg-primary" th:text="${attempt.nodeLevel.maxScore} + ' điểm'"></span>
                                 <span class="badge bg-light text-dark border"
                                       th:text="'Đạt từ ' + ${attempt.nodeLevel.passingScore} + ' điểm'"></span>
+                                <!-- Countdown Timer (chỉ hiện khi level có giới hạn thời gian) -->
+                                <div class="mt-2" th:if="${attempt.nodeLevel.durationMinutes != null}">
+                                    <span class="badge fs-6 px-3 py-2 bg-success text-white" id="timerBadge"
+                                          style="min-width: 90px; font-variant-numeric: tabular-nums;">
+                                        <i class="ti ti-clock me-1"></i>
+                                        <span id="timerDisplay"
+                                              th:text="${attempt.nodeLevel.durationMinutes} + ':00'">--:--</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -81,22 +90,32 @@
                 </form>
 </main>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
     (() => {
         const form = document.getElementById('levelTestForm');
         const submitButton = document.getElementById('submitTestButton');
+        const timerEnabled = /*[[${attempt.nodeLevel.durationMinutes != null}]]*/ false;
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerBadge = document.getElementById('timerBadge');
+        let secondsRemaining = /*[[${secondsRemaining}]]*/ 0;
         let isSubmitting = false;
+        let autoSubmitted = false;
+
+        const markSubmitting = () => {
+            isSubmitting = true;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang nộp...';
+            }
+        };
 
         form?.addEventListener('submit', event => {
             if (!confirm('Nộp bài test này? Sau khi nộp bạn không thể sửa đáp án.')) {
                 event.preventDefault();
                 return;
             }
-            isSubmitting = true;
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang nộp...';
-            }
+            markSubmitting();
         });
 
         // Trình duyệt vẫn phải cho phép đóng tab/máy sập; cảnh báo này ngăn
@@ -113,7 +132,49 @@
             history.pushState({ levelTest: true }, '', window.location.href);
             alert('Bạn cần nộp bài trước khi rời trang.');
         });
+
+        if (!timerEnabled || !timerDisplay || !timerBadge) return;
+
+        const pad = value => value < 10 ? '0' + value : String(value);
+
+        function updateDisplay() {
+            const total = Math.max(0, secondsRemaining);
+            const h = Math.floor(total / 3600);
+            const m = Math.floor((total % 3600) / 60);
+            const s = total % 60;
+            timerDisplay.textContent = h > 0
+                ? pad(h) + ':' + pad(m) + ':' + pad(s)
+                : pad(m) + ':' + pad(s);
+        }
+
+        function tick() {
+            secondsRemaining = Math.max(0, secondsRemaining - 1);
+            updateDisplay();
+
+            if (secondsRemaining <= 0) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-danger text-white';
+                if (!autoSubmitted) {
+                    autoSubmitted = true;
+                    markSubmitting();
+                    alert('⏰ Hết giờ! Bài làm của bạn sẽ được nộp tự động.');
+                    form.submit();
+                }
+                return;
+            }
+            if (secondsRemaining <= 300) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-danger text-white';
+            } else if (secondsRemaining <= 600) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-warning text-dark';
+            } else {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-success text-white';
+            }
+            setTimeout(tick, 1000);
+        }
+
+        updateDisplay();
+        setTimeout(tick, 1000);
     })();
+    /*]]>*/
 </script>
 </body>
 </html>

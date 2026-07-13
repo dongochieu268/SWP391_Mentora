@@ -80,19 +80,23 @@
                     <div class="card-body">
                         <!-- Thông số level -->
                         <div class="row g-3 mb-3">
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-2">
                                 <small class="text-muted d-block">Điểm tối đa</small>
                                 <strong th:text="${level.maxScore.stripTrailingZeros().toPlainString()}">10</strong>
                             </div>
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-2">
                                 <small class="text-muted d-block">Ngưỡng qua level</small>
                                 <strong th:text="${level.passingScore.stripTrailingZeros().toPlainString()}">5</strong>
                             </div>
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-2">
                                 <small class="text-muted d-block">Số lần thử</small>
                                 <strong th:text="${level.maxAttempts != null ? level.maxAttempts : 'Không giới hạn'}">∞</strong>
                             </div>
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-2">
+                                <small class="text-muted d-block">Thời gian</small>
+                                <strong th:text="${level.durationMinutes != null ? level.durationMinutes + ' phút' : 'Không giới hạn'}">∞</strong>
+                            </div>
+                            <div class="col-6 col-md-2">
                                 <small class="text-muted d-block">Tổng câu hỏi</small>
                                 <strong th:text="${totalQuestionsByLevel[level.id] != null ? totalQuestionsByLevel[level.id] : 0}">0</strong>
                             </div>
@@ -215,7 +219,12 @@
                                min="1" placeholder="Để trống = không giới hạn">
                     </div>
 
-                    <!-- durationMinutes ẩn khỏi UI (deferred post-defense, work-plan §8) -->
+                    <div class="mb-3">
+                        <label class="form-label">Thời gian làm bài (phút)</label>
+                        <input type="number" class="form-control" th:field="*{durationMinutes}"
+                               min="1" placeholder="Để trống = không giới hạn">
+                        <div class="form-text">Khi hết giờ, bài sẽ tự động nộp.</div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <a th:href="@{/lecturer/nodes/{id}/levels(id=${node.id})}"

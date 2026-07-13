@@ -12,7 +12,12 @@ import java.util.List;
 
 public interface BankQuestionRepository extends JpaRepository<BankQuestion, Integer> {
     List<BankQuestion> findByQuestionBank_Subject_IdAndStatusOrderByUpdatedAtDesc(Integer subjectId, String status);
+    List<BankQuestion> findByMaterial_IdOrderByUpdatedAtDesc(Integer materialId);
     List<BankQuestion> findByIdIn(Collection<Integer> ids);
+
+    long countByMaterial_IdAndStatus(Integer materialId, String status);
+    List<BankQuestion> findByMaterial_IdAndStatus(Integer materialId, String status);
+
 
     @Query("""
             select bankQuestion

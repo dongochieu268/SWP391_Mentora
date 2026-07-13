@@ -162,6 +162,10 @@
                                                    class="btn btn-outline-secondary" title="Quản lý nội dung bài học">
                                                     <i class="ti ti-files"></i>
                                                 </a>
+                                                <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/levels(nid=${node.id})}"
+                                                   class="btn btn-outline-info" title="Cấu hình level">
+                                                    <i class="ti ti-layers-subtract"></i>
+                                                </a>
                                                 <form th:if="${isTest and rule == null}"
                                                       th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/create-test(id=${path.id},nid=${node.id})}"
                                                       method="post">
@@ -224,9 +228,6 @@
                                                 </th:block>
                                                 <div class="pb-connector">
                                                     <span class="pb-line"></span>
-                                                    <a class="pb-add" th:href="@{${baseUrl}(addBranch=${node.id},tag='PASS')}" title="Thêm bài cho nhánh ĐẠT">
-                                                        <i class="ti ti-plus"></i>
-                                                    </a>
                                                 </div>
                                             </div>
                                             <!-- Nhánh CHƯA ĐẠT -->
@@ -259,9 +260,6 @@
                                                 </th:block>
                                                 <div class="pb-connector">
                                                     <span class="pb-line"></span>
-                                                    <a class="pb-add" th:href="@{${baseUrl}(addBranch=${node.id},tag='FAIL')}" title="Thêm bài cho nhánh CHƯA ĐẠT">
-                                                        <i class="ti ti-plus"></i>
-                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -466,22 +464,6 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Loại node</label>
-                                            <div class="pb-type-pick">
-                                                <button type="button" class="pb-type-btn selected" id="typeBtnLesson" onclick="pickType('LESSON')">
-                                                    <i class="ti ti-book text-primary"></i>
-                                                    <strong>Bài học</strong>
-                                                    <div class="small text-muted">Tài liệu, video, liên kết... cho sinh viên học</div>
-                                                </button>
-                                                <button type="button" class="pb-type-btn" id="typeBtnTest" onclick="pickType('BRANCH_TEST')">
-                                                    <i class="ti ti-git-branch text-warning"></i>
-                                                    <strong>Bài test rẽ nhánh</strong>
-                                                    <div class="small text-muted">Đạt → nhánh ĐẠT, chưa đạt → nhánh CHƯA ĐẠT</div>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
                                             <label class="form-label" for="addNodeTitle">Tiêu đề <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="title" id="addNodeTitle" maxlength="200" required autofocus>
                                         </div>
@@ -495,29 +477,6 @@
                                                 <option value="">Không có tiên quyết</option>
                                                 <option th:each="n : ${nodes}" th:value="${n.id}" th:text="${n.title}"></option>
                                             </select>
-                                        </div>
-
-                                        <!-- Chỉ hiện khi chọn "Bài test rẽ nhánh" -->
-                                        <div class="p-3 rounded border d-none pb-test-fields" id="addTestFields">
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold" for="assessmentIdAdd">
-                                                    <i class="ti ti-clipboard-list me-1"></i>Bài test
-                                                </label>
-                                                <select class="form-select" name="assessmentId" id="assessmentIdAdd">
-                                                    <option value="">— Chọn sau (gắn bài test ở bước sửa node) —</option>
-                                                    <option th:each="a : ${assessments}" th:value="${a.id}"
-                                                            th:text="${a.title} + ' (PUBLISHED)'"></option>
-                                                </select>
-                                                <div class="form-text">Chưa có bài test phù hợp? Lưu node trước, rồi bấm "Sửa node" để tạo bài test mới ngay tại chỗ.</div>
-                                            </div>
-                                            <div class="mb-0 pb-score-field">
-                                                <label class="form-label fw-semibold" for="minScoreAdd">Điểm đạt (minScore)</label>
-                                                <div class="input-group">
-                                                    <input type="number" class="form-control" name="minScore" id="minScoreAdd" min="0" step="0.5" placeholder="VD: 5">
-                                                    <span class="input-group-text">điểm</span>
-                                                </div>
-                                                <div class="form-text">Điểm ≥ giá trị này → nhánh ĐẠT.</div>
-                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -588,7 +547,7 @@
                                             Node thuộc <strong th:text="${nodeForm.branchTag == 'PASS'} ? 'nhánh ĐẠT' : 'nhánh CHƯA ĐẠT'"></strong>.
                                         </div>
 
-                                        <div class="mb-3" th:if="${!isBranchNode and !(isTestNode and testHasChildren)}">
+                                        <div class="mb-3" th:if="${isTestNode and !testHasChildren}">
                                             <label class="form-label">Loại node</label>
                                             <div class="pb-type-pick">
                                                 <button type="button" class="pb-type-btn" id="typeBtnLesson"

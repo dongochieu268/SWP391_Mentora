@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${attempt.nodeLevel.title} + ' | Mentora'">Làm bài Level Test | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body class="bg-light">
+<main class="container py-4" style="max-width: 980px">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <img th:src="@{/assets/images/logos/logo.svg}" alt="Mentora" style="height: 38px">
+            <span class="fw-bold fs-5">Chế độ làm bài</span>
+        </div>
+        <span class="badge bg-warning-subtle text-warning px-3 py-2">
+            <i class="ti ti-lock me-1"></i>Không rời trang khi chưa nộp bài
+        </span>
+    </div>
+
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between gap-3">
+                            <div>
+                                <h4 class="fw-bold mb-1" th:text="${attempt.nodeLevel.title}"></h4>
+                                <p class="text-muted mb-0" th:text="'Lần thử số ' + ${attempt.attemptNumber}"></p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary" th:text="${attempt.nodeLevel.maxScore} + ' điểm'"></span>
+                                <span class="badge bg-light text-dark border"
+                                      th:text="'Đạt từ ' + ${attempt.nodeLevel.passingScore} + ' điểm'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="levelTestForm"
+                      th:action="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${levelId})}"
+                      method="post"
+                      autocomplete="off">
+
+                    <input type="hidden" name="attemptId" th:value="${attempt.id}"/>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-4">
+                                Level này chưa có câu hỏi.
+                            </div>
+
+                            <div th:unless="${#lists.isEmpty(questions)}">
+                                <div class="border rounded p-3 mb-3" th:each="question, stat : ${questions}">
+                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                                        <span class="badge bg-light text-dark border" th:text="'Câu ' + ${stat.count}"></span>
+                                        <span class="badge bg-info text-dark" th:text="${question.difficulty}"></span>
+                                    </div>
+                                    <div class="fw-semibold mb-3" th:text="${question.content}"></div>
+
+                                    <div class="form-check mb-2" th:each="option : ${question.options}">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               th:name="${'answers_' + question.id}"
+                                               th:id="${'q' + question.id + '_opt' + option.id}"
+                                               th:value="${option.id}">
+                                        <label class="form-check-label"
+                                               th:for="${'q' + question.id + '_opt' + option.id}"
+                                               th:text="${option.content}"></label>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button id="submitTestButton" type="submit" class="btn btn-primary px-4">
+                                        <i class="ti ti-send me-1"></i> Nộp bài
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+</main>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    (() => {
+        const form = document.getElementById('levelTestForm');
+        const submitButton = document.getElementById('submitTestButton');
+        let isSubmitting = false;
+
+        form?.addEventListener('submit', event => {
+            if (!confirm('Nộp bài test này? Sau khi nộp bạn không thể sửa đáp án.')) {
+                event.preventDefault();
+                return;
+            }
+            isSubmitting = true;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang nộp...';
+            }
+        });
+
+        // Trình duyệt vẫn phải cho phép đóng tab/máy sập; cảnh báo này ngăn
+        // thao tác rời trang ngoài ý muốn. Khi quay lại, backend resume attempt cũ.
+        window.addEventListener('beforeunload', event => {
+            if (isSubmitting) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        // Không cho nút Back của trình duyệt đưa sinh viên ra khỏi bài thi.
+        history.pushState({ levelTest: true }, '', window.location.href);
+        window.addEventListener('popstate', () => {
+            history.pushState({ levelTest: true }, '', window.location.href);
+            alert('Bạn cần nộp bài trước khi rời trang.');
+        });
+    })();
+</script>
+</body>
+</html>

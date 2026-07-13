@@ -4,6 +4,8 @@ import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.branching.BranchRule;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
+import com.edunac.mentora.domain.classroom.ClassroomNodeStatus;
+import com.edunac.mentora.domain.classroom.NodeVisibilityStatus;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
@@ -18,6 +20,7 @@ import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
 import com.edunac.mentora.service.learning.NodeContentStorageService;
+import com.edunac.mentora.service.learning.NodeLevelService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +47,8 @@ public class LearningPathService {
     private final BranchRuleRepository branchRuleRepository;
     private final AssessmentRepository assessmentRepository;
 
+    private final NodeLevelService nodeLevelService;
+
     public LearningPathService(LearningPathRepository pathRepository,
                                LearningNodeRepository nodeRepository,
                                SubjectRepository subjectRepository,
@@ -53,7 +58,8 @@ public class LearningPathService {
                                ClassroomNodeStatusRepository classroomNodeStatusRepository,
                                ClassroomRepository classroomRepository,
                                BranchRuleRepository branchRuleRepository,
-                               AssessmentRepository assessmentRepository) {
+                               AssessmentRepository assessmentRepository,
+                               NodeLevelService nodeLevelService) {
         this.pathRepository = pathRepository;
         this.nodeRepository = nodeRepository;
         this.subjectRepository = subjectRepository;
@@ -64,6 +70,7 @@ public class LearningPathService {
         this.classroomRepository = classroomRepository;
         this.branchRuleRepository = branchRuleRepository;
         this.assessmentRepository = assessmentRepository;
+        this.nodeLevelService = nodeLevelService;
     }
 
 
@@ -146,6 +153,13 @@ public class LearningPathService {
         normalizeIfNeeded(pathId);
 
         saveBranchRuleIfNeeded(saved, form);
+
+        // L3 §7: tự sinh Level 1 mặc định khi tạo node mới
+        nodeLevelService.createDefaultLevel(saved.getId());
+
+        // A newly-created lesson is published to every classroom currently
+        // using this path. Explicitly hidden existing lessons are untouched.
+        createVisibleStatusForPathClassrooms(pathId, saved);
 
         return saved;
     }
@@ -249,10 +263,17 @@ public class LearningPathService {
         if (nodeProgressRepository.existsByLearningNodeId(nodeId)) {
             throw new IllegalStateException("Không thể xóa node vì vẫn còn dữ liệu tiến trình học liên quan.");
         }
+        // L1 §3 — chặn xóa node khi bất kỳ level nào của nó đã có NodeLevelAttempt.
+        if (nodeLevelService.nodeHasAttempts(nodeId)) {
+            throw new IllegalStateException(
+                    "Node đang có dữ liệu tiến trình học sinh, không thể xóa.");
+        }
 
         branchRuleRepository.findByNodeId(nodeId).ifPresent(branchRuleRepository::delete);
         classroomNodeStatusRepository.deleteByNodeId(nodeId);
         deleteContentsForNode(nodeId);
+        // L3 §6 — cascade xóa NodeLevel + LevelMaterial trước khi xóa node (FK).
+        nodeLevelService.deleteLevelsForNode(nodeId);
         nodeRepository.delete(node);
     }
 
@@ -360,6 +381,20 @@ public class LearningPathService {
         nodeContentRepository.flush();
         for (NodeContent c : contents) {
             storageService.deleteIfManaged(c.getContentUrl());
+        }
+    }
+
+    private void createVisibleStatusForPathClassrooms(Integer pathId, LearningNode node) {
+        for (var classroom : classroomRepository.findByLearningPathId(pathId)) {
+            if (classroomNodeStatusRepository
+                    .findByClassroomIdAndNodeId(classroom.getId(), node.getId()).isPresent()) {
+                continue;
+            }
+            ClassroomNodeStatus status = new ClassroomNodeStatus();
+            status.setClassroom(classroom);
+            status.setNode(node);
+            status.setStatus(NodeVisibilityStatus.VISIBLE.name());
+            classroomNodeStatusRepository.save(status);
         }
     }
 
@@ -528,6 +563,12 @@ public class LearningPathService {
                 newRule.setMinScore(oldRule.getMinScore());
                 branchRuleRepository.save(newRule);
             });
+        }
+
+        // L1 §4: clone levels + levelMaterials, KHÔNG clone attempts
+        for (LearningNode oldNode : sourceNodes) {
+            LearningNode clonedNode = nodeMap.get(oldNode.getId());
+            nodeLevelService.cloneLevels(oldNode.getId(), clonedNode.getId());
         }
 
         return savedPath;

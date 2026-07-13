@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,6 +40,12 @@ public class NodeProgress {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Column(name = "best_score", precision = 5, scale = 2)
+    private BigDecimal bestScore;   // highest score across all level attempts for this node
+
+    @Column(name = "best_level_number")
+    private Integer bestLevelNumber;   // level at which bestScore was achieved
 
     public Integer getNodeId() {
         return learningNode != null ? learningNode.getId() : null;

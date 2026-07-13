@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${nodeLevel.title} + ' | Mentora'">Kết quả Level Test | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div class="mb-4">
+                    <a th:replace="~{components/back-button :: backButton(@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}, 'Trở lại roadmap')}"></a>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <!-- S5 §1: điểm, thang điểm, ngưỡng đạt, trạng thái -->
+                <div class="card mb-4">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <span class="status-badge" th:classappend="${attempt.passed} ? 'status-active' : 'status-banned'"
+                                  th:text="${attempt.passed} ? 'ĐẠT' : 'CHƯA ĐẠT'"></span>
+                        </div>
+                        <h4 class="fw-bold mb-2" th:text="${nodeLevel.title}"></h4>
+                        <p class="text-muted mb-4">Kết quả Level Test</p>
+
+                        <div class="d-inline-block p-4 bg-light rounded-3 mb-4">
+                            <div class="text-muted small">Điểm của bạn</div>
+                            <div class="display-5 fw-bold text-primary">
+                                <span th:text="${attempt.score}"></span>
+                                <span class="fs-5 text-muted">/ <span th:text="${nodeLevel.maxScore}"></span></span>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded">
+                                    <div class="text-muted small">Điểm cần đạt</div>
+                                    <div class="fw-semibold" th:text="${nodeLevel.passingScore}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded">
+                                    <div class="text-muted small">Lần thử</div>
+                                    <div class="fw-semibold" th:text="${attempt.attemptNumber}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded">
+                                    <div class="text-muted small">Nộp bài</div>
+                                    <div class="fw-semibold"
+                                         th:text="${attempt.submittedAt != null ? #temporals.format(attempt.submittedAt, 'dd/MM/yyyy HH:mm') : '-'}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- S5 §3/§4/§5: CTA theo trạng thái đạt/lượt còn lại -->
+                        <div class="d-flex justify-content-center flex-wrap gap-2">
+                            <a th:if="${canGoNext}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nodeId})}"
+                               class="btn btn-success">
+                                <i class="ti ti-arrow-big-right-lines me-1"></i> Tiếp theo: ôn tập
+                            </a>
+                            <a th:if="${canRetry}"
+                               th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${levelId})}"
+                               class="btn btn-outline-primary">
+                                <i class="ti ti-refresh me-1"></i> Thử lại Level này
+                            </a>
+                            <span th:if="${noAttemptsLeft}" class="text-muted align-self-center">
+                                Bạn đã hết số lần thử cho level này.
+                            </span>
+                            <a th:href="@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}" class="btn btn-outline-secondary">
+                                <i class="ti ti-route me-1"></i> Về lộ trình học
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- S5 §6: review từng câu — đáp án đã chọn vs đáp án đúng -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Xem lại từng câu</h5>
+
+                        <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-4">
+                            Level này chưa có câu hỏi.
+                        </div>
+
+                        <div th:unless="${#lists.isEmpty(questions)}">
+                            <div class="border rounded p-3 mb-3" th:each="question, stat : ${questions}">
+                                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                                    <span class="badge bg-light text-dark border" th:text="'Câu ' + ${stat.count}"></span>
+                                    <span class="badge bg-info text-dark" th:text="${question.difficulty}"></span>
+                                </div>
+                                <div class="fw-semibold mb-3" th:text="${question.content}"></div>
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                        th:each="option : ${question.options}"
+                                        th:classappend="${option.correct} ? 'text-success fw-semibold' : ''">
+                                        <span th:text="${option.content}"></span>
+                                        <span th:if="${option.correct}" class="badge bg-success-subtle text-success ms-2">
+                                            <i class="ti ti-check"></i> Đáp án đúng
+                                        </span>
+                                        <span th:if="${option.selected}" class="badge bg-secondary ms-2">Bạn đã chọn</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

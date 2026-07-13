@@ -1,25 +1,28 @@
 package com.edunac.mentora.service.student;
 
 import com.edunac.mentora.domain.User;
-import com.edunac.mentora.domain.branching.AssignedBranch;
-import com.edunac.mentora.domain.branching.BranchTag;
-import com.edunac.mentora.domain.branching.StudentBranchAssignment;
 import com.edunac.mentora.domain.classroom.Classroom;
 import com.edunac.mentora.domain.classroom.ClassroomNodeStatus;
 import com.edunac.mentora.domain.classroom.NodeVisibilityStatus;
 import com.edunac.mentora.domain.learning.NodeProgress;
 import com.edunac.mentora.domain.learningpath.LearningNode;
+import com.edunac.mentora.domain.level.LevelMaterial;
+import com.edunac.mentora.domain.level.NodeLevel;
 import com.edunac.mentora.dto.StudentRoadmapNodeState;
 import com.edunac.mentora.dto.StudentRoadmapNodeView;
 import com.edunac.mentora.dto.StudentRoadmapView;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
-import com.edunac.mentora.service.branching.StudentBranchService;
+import com.edunac.mentora.repository.level.LevelMaterialRepository;
+import com.edunac.mentora.repository.level.NodeLevelRepository;
+import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.service.classroom.ClassroomMemberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,20 +35,26 @@ public class StudentRoadmapService {
     private final LearningNodeRepository nodeRepository;
     private final ClassroomNodeStatusRepository nodeStatusRepository;
     private final NodeProgressRepository progressRepository;
-    private final StudentBranchService branchService;
+    private final NodeLevelRepository nodeLevelRepository;
+    private final LevelMaterialRepository levelMaterialRepository;
+    private final NodeLevelAttemptRepository nodeLevelAttemptRepository;
 
     public StudentRoadmapService(
             ClassroomMemberService memberService,
             LearningNodeRepository nodeRepository,
             ClassroomNodeStatusRepository nodeStatusRepository,
             NodeProgressRepository progressRepository,
-            StudentBranchService branchService
+            NodeLevelRepository nodeLevelRepository,
+            LevelMaterialRepository levelMaterialRepository,
+            NodeLevelAttemptRepository nodeLevelAttemptRepository
     ) {
         this.memberService = memberService;
         this.nodeRepository = nodeRepository;
         this.nodeStatusRepository = nodeStatusRepository;
         this.progressRepository = progressRepository;
-        this.branchService = branchService;
+        this.nodeLevelRepository = nodeLevelRepository;
+        this.levelMaterialRepository = levelMaterialRepository;
+        this.nodeLevelAttemptRepository = nodeLevelAttemptRepository;
     }
 
     public StudentRoadmapView buildRoadmap(Integer classroomId, User student) {
@@ -55,41 +64,56 @@ public class StudentRoadmapService {
         List<LearningNode> pathNodes = nodeRepository
                 .findByLearningPathIdOrderByNodeOrderAsc(pathId);
 
-        Map<Integer, String>     visibilityMap = loadVisibilityMap(classroomId);
-        Map<Integer, Boolean>    completedMap  = loadCompletionMap(classroomId, student.getId());
-        Map<Integer, AssignedBranch> branchMap = loadBranchMap(student.getId(), classroomId);
+        List<NodeLevel> levels = nodeLevelRepository.findByLearningNode_IdInOrderByLevelNumberAsc(
+                pathNodes.stream().map(LearningNode::getId).toList());
+
+        Map<Integer, String>       visibilityMap  = loadVisibilityMap(classroomId);
+        Map<Integer, NodeProgress> progressMap    = loadProgressMap(classroomId, student.getId());
+        Map<Integer, Long>         levelCountMap  = buildLevelCountMap(levels);
+        Map<Integer, BigDecimal>   masteryMaxMap  = buildMasteryMaxScoreMap(levels);
+        Map<Integer, Integer>      passedLevelMap = buildHighestPassedLevelMap(classroomId, student.getId());
 
         int visibleCount          = 0;
         int completedVisibleCount = 0;
+        BigDecimal totalScoreEarned   = BigDecimal.ZERO;
+        BigDecimal totalScorePossible = BigDecimal.ZERO;
 
         List<StudentRoadmapNodeView> nodeViews = pathNodes.stream()
                 .map(node -> {
-                    boolean visible        = isVisible(node.getId(), visibilityMap);
-                    boolean prereqMet      = isPrerequisiteMet(node, completedMap);
-                    boolean completed      = Boolean.TRUE.equals(completedMap.get(node.getId()));
-                    boolean onCorrectBranch = isOnCorrectBranch(node, branchMap);
+                    boolean visible   = isVisible(node.getId(), visibilityMap);
+                    boolean prereqMet = isPrerequisiteMet(node, progressMap);
+                    NodeProgress progress = progressMap.get(node.getId());
+                    boolean completed = progress != null && progress.isCompleted();
 
-
-                    Boolean branchDecided = resolveBranchDecided(node, branchMap);
-
-                    StudentRoadmapNodeState state = resolveState(
-                            visible, prereqMet, completed, onCorrectBranch);
+                    StudentRoadmapNodeState state = resolveState(visible, prereqMet, completed);
 
                     String prereqTitle = node.getPrerequisite() != null
                             ? node.getPrerequisite().getTitle() : null;
 
-                    return new StudentRoadmapNodeView(node, state, prereqTitle, branchDecided);
-                })
+                    int totalLevels = levelCountMap.getOrDefault(node.getId(), 0L).intValue();
+                    Integer bestLevelNumber = passedLevelMap.get(node.getId());
 
-                .filter(view -> shouldShowToStudent(view, branchMap))
+                    return new StudentRoadmapNodeView(
+                            node, state, prereqTitle,
+                            totalLevels, bestLevelNumber,
+                            progress != null ? progress.getBestScore() : null);
+                })
                 .toList();
 
         for (StudentRoadmapNodeView view : nodeViews) {
-            if (isVisible(view.getNode().getId(), visibilityMap)
-                    && isOnCorrectBranch(view.getNode(), branchMap)) {
+            Integer nodeId = view.getNode().getId();
+            if (isVisible(nodeId, visibilityMap)) {
                 visibleCount++;
                 if (view.getState() == StudentRoadmapNodeState.COMPLETED) {
                     completedVisibleCount++;
+                }
+
+                BigDecimal maxScore = masteryMaxMap.get(nodeId);
+                if (maxScore != null) {
+                    totalScorePossible = totalScorePossible.add(maxScore);
+                    if (view.getBestScore() != null) {
+                        totalScoreEarned = totalScoreEarned.add(view.getBestScore());
+                    }
                 }
             }
         }
@@ -97,52 +121,15 @@ public class StudentRoadmapService {
         int completionPercent = visibleCount == 0
                 ? 0 : (completedVisibleCount * 100) / visibleCount;
 
+        int scorePercent = totalScorePossible.compareTo(BigDecimal.ZERO) == 0
+                ? 0
+                : totalScoreEarned.multiply(BigDecimal.valueOf(100))
+                        .divide(totalScorePossible, 0, RoundingMode.HALF_UP)
+                        .intValue();
+
         return new StudentRoadmapView(
-                classroom, nodeViews, completionPercent, visibleCount, completedVisibleCount);
-    }
-
-
-    private boolean shouldShowToStudent(
-            StudentRoadmapNodeView view,
-            Map<Integer, AssignedBranch> branchMap) {
-
-        LearningNode node = view.getNode();
-        String tag = node.getBranchTag();
-
-        if (tag == null || BranchTag.MAIN.name().equals(tag)
-                || "BRANCH_TEST".equals(node.getNodeType())) {
-            return true;
-        }
-
-        LearningNode owner = node.getBranchOwnerNode();
-        if (owner == null) return true;
-
-        AssignedBranch assigned = branchMap.get(owner.getId());
-
-        if (assigned == null) {
-
-            return true;
-        }
-
-        if (BranchTag.PASS.name().equals(tag)) return assigned == AssignedBranch.PASS;
-        if (BranchTag.FAIL.name().equals(tag)) return assigned == AssignedBranch.FAIL;
-        return true;
-    }
-
-
-    private Boolean resolveBranchDecided(LearningNode node, Map<Integer, AssignedBranch> branchMap) {
-        String tag = node.getBranchTag();
-        if (tag == null || BranchTag.MAIN.name().equals(tag)) return true;
-
-        LearningNode owner = node.getBranchOwnerNode();
-        if (owner == null) return true;
-
-        AssignedBranch assigned = branchMap.get(owner.getId());
-        if (assigned == null) return null;
-
-        if (BranchTag.PASS.name().equals(tag)) return assigned == AssignedBranch.PASS;
-        if (BranchTag.FAIL.name().equals(tag)) return assigned == AssignedBranch.FAIL;
-        return true;
+                classroom, nodeViews, completionPercent, visibleCount, completedVisibleCount,
+                totalScoreEarned, totalScorePossible, scorePercent);
     }
 
     public boolean canAccessNode(Integer nodeId, Integer studentId, Integer classroomId) {
@@ -152,15 +139,11 @@ public class StudentRoadmapService {
         Map<Integer, String> visibilityMap = loadVisibilityMap(classroomId);
         if (!isVisible(nodeId, visibilityMap)) return false;
 
-        Map<Integer, AssignedBranch> branchMap = loadBranchMap(studentId, classroomId);
-        if (!isOnCorrectBranch(node, branchMap)) return false;
-
-        Map<Integer, Boolean> completedMap = loadCompletionMap(classroomId, studentId);
-        if (!isPrerequisiteMet(node, completedMap)) return false;
+        Map<Integer, NodeProgress> progressMap = loadProgressMap(classroomId, studentId);
+        if (!isPrerequisiteMet(node, progressMap)) return false;
 
         return true;
     }
-
 
     private Map<Integer, String> loadVisibilityMap(Integer classroomId) {
         Map<Integer, String> map = new HashMap<>();
@@ -170,49 +153,77 @@ public class StudentRoadmapService {
         return map;
     }
 
-    private Map<Integer, Boolean> loadCompletionMap(Integer classroomId, Integer studentId) {
-        Map<Integer, Boolean> map = new HashMap<>();
+    private Map<Integer, NodeProgress> loadProgressMap(Integer classroomId, Integer studentId) {
+        Map<Integer, NodeProgress> map = new HashMap<>();
         for (NodeProgress p : progressRepository.findByClassroom_IdAndStudent_Id(classroomId, studentId)) {
-            map.put(p.getLearningNode().getId(), p.isCompleted());
+            map.put(p.getLearningNode().getId(), p);
         }
         return map;
     }
 
-    private Map<Integer, AssignedBranch> loadBranchMap(Integer studentId, Integer classroomId) {
-        Map<Integer, AssignedBranch> map = new HashMap<>();
-        for (StudentBranchAssignment a : branchService.getAssignments(studentId, classroomId)) {
-            map.put(a.getBranchNode().getId(), a.getAssignedBranch());
+    private Map<Integer, Long> buildLevelCountMap(List<NodeLevel> levels) {
+        Map<Integer, Long> map = new HashMap<>();
+        for (NodeLevel level : levels) {
+            Integer nodeId = level.getLearningNode().getId();
+            map.merge(nodeId, 1L, Long::sum);
         }
         return map;
     }
 
-    private boolean isOnCorrectBranch(LearningNode node, Map<Integer, AssignedBranch> branchMap) {
-        String tag = node.getBranchTag();
-        if (tag == null || BranchTag.MAIN.name().equals(tag)) return true;
+    /** Roadmap level progress is the highest level actually passed, not the
+     * level associated with the best score (ties may belong to an earlier level). */
+    private Map<Integer, Integer> buildHighestPassedLevelMap(Integer classroomId, Integer studentId) {
+        Map<Integer, Integer> map = new HashMap<>();
+        nodeLevelAttemptRepository
+                .findByClassroom_IdAndStudent_IdAndStatusAndPassedTrue(classroomId, studentId, "SUBMITTED")
+                .forEach(attempt -> map.merge(
+                        attempt.getNodeLevel().getLearningNode().getId(),
+                        attempt.getNodeLevel().getLevelNumber(),
+                        Math::max));
+        return map;
+    }
 
-        LearningNode owner = node.getBranchOwnerNode();
-        if (owner == null) return true;
+    /**
+     * Per node, the max maxScore among levels that have >= 1 question configured
+     * (S1 §6): a level with zero questions is not startable and excluded, and a
+     * node whose levels are ALL non-startable contributes no entry (excluded from
+     * both the earned and possible score totals).
+     */
+    private Map<Integer, BigDecimal> buildMasteryMaxScoreMap(List<NodeLevel> levels) {
+        if (levels.isEmpty()) return Map.of();
 
-        AssignedBranch assigned = branchMap.get(owner.getId());
-        if (assigned == null) return false;
+        List<Integer> levelIds = levels.stream().map(NodeLevel::getId).toList();
+        Map<Integer, Integer> questionCountByLevel = new HashMap<>();
+        for (LevelMaterial lm : levelMaterialRepository.findByNodeLevel_IdIn(levelIds)) {
+            questionCountByLevel.merge(lm.getNodeLevel().getId(), lm.getQuestionCount(), Integer::sum);
+        }
 
-        if (BranchTag.PASS.name().equals(tag)) return assigned == AssignedBranch.PASS;
-        if (BranchTag.FAIL.name().equals(tag)) return assigned == AssignedBranch.FAIL;
-        return true;
+        Map<Integer, BigDecimal> maxScoreByNode = new HashMap<>();
+        for (NodeLevel level : levels) {
+            if (questionCountByLevel.getOrDefault(level.getId(), 0) < 1) continue;
+
+            Integer nodeId = level.getLearningNode().getId();
+            BigDecimal current = maxScoreByNode.get(nodeId);
+            if (current == null || level.getMaxScore().compareTo(current) > 0) {
+                maxScoreByNode.put(nodeId, level.getMaxScore());
+            }
+        }
+        return maxScoreByNode;
     }
 
     private boolean isVisible(Integer nodeId, Map<Integer, String> visibilityMap) {
         return NodeVisibilityStatus.VISIBLE.name().equals(visibilityMap.get(nodeId));
     }
 
-    private boolean isPrerequisiteMet(LearningNode node, Map<Integer, Boolean> completedMap) {
+    private boolean isPrerequisiteMet(LearningNode node, Map<Integer, NodeProgress> progressMap) {
         if (node.getPrerequisite() == null) return true;
-        return Boolean.TRUE.equals(completedMap.get(node.getPrerequisite().getId()));
+        NodeProgress prereqProgress = progressMap.get(node.getPrerequisite().getId());
+        return prereqProgress != null && prereqProgress.isCompleted();
     }
 
     private StudentRoadmapNodeState resolveState(
-            boolean visible, boolean prereqMet, boolean completed, boolean onCorrectBranch) {
-        if (!visible || !onCorrectBranch) return StudentRoadmapNodeState.HIDDEN;
+            boolean visible, boolean prereqMet, boolean completed) {
+        if (!visible) return StudentRoadmapNodeState.HIDDEN;
         if (!prereqMet) return StudentRoadmapNodeState.LOCKED;
         if (completed) return StudentRoadmapNodeState.COMPLETED;
         return StudentRoadmapNodeState.ACCESSIBLE;

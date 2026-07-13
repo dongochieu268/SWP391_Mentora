@@ -165,6 +165,66 @@
                                             </a>
                                         </div>
                                     </div>
+
+                                    <!-- Đạt level trước sẽ mở material ôn cho level kế tiếp. -->
+                                    <div th:if="${not #lists.isEmpty(levelMaterials)}" class="mt-4">
+                                        <hr>
+                                        <h5 class="fw-bold mb-3">Nội dung ôn tập theo level</h5>
+
+                                        <div th:each="item : ${levelMaterials}" class="card border mb-3">
+                                            <div class="card-header d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <span class="badge bg-primary me-2"
+                                                          th:text="'Ôn cho Level ' + ${item.levelNumber}">Ôn cho Level 2</span>
+                                                    <strong th:text="${item.material.title}">Material</strong>
+                                                </div>
+                                                <span th:if="${item.reviewed}" class="badge bg-success-subtle text-success">
+                                                    <i class="ti ti-check me-1"></i>Đã ôn
+                                                </span>
+                                                <span th:if="${item.unlocked and !item.reviewed}" class="badge bg-warning-subtle text-warning">
+                                                    <i class="ti ti-book me-1"></i>Đang ôn
+                                                </span>
+                                                <span th:unless="${item.unlocked}" class="badge bg-secondary-subtle text-secondary">
+                                                    <i class="ti ti-lock me-1"></i>Cần đạt level trước
+                                                </span>
+                                            </div>
+
+                                            <div th:unless="${item.unlocked}" class="card-body text-muted small">
+                                                Hoàn thành và đạt Level <span th:text="${item.levelNumber - 1}"></span>
+                                                để mở nội dung ôn tập này.
+                                            </div>
+
+                                            <div th:if="${item.unlocked}" class="card-body">
+                                                <p th:if="${item.material.description != null}"
+                                                   class="text-muted" th:text="${item.material.description}"></p>
+                                                <div th:if="${#lists.isEmpty(item.contents)}" class="text-muted small">
+                                                    Material này chưa có nội dung ôn tập.
+                                                </div>
+                                                <div th:each="content : ${item.contents}" class="mb-3">
+                                                    <div th:if="${content.title != null}" class="fw-semibold mb-2"
+                                                         th:text="${content.title}"></div>
+                                                    <div th:if="${content.contentType == 'TEXT'}"
+                                                         th:utext="${content.contentText}" class="learning-text-block"></div>
+                                                    <div th:if="${content.contentType == 'VIDEO'}"
+                                                         class="ratio ratio-16x9 rounded overflow-hidden border">
+                                                        <iframe th:src="${content.contentUrl}" allowfullscreen></iframe>
+                                                    </div>
+                                                    <a th:if="${content.contentType == 'FILE' or content.contentType == 'LINK'}"
+                                                       th:href="${content.contentUrl}" target="_blank"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="ti ti-external-link me-1"></i>Mở tài liệu
+                                                    </a>
+                                                </div>
+                                                <form th:if="${!item.reviewed}"
+                                                      th:action="@{/student/classrooms/{cid}/nodes/{nid}/levels/{lid}/reviewed(cid=${classroomId},nid=${node.id},lid=${item.levelId})}"
+                                                      method="post" class="mt-3 text-end">
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="ti ti-check me-1"></i>Đã ôn xong
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                             </div>
@@ -291,7 +351,8 @@
                                         </button>
                                         <button th:if="${!lvl.canStart and lvl.hasQuestions and !lvl.unlocked}"
                                                 class="btn btn-sm btn-light text-muted px-3" disabled>
-                                            <i class="ti ti-lock me-1"></i>Cần qua level trước
+                                            <span th:if="${!lvl.prerequisitePassed}"><i class="ti ti-lock me-1"></i>Cần qua level trước</span>
+                                            <span th:if="${lvl.prerequisitePassed and !lvl.reviewCompleted}"><i class="ti ti-book me-1"></i>Cần xác nhận đã ôn</span>
                                         </button>
                                         <button th:if="${!lvl.canStart and lvl.hasQuestions and lvl.unlocked and !lvl.hasAttemptsLeft}"
                                                 class="btn btn-sm btn-light text-muted px-3" disabled>

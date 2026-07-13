@@ -33,7 +33,7 @@ public class NodeProgressService {
 
 
     public NodeProgressResponse markNodeCompleted(
-            Integer studentId, Integer nodeId, Integer classroomId) {
+            Integer studentId, Integer nodeId, Integer classroomId, BigDecimal score) {
 
         ensureActiveMember(studentId, classroomId);
         ensureNodeVisible(nodeId, classroomId);
@@ -53,18 +53,12 @@ public class NodeProgressService {
             }
         }
 
-        saveCompleted(studentId, nodeId, classroomId);
+        saveCompleted(studentId, nodeId, classroomId, score);
         return buildProgressResponse(studentId, classroomId, nodeId);
     }
 
 
-    public void markBranchTestCompleted(
-            Integer studentId, Integer nodeId, Integer classroomId) {
-        saveCompleted(studentId, nodeId, classroomId);
-    }
-
-
-    void saveCompleted(Integer studentId, Integer nodeId, Integer classroomId) {
+    void saveCompleted(Integer studentId, Integer nodeId, Integer classroomId, BigDecimal score) {
         NodeProgress progress = nodeProgressRepository
                 .findByStudent_IdAndLearningNode_IdAndClassroom_Id(
                         studentId, nodeId, classroomId)
@@ -80,9 +74,21 @@ public class NodeProgressService {
                     return np;
                 });
 
+        boolean changed = false;
+
         if (!progress.isCompleted()) {
             progress.setCompleted(true);
             progress.setCompletedAt(LocalDateTime.now());
+            changed = true;
+        }
+
+        if (score != null
+                && (progress.getBestScore() == null || score.compareTo(progress.getBestScore()) > 0)) {
+            progress.setBestScore(score);
+            changed = true;
+        }
+
+        if (changed) {
             nodeProgressRepository.save(progress);
         }
     }
@@ -96,7 +102,7 @@ public class NodeProgressService {
 
 
         long totalNodes     = nodeProgressRepository
-                .countRelevantNodesForStudent(studentId, classroomId);
+                .countRelevantNodesForStudent(classroomId);
         long completedNodes = nodeProgressRepository
                 .countCompletedNodesForStudent(studentId, classroomId);
 
@@ -109,9 +115,10 @@ public class NodeProgressService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Node không tồn tại"));
 
-        boolean isCompleted = nodeProgressRepository
-                .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
-                        studentId, nodeId, classroomId);
+        NodeProgress progress = nodeProgressRepository
+                .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
+                .orElse(null);
+        boolean isCompleted = progress != null && progress.isCompleted();
 
         boolean prerequisiteMet = true;
         if (currentNode.getPrerequisite() != null) {
@@ -128,6 +135,8 @@ public class NodeProgressService {
                 .completedNodes((int) completedNodes)
                 .progressPercent(percent)
                 .prerequisiteMet(prerequisiteMet)
+                .bestScore(progress != null ? progress.getBestScore() : null)
+                .bestLevelNumber(progress != null ? progress.getBestLevelNumber() : null)
                 .build();
     }
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -112,6 +113,35 @@ public class ClassroomService {
         String normalized = normalizeStatus(status);
         classroom.setStatus(normalized);
         return classroomRepository.save(classroom);
+    }
+
+    // L6 — kết thúc lớp: chặn start attempt mới (S3 §4b), lượt đang dở vẫn nộp được.
+    public Classroom complete(Integer id, User teacher) {
+        Classroom classroom = findForTeacher(id, teacher);
+        if (classroom.isCompleted()) {
+            throw new IllegalStateException("Lớp học đã kết thúc.");
+        }
+        classroom.setStatus(ClassroomStatus.COMPLETED.name());
+        return classroomRepository.save(classroom);
+    }
+
+    // L6 §4 — mở lại lớp đã kết thúc.
+    public Classroom reopen(Integer id, User teacher) {
+        Classroom classroom = findForTeacher(id, teacher);
+        if (!classroom.isCompleted()) {
+            throw new IllegalStateException("Lớp học chưa kết thúc.");
+        }
+        classroom.setStatus(ClassroomStatus.OPEN.name());
+        return classroomRepository.save(classroom);
+    }
+
+    // L6 — lớp quá endDate học kỳ mà chưa COMPLETED (chỉ nhắc, không tự đóng).
+    public List<Classroom> findExpiredNeedingCompletion(User teacher) {
+        LocalDate today = LocalDate.now();
+        return findByTeacher(teacher).stream()
+                .filter(c -> !c.isCompleted())
+                .filter(c -> c.getSemester().getEndDate().isBefore(today))
+                .toList();
     }
 
     public void delete(Integer id, User teacher) {

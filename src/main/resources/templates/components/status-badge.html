@@ -7,10 +7,10 @@
   Usage: <th:block th:replace="~{components/status-badge :: statusBadge(${entity.status})}"></th:block>
 
   Hỗ trợ mọi trạng thái trong hệ thống:
-    ACTIVE/PUBLISHED/OPEN/VISIBLE  → xanh (status-active)
-    INACTIVE/ARCHIVED/CLOSE/HIDDEN → xám (status-inactive)
-    BANNED                         → đỏ  (status-banned)
-    DRAFT/PENDING                  → vàng (status-pending)
+    ACTIVE/PUBLISHED/OPEN/VISIBLE      → xanh (status-active)
+    INACTIVE/ARCHIVED/CLOSE/HIDDEN/COMPLETED → xám (status-inactive)
+    BANNED                             → đỏ  (status-banned)
+    DRAFT/PENDING                      → vàng (status-pending)
 
   Lưu ý: dùng map literal + getOrDefault thay vì ternary lồng nhiều tầng,
   vì SpringEL crash khi biểu thức điều kiện lồng quá sâu.
@@ -19,7 +19,7 @@
       th:with="s=${status != null ? status.toString() : ''}"
       class="status-badge"
       th:classappend="${ {'ACTIVE':'status-active','PUBLISHED':'status-active','OPEN':'status-active','VISIBLE':'status-active','BANNED':'status-banned','DRAFT':'status-pending','PENDING':'status-pending'}.getOrDefault(s, 'status-inactive') }"
-      th:text="${ {'ACTIVE':'Hoạt động','PUBLISHED':'Đã xuất bản','OPEN':'Đang mở','VISIBLE':'Hiển thị','INACTIVE':'Vô hiệu','ARCHIVED':'Lưu trữ','CLOSE':'Đã đóng','HIDDEN':'Ẩn','BANNED':'Bị cấm','DRAFT':'Bản nháp','PENDING':'Chờ duyệt'}.getOrDefault(s, s) }">
+      th:text="${ {'ACTIVE':'Hoạt động','PUBLISHED':'Đã xuất bản','OPEN':'Đang mở','VISIBLE':'Hiển thị','INACTIVE':'Vô hiệu','ARCHIVED':'Lưu trữ','CLOSE':'Đã đóng','HIDDEN':'Ẩn','BANNED':'Bị cấm','DRAFT':'Bản nháp','PENDING':'Chờ duyệt','COMPLETED':'Đã kết thúc'}.getOrDefault(s, s) }">
 </span>
 
 </body>

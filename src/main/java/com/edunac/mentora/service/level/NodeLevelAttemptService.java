@@ -18,6 +18,7 @@ import com.edunac.mentora.repository.UserRepository;
 import com.edunac.mentora.service.learning.NodeProgressService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NodeLevelAttemptService {
 
     private final NodeLevelRepository nodeLevelRepository;
@@ -184,6 +186,7 @@ public class NodeLevelAttemptService {
         BigDecimal score;
         if (total == 0) {
             score = BigDecimal.ZERO;
+            log.warn("Attempt {} có snapshot 0 câu hỏi lúc submit — chấm điểm 0.", attemptId);
         } else {
             score = nodeLevel.getMaxScore()
                     .multiply(BigDecimal.valueOf(correctCount))

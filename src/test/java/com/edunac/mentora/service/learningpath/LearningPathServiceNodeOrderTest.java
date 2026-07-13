@@ -14,6 +14,7 @@ import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
 import com.edunac.mentora.service.learning.NodeContentStorageService;
+import com.edunac.mentora.service.learning.NodeLevelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -62,6 +63,7 @@ class LearningPathServiceNodeOrderTest {
         ClassroomRepository classroomRepository = mock(ClassroomRepository.class);
         BranchRuleRepository branchRuleRepository = mock(BranchRuleRepository.class);
         AssessmentRepository assessmentRepository = mock(AssessmentRepository.class);
+        NodeLevelService nodeLevelService = mock(NodeLevelService.class);
 
         owner = new User();
         owner.setId(7);
@@ -89,7 +91,8 @@ class LearningPathServiceNodeOrderTest {
                 classroomNodeStatusRepository,
                 classroomRepository,
                 branchRuleRepository,
-                assessmentRepository
+                assessmentRepository,
+                nodeLevelService
         );
     }
 

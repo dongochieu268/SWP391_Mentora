@@ -117,7 +117,11 @@ public class NodeLevelAttemptService {
         attempt.setClassroom(classroom);
         attempt.setAttemptNumber((int) currentCount + 1);
         attempt.setStatus(AttemptStatus.IN_PROGRESS.name());
-        attempt.setStartedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        attempt.setStartedAt(now);
+        if (nodeLevel.getDurationMinutes() != null) {
+            attempt.setDeadlineAt(now.plusMinutes(nodeLevel.getDurationMinutes()));
+        }
 
         attempt = nodeLevelAttemptRepository.save(attempt);
 

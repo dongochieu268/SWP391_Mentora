@@ -11,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,10 +52,26 @@ public class StudentAssessmentController {
             }
 
             var questions = assessmentService.findQuestions(assessmentId);
+
+            // Tính số giây còn lại để hiển thị countdown timer ở client
+            long secondsRemaining = 0;
+            if (attempt.getDeadlineAt() != null) {
+                secondsRemaining = Math.max(0,
+                        ChronoUnit.SECONDS.between(LocalDateTime.now(), attempt.getDeadlineAt()));
+            } else if (attempt.getStartedAt() != null
+                    && attempt.getAssessment().getDurationMinutes() != null) {
+                // Fallback cho attempt cũ chưa có deadline_at
+                LocalDateTime computed = attempt.getStartedAt()
+                        .plusMinutes(attempt.getAssessment().getDurationMinutes());
+                secondsRemaining = Math.max(0,
+                        ChronoUnit.SECONDS.between(LocalDateTime.now(), computed));
+            }
+
             model.addAttribute("attempt", attempt);
             model.addAttribute("assessment", attempt.getAssessment());
             model.addAttribute("questions", questions);
             model.addAttribute("optionsByQuestionId", assessmentService.findOptionsGroupedByQuestion(questions));
+            model.addAttribute("secondsRemaining", secondsRemaining);
             model.addAttribute("classroomId", classroomId);
             model.addAttribute("user", user);
             model.addAttribute("activePage", "classrooms");

@@ -237,6 +237,7 @@
                                                 <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
                                                 <input type="hidden" th:field="*{id}">
                                                 <input type="hidden" th:field="*{materialId}">
+                                                <input type="hidden" th:field="*{displayOrder}">
                                                 <div class="col-md-4">
                                                     <label class="form-label" for="contentType">Lo&#7841;i n&#7897;i dung</label>
                                                     <select class="form-select" id="contentType" th:field="*{contentType}" required>
@@ -246,14 +247,9 @@
                                                         <option value="FILE">FILE</option>
                                                     </select>
                                                 </div>
-                                                <div class="col-md-5">
+                                                <div class="col-md-8">
                                                     <label class="form-label" for="contentTitle">Ti&#234;u &#273;&#7873;</label>
                                                     <input class="form-control" id="contentTitle" th:field="*{title}" maxlength="200">
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label class="form-label" for="displayOrder">Th&#7913; t&#7921;</label>
-                                                    <input class="form-control" id="displayOrder" type="number"
-                                                           th:field="*{displayOrder}" min="1" required>
                                                 </div>
                                                 <div class="col-12 js-content-field"
                                                      data-content-types="TEXT"

@@ -348,9 +348,16 @@
                                                     <h3 class="fs-5 mb-1">C&#226;u h&#7887;i thu&#7897;c material</h3>
                                                     <p class="text-muted small mb-0">C&#225;c c&#226;u &#273;ang &#273;&#432;&#7907;c d&#249;ng trong material n&#224;y.</p>
                                                 </div>
-                                                <span class="badge bg-light text-dark border">
-                                                    <span th:text="${#lists.size(materialQuestions)}">0</span> c&#226;u
-                                                </span>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-light text-dark border">
+                                                        <span th:text="${#lists.size(materialQuestions)}">0</span> c&#226;u
+                                                    </span>
+                                                    <button class="btn btn-primary btn-sm" type="button"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#materialQuestionPickerModal">
+                                                        <i class="ti ti-plus me-1"></i>Th&#234;m c&#226;u h&#7887;i
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <form th:action="@{/lecturer/materials/{id}/questions/unassign(id=${selectedMaterial.id})}"
@@ -392,60 +399,6 @@
                                                     <i class="ti ti-unlink me-1"></i>G&#7905; c&#226;u &#273;&#227; ch&#7885;n
                                                 </button>
                                             </form>
-
-                                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                                                <div>
-                                                    <h3 class="fs-5 mb-1">Ng&#226;n h&#224;ng c&#226;u h&#7887;i c&#249;ng m&#244;n</h3>
-                                                    <p class="text-muted small mb-0">Tick c&#225;c c&#226;u c&#7847;n &#273;&#432;a v&#224;o material &#273;ang ch&#7885;n.</p>
-                                                </div>
-                                                <span class="badge bg-light text-dark border">
-                                                    <span th:text="${#lists.size(bankQuestions)}">0</span> c&#226;u
-                                                </span>
-                                            </div>
-
-                                            <form th:action="@{/lecturer/materials/{id}/questions/assign(id=${selectedMaterial.id})}"
-                                                  method="post">
-                                                <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover align-middle mb-0">
-                                                        <thead>
-                                                        <tr>
-                                                            <th style="width:44px"></th>
-                                                            <th>N&#7897;i dung</th>
-                                                            <th>&#272;&#7897; kh&#243;</th>
-                                                            <th>Material hi&#7879;n t&#7841;i</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <tr th:if="${#lists.isEmpty(bankQuestions)}">
-                                                            <td colspan="4" class="text-center text-muted py-4">
-                                                                Ch&#432;a c&#243; c&#226;u h&#7887;i trong ng&#226;n h&#224;ng c&#7911;a m&#244;n n&#224;y.
-                                                            </td>
-                                                        </tr>
-                                                        <tr th:each="question : ${bankQuestions}">
-                                                            <td>
-                                                                <input class="form-check-input" type="checkbox" name="questionIds"
-                                                                       th:value="${question.id}"
-                                                                       th:checked="${assignedQuestionIds.contains(question.id)}">
-                                                            </td>
-                                                            <td class="text-break" th:text="${question.content}">Question</td>
-                                                            <td>
-                                                                <span class="badge bg-light text-dark border"
-                                                                      th:text="${question.difficulty}">MEDIUM</span>
-                                                            </td>
-                                                            <td>
-                                                                <span th:if="${question.material != null}" th:text="${question.material.title}">Material</span>
-                                                                <span th:if="${question.material == null}" class="text-muted">Ch&#432;a g&#7855;n</span>
-                                                            </td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <button class="btn btn-primary mt-3" type="submit"
-                                                        th:disabled="${#lists.isEmpty(bankQuestions)}">
-                                                    <i class="ti ti-link me-1"></i>G&#7855;n c&#226;u &#273;&#227; ch&#7885;n
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -455,6 +408,111 @@
                 </div>
             </main>
         </div>
+    </div>
+</div>
+<div th:if="${selectedMaterial != null}" class="modal fade" id="materialQuestionPickerModal" tabindex="-1"
+     aria-labelledby="materialQuestionPickerModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <form class="modal-content"
+              th:action="@{/lecturer/materials/{id}/questions/assign(id=${selectedMaterial.id})}"
+              method="post">
+            <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title fs-5" id="materialQuestionPickerModalTitle">
+                        Ng&#226;n h&#224;ng c&#226;u h&#7887;i c&#249;ng m&#244;n
+                    </h2>
+                    <p class="text-muted small mb-0">Ch&#7885;n c&#225;c c&#226;u c&#7847;n g&#7855;n v&#224;o material &#273;ang l&#224;m vi&#7879;c.</p>
+                </div>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="&#272;&#243;ng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small" for="materialQuestionSearch">T&#236;m c&#226;u h&#7887;i</label>
+                        <input class="form-control" id="materialQuestionSearch" type="search"
+                               placeholder="Nh&#7853;p n&#7897;i dung c&#226;u h&#7887;i">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small" for="materialQuestionTypeFilter">Lo&#7841;i</label>
+                        <select class="form-select" id="materialQuestionTypeFilter">
+                            <option value="">T&#7845;t c&#7843; lo&#7841;i</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small" for="materialQuestionDifficultyFilter">&#272;&#7897; kh&#243;</label>
+                        <select class="form-select" id="materialQuestionDifficultyFilter">
+                            <option value="">T&#7845;t c&#7843; &#273;&#7897; kh&#243;</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <span class="text-muted small" id="materialQuestionPageSummary"></span>
+                    <span class="badge bg-light text-dark border">
+                        <span th:text="${#lists.size(bankQuestions)}">0</span> c&#226;u
+                    </span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th style="width:44px"></th>
+                            <th>N&#7897;i dung</th>
+                            <th>&#272;&#7897; kh&#243;</th>
+                            <th>Lo&#7841;i</th>
+                            <th>Material hi&#7879;n t&#7841;i</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(bankQuestions)}">
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Ch&#432;a c&#243; c&#226;u h&#7887;i trong ng&#226;n h&#224;ng c&#7911;a m&#244;n n&#224;y.
+                            </td>
+                        </tr>
+                        <tr class="d-none" data-question-empty-row>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Kh&#244;ng c&#243; c&#226;u h&#7887;i ph&#249; h&#7907;p v&#7899;i b&#7897; l&#7885;c.
+                            </td>
+                        </tr>
+                        <tr th:each="question : ${bankQuestions}"
+                            data-question-bank-row="true"
+                            th:attr="data-question-content=${question.content != null ? #strings.toLowerCase(question.content) : ''},data-question-type=${question.questionType},data-question-difficulty=${question.difficulty}">
+                            <td>
+                                <input class="form-check-input" type="checkbox" name="questionIds"
+                                       th:value="${question.id}"
+                                       th:checked="${assignedQuestionIds.contains(question.id)}">
+                            </td>
+                            <td class="text-break" th:text="${question.content}">Question</td>
+                            <td>
+                                <span class="badge bg-light text-dark border"
+                                      th:text="${question.difficulty}">MEDIUM</span>
+                            </td>
+                            <td th:text="${question.questionType}">MULTIPLE_CHOICE</td>
+                            <td>
+                                <span th:if="${question.material != null}" th:text="${question.material.title}">Material</span>
+                                <span th:if="${question.material == null}" class="text-muted">Ch&#432;a g&#7855;n</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div class="btn-group" role="group" aria-label="Ph&#226;n trang c&#226;u h&#7887;i">
+                    <button class="btn btn-light border" id="materialQuestionPreviousPage" type="button">
+                        Tr&#432;&#7899;c
+                    </button>
+                    <button class="btn btn-light border" id="materialQuestionNextPage" type="button">
+                        Sau
+                    </button>
+                </div>
+                <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(bankQuestions)}">
+                    <i class="ti ti-link me-1"></i>G&#7855;n c&#226;u &#273;&#227; ch&#7885;n
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
@@ -486,6 +544,104 @@
         if (contentTypeSelect) {
             contentTypeSelect.addEventListener('change', syncContentFields);
         }
+
+        const questionRows = Array.from(document.querySelectorAll('[data-question-bank-row]'));
+        const questionSearch = document.getElementById('materialQuestionSearch');
+        const questionTypeFilter = document.getElementById('materialQuestionTypeFilter');
+        const questionDifficultyFilter = document.getElementById('materialQuestionDifficultyFilter');
+        const previousQuestionPage = document.getElementById('materialQuestionPreviousPage');
+        const nextQuestionPage = document.getElementById('materialQuestionNextPage');
+        const questionPageSummary = document.getElementById('materialQuestionPageSummary');
+        const emptyQuestionRow = document.querySelector('[data-question-empty-row]');
+        const questionPageSize = 10;
+        let questionPage = 1;
+
+        function addFilterOptions(select, values) {
+            if (!select) {
+                return;
+            }
+            Array.from(values)
+                .filter(Boolean)
+                .sort()
+                .forEach(function (value) {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    select.appendChild(option);
+                });
+        }
+
+        addFilterOptions(questionTypeFilter, new Set(questionRows.map(function (row) {
+            return row.dataset.questionType || '';
+        })));
+        addFilterOptions(questionDifficultyFilter, new Set(questionRows.map(function (row) {
+            return row.dataset.questionDifficulty || '';
+        })));
+
+        function syncMaterialQuestionPicker() {
+            const keyword = (questionSearch ? questionSearch.value : '').trim().toLowerCase();
+            const selectedType = questionTypeFilter ? questionTypeFilter.value : '';
+            const selectedDifficulty = questionDifficultyFilter ? questionDifficultyFilter.value : '';
+            const matches = questionRows.filter(function (row) {
+                const matchesKeyword = !keyword || (row.dataset.questionContent || '').includes(keyword);
+                const matchesType = !selectedType || row.dataset.questionType === selectedType;
+                const matchesDifficulty = !selectedDifficulty || row.dataset.questionDifficulty === selectedDifficulty;
+                return matchesKeyword && matchesType && matchesDifficulty;
+            });
+            const totalPages = Math.max(1, Math.ceil(matches.length / questionPageSize));
+            questionPage = Math.min(questionPage, totalPages);
+            const start = (questionPage - 1) * questionPageSize;
+            const visibleRows = matches.slice(start, start + questionPageSize);
+
+            questionRows.forEach(function (row) {
+                row.classList.add('d-none');
+            });
+            visibleRows.forEach(function (row) {
+                row.classList.remove('d-none');
+            });
+
+            if (emptyQuestionRow) {
+                emptyQuestionRow.classList.toggle('d-none', matches.length > 0 || questionRows.length === 0);
+            }
+            if (questionPageSummary) {
+                questionPageSummary.textContent = matches.length === 0
+                    ? '0 / 0'
+                    : (start + 1) + '-' + (start + visibleRows.length) + ' / ' + matches.length;
+            }
+            if (previousQuestionPage) {
+                previousQuestionPage.disabled = questionPage <= 1 || matches.length === 0;
+            }
+            if (nextQuestionPage) {
+                nextQuestionPage.disabled = questionPage >= totalPages || matches.length === 0;
+            }
+        }
+
+        [questionSearch, questionTypeFilter, questionDifficultyFilter].forEach(function (control) {
+            if (!control) {
+                return;
+            }
+            control.addEventListener('input', function () {
+                questionPage = 1;
+                syncMaterialQuestionPicker();
+            });
+            control.addEventListener('change', function () {
+                questionPage = 1;
+                syncMaterialQuestionPicker();
+            });
+        });
+        if (previousQuestionPage) {
+            previousQuestionPage.addEventListener('click', function () {
+                questionPage = Math.max(1, questionPage - 1);
+                syncMaterialQuestionPicker();
+            });
+        }
+        if (nextQuestionPage) {
+            nextQuestionPage.addEventListener('click', function () {
+                questionPage += 1;
+                syncMaterialQuestionPicker();
+            });
+        }
+        syncMaterialQuestionPicker();
     });
 </script>
 </body>

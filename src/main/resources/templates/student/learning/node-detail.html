@@ -177,7 +177,7 @@
                             <div class="card-body p-4 text-center">
                                 <h6 class="fw-bold mb-3">Trạng thái bài học</h6>
 
-                                <div id="statusBadge" class="mb-4">
+                                <div id="statusBadge" class="mb-2">
                                     <span th:if="${progress.completed}"
                                           class="status-badge status-active">
                                         <i class="ti ti-check me-1"></i> Đã hoàn thành
@@ -192,9 +192,15 @@
                                     </span>
                                 </div>
 
-                                <!-- Nút hoàn thành chỉ hiện với node LESSON -->
-                                <!-- Node BRANCH_TEST: hoàn thành tự động sau khi submit bài test -->
-                                <button th:unless="${isBranchTest}"
+                                <p class="small text-muted mb-4" th:if="${progress.bestScore != null}">
+                                    Điểm cao nhất: <strong th:text="${progress.bestScore}"></strong>
+                                    <th:block th:if="${progress.bestLevelNumber != null}">
+                                        (Level <strong th:text="${progress.bestLevelNumber}"></strong>)
+                                    </th:block>
+                                </p>
+
+                                <!-- Nút hoàn thành chỉ hiện với node LESSON thường (không branch test, không có level nào có câu hỏi — OQ2) -->
+                                <button th:unless="${isBranchTest or hasStartableLevel}"
                                         id="btnComplete"
                                         class="btn w-100 py-2 fw-semibold"
                                         th:classappend="${progress.completed ? 'btn-success disabled'
@@ -214,6 +220,12 @@
                                 <div th:if="${isBranchTest}" class="text-muted small fst-italic">
                                     <i class="ti ti-info-circle me-1"></i>
                                     Tiến độ sẽ được cập nhật tự động sau khi nộp bài test.
+                                </div>
+
+                                <!-- Node có level: thông báo thay nút, tiến độ cập nhật khi nộp bài level test -->
+                                <div th:if="${!isBranchTest and hasStartableLevel}" class="text-muted small fst-italic">
+                                    <i class="ti ti-info-circle me-1"></i>
+                                    Tiến độ sẽ được cập nhật tự động sau khi bạn nộp bài ở một trong các level bên dưới.
                                 </div>
 
                                 <div class="mt-3 text-start">
@@ -245,6 +257,90 @@
                             <a th:if="${nextNodeId != null}"
                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
                                class="btn btn-outline-primary w-50 ms-auto">Bài tiếp →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Danh sách level (S2) ── -->
+                <div class="row mt-3" th:if="${hasStartableLevel}">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3">Danh sách level</h6>
+                                <div th:each="lvl : ${levelStatus}"
+                                     class="d-flex align-items-center justify-content-between gap-3 py-2 border-bottom">
+                                    <div>
+                                        <div class="fw-semibold">
+                                            Level <span th:text="${lvl.levelNumber}"></span>
+                                            <span th:if="${lvl.title != null}" th:text="'– ' + ${lvl.title}"></span>
+                                        </div>
+                                        <div class="small text-muted">
+                                            Điểm tối đa <span th:text="${lvl.maxScore}"></span>
+                                            · Điểm đạt <span th:text="${lvl.passingScore}"></span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <a th:if="${lvl.canStart}"
+                                           th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${lvl.levelId})}"
+                                           class="btn btn-sm btn-primary fw-semibold px-3">
+                                            <i class="ti ti-pencil me-1"></i>Làm bài
+                                        </a>
+                                        <button th:if="${!lvl.canStart and !lvl.hasQuestions}"
+                                                class="btn btn-sm btn-light text-muted px-3" disabled>
+                                            Chưa có câu hỏi
+                                        </button>
+                                        <button th:if="${!lvl.canStart and lvl.hasQuestions and !lvl.unlocked}"
+                                                class="btn btn-sm btn-light text-muted px-3" disabled>
+                                            <i class="ti ti-lock me-1"></i>Cần qua level trước
+                                        </button>
+                                        <button th:if="${!lvl.canStart and lvl.hasQuestions and lvl.unlocked and !lvl.hasAttemptsLeft}"
+                                                class="btn btn-sm btn-light text-muted px-3" disabled>
+                                            Đã hết lượt làm bài
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Lịch sử làm bài theo level (S6) ── -->
+                <div class="row mt-3" th:if="${not #lists.isEmpty(levelHistory)}">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3">Lịch sử làm bài theo level</h6>
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Level</th>
+                                            <th>Số lượt đã thi</th>
+                                            <th>Điểm cao nhất</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="lvl : ${levelHistory}">
+                                            <td>
+                                                Level <span th:text="${lvl.levelNumber}"></span>
+                                                <span th:if="${lvl.title != null}" class="text-muted small"
+                                                      th:text="'– ' + ${lvl.title}"></span>
+                                            </td>
+                                            <td th:text="${lvl.attemptCount}"></td>
+                                            <td>
+                                                <span th:if="${lvl.attempted}"
+                                                      th:text="${lvl.bestScore} + '/' + ${lvl.maxScore}"></span>
+                                                <span th:unless="${lvl.attempted}">—</span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${!lvl.attempted}" class="status-badge status-inactive">Chưa làm</span>
+                                                <span th:if="${lvl.attempted and lvl.passed}" class="status-badge status-active">Đạt</span>
+                                                <span th:if="${lvl.attempted and !lvl.passed}" class="status-badge status-pending">Chưa đạt</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

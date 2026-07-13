@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết lượt làm bài | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body>
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-semibold mb-1">
+                            Lượt <span th:text="${detail.attempt.attemptNumber}"></span>
+                            — <span th:text="${detail.attempt.student.fullName}"></span>
+                        </h5>
+                        <p class="text-muted small mb-0">
+                            <span th:text="${detail.attempt.nodeLevel.learningNode.title}"></span>
+                            &nbsp;·&nbsp; Level <span th:text="${detail.attempt.nodeLevel.levelNumber}"></span>
+                            <span th:if="${detail.attempt.nodeLevel.title != null}"
+                                  th:text="'(' + ${detail.attempt.nodeLevel.title} + ')'"></span>
+                            &nbsp;|&nbsp; Nộp lúc:
+                            <span th:text="${#temporals.format(detail.attempt.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                        <span class="badge bg-primary fs-4"
+                              th:text="${detail.attempt.score} + '/' + ${detail.attempt.nodeLevel.maxScore}"></span>
+                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/classes/{cid}/results/students/{sid}(cid=${classroom.id}, sid=${detail.attempt.student.id})}, 'Quay lại')}"></a>
+                    </div>
+                </div>
+
+                <div class="alert alert-info py-2 small">
+                    <i class="ti ti-lock me-1"></i>
+                    Đây là bản chụp đề của đúng lượt làm này — chỉ xem, không sửa được.
+                    Đáp án đúng đánh dấu <i class="ti ti-check text-success"></i>,
+                    lựa chọn của học sinh đánh dấu <i class="ti ti-user text-primary"></i>.
+                </div>
+
+                <!-- Câu hỏi snapshot -->
+                <div class="card mb-3" th:each="q, qStat : ${detail.questions}">
+                    <div class="card-body">
+                        <h6 class="fw-semibold mb-3">
+                            Câu <span th:text="${qStat.count}"></span>:
+                            <span th:text="${q.content}"></span>
+                        </h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex align-items-center gap-2"
+                                th:each="opt : ${q.options}"
+                                th:classappend="${opt.correct} ? 'list-group-item-success' : (${opt.selected} ? 'list-group-item-danger' : '')">
+                                <i class="ti ti-check text-success" th:if="${opt.correct}" title="Đáp án đúng"></i>
+                                <i class="ti ti-user text-primary" th:if="${opt.selected}" title="Học sinh chọn"></i>
+                                <span th:text="${opt.content}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(detail.questions)}" class="card">
+                    <div class="card-body text-muted small">
+                        Lượt làm bài này không có câu hỏi nào trong bản chụp.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

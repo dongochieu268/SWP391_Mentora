@@ -48,6 +48,15 @@ public class NodeContentService {
         return nodeContentRepository.findByMaterial_IdOrderByDisplayOrderAscIdAsc(material.getId());
     }
 
+    /**
+     * Read-only lookup for the student learning flow. Authorization is enforced
+     * by the caller through classroom/node access and the level-material link.
+     */
+    public List<NodeContent> getLearningContentsByMaterialId(Integer materialId) {
+        if (materialId == null) return List.of();
+        return nodeContentRepository.findByMaterial_IdOrderByDisplayOrderAscIdAsc(materialId);
+    }
+
     public NodeContent findByIdAndNodeId(Integer contentId, Integer nodeId) {
         requireNodeId(nodeId);
         NodeContent content = nodeContentRepository.findByIdAndNode_Id(contentId, nodeId)

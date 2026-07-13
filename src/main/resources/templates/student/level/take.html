@@ -35,14 +35,23 @@
                                 <span class="badge bg-primary" th:text="${attempt.nodeLevel.maxScore} + ' điểm'"></span>
                                 <span class="badge bg-light text-dark border"
                                       th:text="'Đạt từ ' + ${attempt.nodeLevel.passingScore} + ' điểm'"></span>
+                                <!-- Countdown Timer (chỉ hiện khi level có giới hạn thời gian) -->
+                                <div class="mt-2" th:if="${attempt.nodeLevel.durationMinutes != null}">
+                                    <span class="badge fs-6 px-3 py-2 bg-success text-white" id="timerBadge"
+                                          style="min-width: 90px; font-variant-numeric: tabular-nums;">
+                                        <i class="ti ti-clock me-1"></i>
+                                        <span id="timerDisplay"
+                                              th:text="${attempt.nodeLevel.durationMinutes} + ':00'">--:--</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <form th:action="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${levelId})}"
-                      method="post"
-                      onsubmit="return confirm('Nộp bài test này?');">
+                <form id="levelTestForm"
+                      th:action="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${levelId})}"
+                      method="post">
 
                     <input type="hidden" name="attemptId" th:value="${attempt.id}"/>
 
@@ -73,7 +82,7 @@
                                 </div>
 
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary px-4">
+                                    <button type="button" class="btn btn-primary px-4" onclick="confirmSubmit()">
                                         <i class="ti ti-send me-1"></i> Nộp bài
                                     </button>
                                 </div>
@@ -86,5 +95,72 @@
     </div>
 </div>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<th:block th:if="${attempt.nodeLevel.durationMinutes != null}">
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    (function () {
+        var secondsRemaining = /*[[${secondsRemaining}]]*/ 0;
+        var timerDisplay = document.getElementById('timerDisplay');
+        var timerBadge  = document.getElementById('timerBadge');
+        var form        = document.getElementById('levelTestForm');
+        var autoSubmitted = false;
+        var started = false;
+
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+        function updateDisplay() {
+            var total = Math.max(0, secondsRemaining);
+            var h = Math.floor(total / 3600);
+            var m = Math.floor((total % 3600) / 60);
+            var s = total % 60;
+            timerDisplay.textContent = h > 0
+                ? pad(h) + ':' + pad(m) + ':' + pad(s)
+                : pad(m) + ':' + pad(s);
+        }
+
+        function tick() {
+            if (started) secondsRemaining--;
+            started = true;
+            updateDisplay();
+
+            if (secondsRemaining <= 0) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-danger text-white';
+                if (!autoSubmitted) {
+                    autoSubmitted = true;
+                    alert('⏰ Hết giờ! Bài làm của bạn sẽ được nộp tự động.');
+                    form.submit();
+                }
+                return;
+            }
+            if (secondsRemaining <= 300) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-danger text-white';
+            } else if (secondsRemaining <= 600) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-warning text-dark';
+            } else {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-success text-white';
+            }
+            setTimeout(tick, 1000);
+        }
+
+        setTimeout(tick, 1000);
+    })();
+
+    function confirmSubmit() {
+        if (confirm('Nộp bài test này?')) {
+            document.getElementById('levelTestForm').submit();
+        }
+    }
+    /*]]>*/
+</script>
+</th:block>
+<th:block th:unless="${attempt.nodeLevel.durationMinutes != null}">
+<script>
+    function confirmSubmit() {
+        if (confirm('Nộp bài test này?')) {
+            document.getElementById('levelTestForm').submit();
+        }
+    }
+</script>
+</th:block>
 </body>
 </html>

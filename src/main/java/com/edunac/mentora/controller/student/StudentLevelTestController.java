@@ -10,6 +10,7 @@ import com.edunac.mentora.repository.level.AttemptQuestionRepository;
 import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.repository.level.NodeLevelRepository;
 import com.edunac.mentora.service.level.NodeLevelAttemptService;
+import com.edunac.mentora.service.level.StudentLevelReviewService;
 import com.edunac.mentora.service.student.StudentRoadmapService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +41,7 @@ public class StudentLevelTestController {
     private final AttemptGrantRepository attemptGrantRepository;
     private final ClassroomMemberRepository classroomMemberRepository;
     private final StudentRoadmapService studentRoadmapService;
+    private final StudentLevelReviewService studentLevelReviewService;
 
     public StudentLevelTestController(
             NodeLevelAttemptService nodeLevelAttemptService,
@@ -48,7 +50,8 @@ public class StudentLevelTestController {
             NodeLevelRepository nodeLevelRepository,
             AttemptGrantRepository attemptGrantRepository,
             ClassroomMemberRepository classroomMemberRepository,
-            StudentRoadmapService studentRoadmapService
+            StudentRoadmapService studentRoadmapService,
+            StudentLevelReviewService studentLevelReviewService
     ) {
         this.nodeLevelAttemptService = nodeLevelAttemptService;
         this.nodeLevelAttemptRepository = nodeLevelAttemptRepository;
@@ -57,6 +60,7 @@ public class StudentLevelTestController {
         this.attemptGrantRepository = attemptGrantRepository;
         this.classroomMemberRepository = classroomMemberRepository;
         this.studentRoadmapService = studentRoadmapService;
+        this.studentLevelReviewService = studentLevelReviewService;
     }
 
     @GetMapping
@@ -86,6 +90,12 @@ public class StudentLevelTestController {
                 throw new IllegalStateException("Bạn không có quyền truy cập node này.");
             }
 
+            if (studentLevelReviewService.requiresReview(nodeLevel)
+                    && !studentLevelReviewService.isReviewed(levelId, user.getId(), classroomId)) {
+                throw new IllegalStateException(
+                        "Bạn cần ôn material và bấm 'Đã ôn xong' trước khi làm level này.");
+            }
+
             NodeLevelAttempt attempt = nodeLevelAttemptService.startAttempt(levelId, user.getId(), classroomId);
 
             List<AttemptQuestion> questions = attemptQuestionRepository.findWithOptionsByAttemptId(attempt.getId());
@@ -94,6 +104,7 @@ public class StudentLevelTestController {
             model.addAttribute("questions", questions);
             model.addAttribute("classroomId", classroomId);
             model.addAttribute("levelId", levelId);
+            model.addAttribute("nodeId", nodeId);
             model.addAttribute("user", user);
             model.addAttribute("activePage", "classrooms");
             return "student/level/take";

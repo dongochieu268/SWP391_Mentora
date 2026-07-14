@@ -51,12 +51,13 @@ public class LecturerMaterialController {
                        @RequestParam(required = false) Integer materialId,
                        @RequestParam(defaultValue = "false") boolean newMaterial,
                        @RequestParam(required = false) Integer contentEditId,
+                       @RequestParam(defaultValue = "info") String tab,
                        HttpSession session,
                        Model model) {
         User user = currentUser(session);
         List<Subject> subjects = subjectService.getActiveSubjects();
         Integer selectedSubjectId = selectedSubjectId(subjectId, subjects);
-        List<Material> materials = materialService.findBySubject(selectedSubjectId);
+        List<Material> materials = materialService.findOwnedBySubject(selectedSubjectId, user);
         Material selectedMaterial = selectMaterial(materials, materialId, newMaterial);
         List<BankQuestion> materialQuestions = selectedMaterial == null
                 ? List.of()
@@ -95,6 +96,7 @@ public class LecturerMaterialController {
         model.addAttribute("materialQuestions", materialQuestions);
         model.addAttribute("bankQuestions", bankQuestions);
         model.addAttribute("assignedQuestionIds", materialQuestions.stream().map(BankQuestion::getId).toList());
+        model.addAttribute("activeMaterialTab", selectedMaterial == null ? "info" : normalizeTab(tab));
         return "lecturer/material/list";
     }
 
@@ -109,8 +111,10 @@ public class LecturerMaterialController {
             return redirectToNewMaterial(form.getSubjectId());
         }
         try {
-            materialService.create(form.getSubjectId(), form.getTitle(), form.getDescription(), currentUser(session));
+            Material createdMaterial = materialService.create(
+                    form.getSubjectId(), form.getTitle(), form.getDescription(), currentUser(session));
             ra.addFlashAttribute("success", "Đã tạo material.");
+            return redirectToMaterial(form.getSubjectId(), createdMaterial.getId(), "content");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             ra.addFlashAttribute("form", form);
@@ -166,7 +170,7 @@ public class LecturerMaterialController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectToMaterial(subjectId, id);
+        return redirectToMaterial(subjectId, id, "questions");
     }
 
     @PostMapping("/{id}/contents/save")
@@ -181,7 +185,7 @@ public class LecturerMaterialController {
         if (bindingResult.hasErrors()) {
             ra.addFlashAttribute("error", firstValidationError(bindingResult));
             ra.addFlashAttribute("contentForm", form);
-            return redirectToMaterial(subjectId, id);
+            return redirectToMaterial(subjectId, id, "content");
         }
         try {
             nodeContentService.saveMaterialForm(form, mediaFile, currentUser(session));
@@ -190,7 +194,7 @@ public class LecturerMaterialController {
             ra.addFlashAttribute("error", e.getMessage());
             ra.addFlashAttribute("contentForm", form);
         }
-        return redirectToMaterial(subjectId, id);
+        return redirectToMaterial(subjectId, id, "content");
     }
 
     @PostMapping("/{id}/contents/delete/{contentId}")
@@ -205,7 +209,7 @@ public class LecturerMaterialController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectToMaterial(subjectId, id);
+        return redirectToMaterial(subjectId, id, "content");
     }
 
     @PostMapping("/{id}/questions/unassign")
@@ -220,7 +224,7 @@ public class LecturerMaterialController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectToMaterial(subjectId, id);
+        return redirectToMaterial(subjectId, id, "questions");
     }
 
     private Integer selectedSubjectId(Integer requestedSubjectId, List<Subject> subjects) {
@@ -270,8 +274,19 @@ public class LecturerMaterialController {
         return redirectToSubject(subjectId) + "&materialId=" + materialId;
     }
 
+    private String redirectToMaterial(Integer subjectId, Integer materialId, String tab) {
+        return redirectToMaterial(subjectId, materialId) + "&tab=" + normalizeTab(tab);
+    }
+
     private String redirectToNewMaterial(Integer subjectId) {
         return redirectToSubject(subjectId) + "&newMaterial=true";
+    }
+
+    private String normalizeTab(String tab) {
+        if ("content".equals(tab) || "questions".equals(tab)) {
+            return tab;
+        }
+        return "info";
     }
 
     private User currentUser(HttpSession session) {

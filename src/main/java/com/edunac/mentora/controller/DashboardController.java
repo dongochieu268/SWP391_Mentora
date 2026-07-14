@@ -1,6 +1,7 @@
 package com.edunac.mentora.controller;
 
 import com.edunac.mentora.domain.User;
+import com.edunac.mentora.service.classroom.ClassroomMemberService;
 import com.edunac.mentora.service.classroom.ClassroomService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -11,9 +12,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DashboardController {
 
     private final ClassroomService classroomService;
+    private final ClassroomMemberService classroomMemberService;
 
-    public DashboardController(ClassroomService classroomService) {
+    public DashboardController(ClassroomService classroomService,
+                               ClassroomMemberService classroomMemberService) {
         this.classroomService = classroomService;
+        this.classroomMemberService = classroomMemberService;
     }
 
     @GetMapping("/admin/dashboard")
@@ -34,7 +38,10 @@ public class DashboardController {
 
     @GetMapping("/student/dashboard")
     public String studentDashboard(HttpSession session, Model model) {
-        model.addAttribute("user", (User) session.getAttribute("loggedInUser"));
+        User user = (User) session.getAttribute("loggedInUser");
+        model.addAttribute("user", user);
+        model.addAttribute("myClassrooms", classroomMemberService.getMyClassrooms(user.getId()));
+        model.addAttribute("pendingRequests", classroomMemberService.getMyPendingRequests(user.getId()));
         model.addAttribute("activePage", "dashboard");
         return "student/dashboard";
     }

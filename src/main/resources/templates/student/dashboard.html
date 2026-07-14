@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard | Mentora</title>
+    <title>Trang chủ sinh viên | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -18,34 +19,114 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
+                <section class="student-hero">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-8">
+                            <span class="student-hero-eyebrow">
+                                <i class="ti ti-sparkles"></i> Không gian học tập của bạn
+                            </span>
+                            <h1>Chào <span th:text="${user.fullName}">Sinh viên</span>, hôm nay mình học gì?</h1>
+                            <p>Tiếp tục lộ trình đang học, khám phá nội dung mới và hoàn thành từng mục tiêu nhỏ cùng Mentora.</p>
+                            <div class="student-hero-actions">
+                                <a th:href="@{/student/classrooms}" class="btn btn-light px-4">
+                                    <i class="ti ti-player-play me-1"></i> Tiếp tục học
+                                </a>
+                                <a th:href="@{/student/classrooms}" class="btn btn-outline-light px-4">
+                                    <i class="ti ti-door-enter me-1"></i> Tham gia lớp mới
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="student-hero-stats">
+                                <div class="student-hero-stat">
+                                    <i class="ti ti-school fs-5"></i>
+                                    <strong th:text="${#lists.size(myClassrooms)}">0</strong>
+                                    <span>Lớp đang tham gia</span>
+                                </div>
+                                <div class="student-hero-stat">
+                                    <i class="ti ti-hourglass fs-5"></i>
+                                    <strong th:text="${#lists.size(pendingRequests)}">0</strong>
+                                    <span>Yêu cầu chờ duyệt</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                <!-- Welcome -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h4 class="card-title mb-1">Xin chào, <span th:text="${user.fullName}">Student</span>!</h4>
-                        <p class="card-text text-muted mb-0">Chào mừng bạn đến với Mentora. Chọn chức năng bên dưới để bắt đầu.</p>
+                <div class="student-section-heading">
+                    <div>
+                        <h2>Truy cập nhanh</h2>
+                        <p>Những thao tác bạn thường dùng nhất.</p>
                     </div>
                 </div>
 
-                <!-- Điều hướng nhanh -->
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <a th:href="@{/student/classrooms}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body d-flex align-items-center gap-3 p-4">
-                                    <div class="quick-link-icon">
-                                        <i class="ti ti-school fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-semibold mb-1 text-dark">Lớp học của tôi</h6>
-                                        <p class="text-muted small mb-0">Xem lớp đã tham gia hoặc nhập mã để vào lớp mới</p>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="col-md-6 col-xl-4">
+                        <a th:href="@{/student/classrooms}" class="student-quick-card text-decoration-none">
+                            <span class="student-icon-tile"><i class="ti ti-school"></i></span>
+                            <h3>Lớp học của tôi</h3>
+                            <p>Xem toàn bộ lớp đã tham gia và tiếp tục lộ trình học còn dang dở.</p>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <a th:href="@{/student/classrooms}" class="student-quick-card text-decoration-none">
+                            <span class="student-icon-tile"><i class="ti ti-key"></i></span>
+                            <h3>Nhập mã lớp</h3>
+                            <p>Tham gia lớp học mới bằng mã mời do giảng viên cung cấp.</p>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-xl-4" th:if="${!#lists.isEmpty(myClassrooms)}">
+                        <a th:href="@{/student/classrooms/{id}/roadmap(id=${myClassrooms[0].classroom.id})}"
+                           class="student-quick-card text-decoration-none">
+                            <span class="student-icon-tile"><i class="ti ti-route"></i></span>
+                            <h3>Vào lớp gần nhất</h3>
+                            <p th:text="${myClassrooms[0].classroom.name}">Tên lớp học</p>
                         </a>
                     </div>
                 </div>
 
+                <div class="student-section-heading">
+                    <div>
+                        <h2>Lớp học gần đây</h2>
+                        <p>Quay lại bài học của bạn chỉ với một lần nhấn.</p>
+                    </div>
+                    <a th:href="@{/student/classrooms}" class="btn btn-outline-primary btn-sm px-3">
+                        Xem tất cả <i class="ti ti-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                <div class="classroom-grid" th:if="${!#lists.isEmpty(myClassrooms)}">
+                    <article class="student-class-card" th:each="m, stat : ${myClassrooms}" th:if="${stat.index < 3}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="student-subject-badge" th:text="${m.classroom.subject.code}">Môn học</span>
+                            <span class="student-role-badge" th:text="${m.roleInClass == 'TA' ? 'Trợ giảng' : 'Sinh viên'}">Sinh viên</span>
+                        </div>
+                        <h3 th:text="${m.classroom.name}">Tên lớp học</h3>
+                        <div class="class-subject-name" th:text="${m.classroom.subject.name}">Tên môn học</div>
+                        <div class="student-class-meta">
+                            <div><i class="ti ti-route"></i><span th:text="${m.classroom.learningPath.name}">Lộ trình</span></div>
+                            <div><i class="ti ti-user"></i><span th:text="${m.classroom.teacher.fullName}">Giảng viên</span></div>
+                            <div><i class="ti ti-calendar"></i><span th:text="${m.classroom.semester.name}">Học kỳ</span></div>
+                        </div>
+                        <div class="student-class-actions">
+                            <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
+                               class="btn btn-primary flex-grow-1">
+                                <i class="ti ti-player-play me-1"></i> Vào học
+                            </a>
+                            <a th:href="@{/student/classrooms/{id}/qna(id=${m.classroom.id})}"
+                               class="btn btn-outline-primary" title="Hỏi đáp lớp học" aria-label="Hỏi đáp lớp học">
+                                <i class="ti ti-messages"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="student-empty-state" th:if="${#lists.isEmpty(myClassrooms)}">
+                    <span class="student-icon-tile"><i class="ti ti-school-off"></i></span>
+                    <h3 class="h5 fw-bold">Bạn chưa tham gia lớp học nào</h3>
+                    <p class="text-muted mb-3">Nhập mã lớp do giảng viên cung cấp để bắt đầu học.</p>
+                    <a th:href="@{/student/classrooms}" class="btn btn-primary px-4">Tham gia lớp ngay</a>
+                </div>
             </div>
         </div>
     </div>

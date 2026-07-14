@@ -7,7 +7,7 @@
   Usage: <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
   activePage values: 'dashboard' | 'classrooms'
 -->
-<aside th:fragment="studentSidebar(activePage)" class="left-sidebar">
+<aside th:fragment="studentSidebar(activePage)" class="left-sidebar student-navigation">
   <div>
     <div class="brand-logo d-flex align-items-center justify-content-between">
       <a th:href="@{/student/dashboard}" class="text-nowrap logo-img">
@@ -49,6 +49,17 @@
         </li>
 
       </ul>
+
+      <div class="mx-3 mt-4 p-3 rounded-4 text-white"
+           style="background: linear-gradient(145deg, #1d4ed8, #4f46e5); box-shadow: 0 14px 28px rgba(37, 99, 235, .2);">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="ti ti-sparkles fs-5" aria-hidden="true"></i>
+          <strong class="small">Mỗi ngày một bước</strong>
+        </div>
+        <p class="small mb-0" style="color: rgba(255,255,255,.74); line-height: 1.5;">
+          Hoàn thành từng bài nhỏ để tiến gần hơn tới mục tiêu.
+        </p>
+      </div>
     </nav>
   </div>
 </aside>

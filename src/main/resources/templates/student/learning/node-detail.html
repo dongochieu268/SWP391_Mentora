@@ -6,9 +6,10 @@
     <title th:text="${node.title} + ' | Mentora'">Chi tiết bài học</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
     <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -26,11 +27,11 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0 mb-4">
+                        <div class="card shadow-sm border-0 mb-4 student-lesson-card">
                             <div class="card-body p-4">
                                 <h4 class="fw-bold mb-3" th:text="${node.title}">Tên bài học</h4>
 
-                                <div class="p-3 bg-light rounded text-dark mb-4"
+                                <div class="student-lesson-description mb-4"
                                      th:if="${node.description != null}"
                                      th:text="${node.description}">
                                 </div>
@@ -198,7 +199,7 @@
                 <!-- Mỗi level mở/đóng nội dung học và chỉ mở bài test sau khi xác nhận học xong. -->
                 <div class="row mt-3" th:if="${hasStartableLevel}">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0">
+                        <div class="card shadow-sm border-0 student-level-card">
                             <div class="card-body p-4">
                                 <h6 class="fw-bold mb-3">Danh sách level</h6>
                                 <div class="accordion" id="levelAccordion">

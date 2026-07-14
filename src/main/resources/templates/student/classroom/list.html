@@ -6,8 +6,9 @@
     <title>Lớp học của tôi | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -18,161 +19,130 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success d-flex align-items-center gap-2" role="alert">
+                    <i class="ti ti-circle-check fs-5"></i><span th:text="${success}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                    <i class="ti ti-alert-circle fs-5"></i><span th:text="${error}"></span>
+                </div>
 
-                <!-- Form tham gia lớp bằng mã mời -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold mb-3">Tham gia lớp học</h5>
-                        <form th:action="@{/student/classrooms/join}" method="post" class="d-flex flex-column flex-sm-row gap-2">
-                            <label for="inviteCode" class="visually-hidden">Mã lớp</label>
-                            <input type="text" id="inviteCode" name="inviteCode" class="form-control flex-grow-1"
-                                   placeholder="Nhập mã lớp (VD: ABC12345)" maxlength="20"
-                                   autocomplete="off" required/>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="ti ti-door-enter me-1"></i> Tham gia
-                            </button>
-                        </form>
+                <div class="student-page-heading">
+                    <div>
+                        <span class="student-page-kicker"><i class="ti ti-school"></i> Không gian lớp học</span>
+                        <h1>Lớp học của tôi</h1>
+                        <p>Vào lớp để tiếp tục lộ trình hoặc tham gia một lớp học mới.</p>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                        <i class="ti ti-books me-1"></i>
+                        <span th:text="${#lists.size(myClassrooms)}">0</span> lớp đang học
+                    </span>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-7">
+                        <section class="card h-100">
+                            <div class="card-body p-4 p-lg-5">
+                                <div class="d-flex align-items-start gap-3">
+                                    <span class="student-icon-tile flex-shrink-0"><i class="ti ti-key"></i></span>
+                                    <div>
+                                        <h2 class="h4 fw-bold mb-2">Bạn có mã lớp?</h2>
+                                        <p class="text-muted mb-4">Nhập mã mời được giảng viên gửi để yêu cầu tham gia lớp học.</p>
+                                    </div>
+                                </div>
+                                <form th:action="@{/student/classrooms/join}" method="post"
+                                      class="d-flex flex-column flex-sm-row gap-2">
+                                    <label for="inviteCode" class="visually-hidden">Mã lớp</label>
+                                    <input type="text" id="inviteCode" name="inviteCode" class="form-control flex-grow-1"
+                                           placeholder="Ví dụ: SWP1842" maxlength="20" autocomplete="off" required/>
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="ti ti-door-enter me-1"></i> Tham gia
+                                    </button>
+                                </form>
+                                <div class="small text-muted mt-3">
+                                    <i class="ti ti-info-circle me-1"></i>Yêu cầu sẽ được gửi tới giảng viên để phê duyệt.
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-xl-5">
+                        <section class="card student-join-card">
+                            <span class="student-hero-eyebrow"><i class="ti ti-bulb"></i> Mẹo nhỏ</span>
+                            <h2 class="h4 text-white fw-bold mt-3">Học đều mỗi ngày hiệu quả hơn học dồn</h2>
+                            <p class="mb-0 text-white-50">Mỗi lần vào lớp, hãy hoàn thành một nội dung nhỏ và kiểm tra lại kiến thức ngay sau đó.</p>
+                        </section>
                     </div>
                 </div>
 
-                <!-- Yêu cầu đang chờ duyệt -->
-                <div class="card mb-4" th:if="${!#lists.isEmpty(pendingRequests)}">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold mb-3">
-                            <i class="ti ti-clock me-1 text-warning"></i> Yêu cầu đang chờ duyệt
-                        </h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead>
-                                <tr>
-                                    <th>Tên lớp</th>
-                                    <th>Môn học</th>
-                                    <th>Giảng viên</th>
-                                    <th>Học kỳ</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="m : ${pendingRequests}">
-                                    <td class="fw-semibold" th:text="${m.classroom.name}"></td>
-                                    <td>
-                                        <span class="badge bg-info text-dark" th:text="${m.classroom.subject.code}"></span>
-                                        <span th:text="${m.classroom.subject.name}"></span>
-                                    </td>
-                                    <td th:text="${m.classroom.teacher.fullName}"></td>
-                                    <td th:text="${m.classroom.semester.name}"></td>
-                                    <td><span class="status-badge status-pending">Chờ duyệt</span></td>
-                                </tr>
-                                </tbody>
-                            </table>
+                <section th:if="${!#lists.isEmpty(pendingRequests)}">
+                    <div class="student-section-heading">
+                        <div>
+                            <h2>Đang chờ duyệt</h2>
+                            <p>Giảng viên sẽ duyệt yêu cầu tham gia của bạn.</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Danh sách lớp đã tham gia -->
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold mb-3">
-                            <i class="ti ti-school me-1 text-success"></i> Lớp học của tôi
-                        </h5>
-
-                        <div class="mobile-card-list d-md-none" th:if="${!#lists.isEmpty(myClassrooms)}">
-                            <div class="mobile-list-card" th:each="m, stat : ${myClassrooms}">
-                                <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
-                                    <div>
-                                        <span class="badge bg-info text-dark mb-2" th:text="${m.classroom.subject.code}"></span>
-                                        <h6 class="fw-semibold mb-1" th:text="${m.classroom.name}"></h6>
-                                        <div class="text-muted small" th:text="${m.classroom.subject.name}"></div>
-                                    </div>
-                                    <div class="text-end">
-                                        <span th:if="${m.roleInClass == 'TA'}" class="role-badge">Trợ giảng</span>
-                                        <span th:unless="${m.roleInClass == 'TA'}" class="role-badge">Học sinh</span>
-                                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl-4" th:each="m : ${pendingRequests}">
+                            <article class="student-class-card">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <span class="student-subject-badge" th:text="${m.classroom.subject.code}">Môn học</span>
+                                    <span class="student-pending-badge"><i class="ti ti-clock"></i> Chờ duyệt</span>
                                 </div>
-                                <div class="small text-muted d-grid gap-1">
-                                    <div>
-                                        <i class="ti ti-route me-1"></i>
-                                        <span th:text="${m.classroom.learningPath.name}"></span>
-                                    </div>
-                                    <div>
-                                        <i class="ti ti-user me-1"></i>
-                                        <span th:text="${m.classroom.teacher.fullName}"></span>
-                                    </div>
-                                    <div>
-                                        <i class="ti ti-calendar me-1"></i>
-                                        <span th:text="${m.classroom.semester.name}"></span>
-                                    </div>
+                                <h3 th:text="${m.classroom.name}">Tên lớp học</h3>
+                                <div class="class-subject-name" th:text="${m.classroom.subject.name}">Tên môn học</div>
+                                <div class="student-class-meta">
+                                    <div><i class="ti ti-user"></i><span th:text="${m.classroom.teacher.fullName}">Giảng viên</span></div>
+                                    <div><i class="ti ti-calendar"></i><span th:text="${m.classroom.semester.name}">Học kỳ</span></div>
                                 </div>
+                                <div class="mt-auto small text-muted">
+                                    <i class="ti ti-progress-check me-1"></i>Yêu cầu đã được ghi nhận
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="student-section-heading">
+                        <div>
+                            <h2>Danh sách lớp học</h2>
+                            <p>Chọn một lớp để xem lộ trình và bắt đầu học.</p>
+                        </div>
+                    </div>
+
+                    <div class="classroom-grid" th:if="${!#lists.isEmpty(myClassrooms)}">
+                        <article class="student-class-card" th:each="m : ${myClassrooms}">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <span class="student-subject-badge" th:text="${m.classroom.subject.code}">Môn học</span>
+                                <span class="student-role-badge" th:text="${m.roleInClass == 'TA' ? 'Trợ giảng' : 'Sinh viên'}">Sinh viên</span>
+                            </div>
+                            <h3 th:text="${m.classroom.name}">Tên lớp học</h3>
+                            <div class="class-subject-name" th:text="${m.classroom.subject.name}">Tên môn học</div>
+                            <div class="student-class-meta">
+                                <div><i class="ti ti-route"></i><span th:text="${m.classroom.learningPath.name}">Lộ trình</span></div>
+                                <div><i class="ti ti-user"></i><span th:text="${m.classroom.teacher.fullName}">Giảng viên</span></div>
+                                <div><i class="ti ti-calendar"></i><span th:text="${m.classroom.semester.name}">Học kỳ</span></div>
+                            </div>
+                            <div class="student-class-actions">
                                 <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
-                                   class="btn btn-primary w-100 mt-3">
+                                   class="btn btn-primary flex-grow-1">
                                     <i class="ti ti-route me-1"></i> Xem lộ trình
                                 </a>
+                                <a th:href="@{/student/classrooms/{id}/qna(id=${m.classroom.id})}"
+                                   class="btn btn-outline-primary"
+                                   th:title="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Hỏi đáp lớp học'"
+                                   th:aria-label="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Hỏi đáp lớp học'">
+                                    <i class="ti ti-messages"></i>
+                                </a>
                             </div>
-                        </div>
-
-                        <div th:if="${#lists.isEmpty(myClassrooms)}" class="text-center text-muted py-4 d-md-none">
-                            Bạn chưa tham gia lớp học nào. Nhập mã lớp ở trên để tham gia.
-                        </div>
-
-                        <div class="table-responsive d-none d-md-block">
-                            <table class="table table-hover align-middle mb-0 table-min-760">
-                                <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Tên lớp</th>
-                                    <th>Môn học</th>
-                                    <th>Lộ trình</th>
-                                    <th>Giảng viên</th>
-                                    <th>Học kỳ</th>
-                                    <th>Vai trò</th>
-                                    <th class="text-end">Thao tác</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:if="${#lists.isEmpty(myClassrooms)}">
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        Bạn chưa tham gia lớp học nào. Nhập mã lớp ở trên để tham gia.
-                                    </td>
-                                </tr>
-                                <tr th:each="m, stat : ${myClassrooms}">
-                                    <td th:text="${stat.count}"></td>
-                                    <td class="fw-semibold" th:text="${m.classroom.name}"></td>
-                                    <td>
-                                        <span class="badge bg-info text-dark" th:text="${m.classroom.subject.code}"></span>
-                                        <span th:text="${m.classroom.subject.name}"></span>
-                                    </td>
-                                    <td th:text="${m.classroom.learningPath.name}"></td>
-                                    <td th:text="${m.classroom.teacher.fullName}"></td>
-                                    <td th:text="${m.classroom.semester.name}"></td>
-                                    <td>
-                                        <span th:if="${m.roleInClass == 'TA'}" class="role-badge">Trợ giảng</span>
-                                        <span th:unless="${m.roleInClass == 'TA'}" class="role-badge">Học sinh</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="table-actions justify-content-end">
-                                            <a th:href="@{/student/classrooms/{id}/roadmap(id=${m.classroom.id})}"
-                                               class="table-action-btn"
-                                               title="Xem lộ trình"
-                                               aria-label="Xem lộ trình">
-                                                <i class="ti ti-route"></i>
-                                            </a>
-                                            <a th:href="@{/student/classrooms/{id}/qna(id=${m.classroom.id})}"
-                                               class="table-action-btn"
-                                               th:title="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Câu hỏi sinh viên'"
-                                               th:aria-label="${m.roleInClass == 'TA'} ? 'Trả lời hỏi đáp' : 'Câu hỏi sinh viên'">
-                                                <i class="ti ti-messages"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        </article>
                     </div>
-                </div>
 
+                    <div class="student-empty-state" th:if="${#lists.isEmpty(myClassrooms)}">
+                        <span class="student-icon-tile"><i class="ti ti-school-off"></i></span>
+                        <h3 class="h5 fw-bold">Chưa có lớp học nào</h3>
+                        <p class="text-muted mb-0">Nhập mã lớp ở phía trên để gửi yêu cầu tham gia.</p>
+                    </div>
+                </section>
             </div>
         </div>
     </div>

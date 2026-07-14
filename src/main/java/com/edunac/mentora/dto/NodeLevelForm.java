@@ -15,6 +15,6 @@ public class NodeLevelForm {
     private String title;
     private BigDecimal maxScore;
     private BigDecimal passingScore;
-    private Integer maxAttempts;   // null = unlimited
-    // durationMinutes ẩn khỏi UI — enforcement hoãn sau bảo vệ (work-plan §8)
+    private Integer maxAttempts;      // null = unlimited
+    private Integer durationMinutes;  // null = no time limit
 }

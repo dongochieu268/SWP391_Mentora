@@ -6,8 +6,9 @@
     <title>Lộ trình học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
 </head>
-<body>
+<body class="lecturer-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -27,26 +28,45 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
 
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div>
-                                <h5 class="card-title fw-semibold mb-1">Lộ trình học của tôi</h5>
-                                <p class="text-muted small mb-0">Chọn môn học để xem các lộ trình bên trong.</p>
-                            </div>
-                            <a th:href="@{/lecturer/learning-paths/new}" class="btn btn-primary">
-                                <i class="ti ti-plus me-1"></i> Tạo lộ trình mới
-                            </a>
-                        </div>
+                <div class="lecturer-page-heading">
+                    <div>
+                        <span class="lecturer-page-kicker">
+                            <i class="ti ti-route"></i> Thiết kế môn học
+                        </span>
+                        <h1>Lộ trình học</h1>
+                        <p>Tổ chức cấu trúc bài học và các nhánh kiến thức theo từng môn.</p>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="lecturer-heading-count">
+                            <i class="ti ti-direction-sign"></i>
+                            <span th:text="${#lists.size(paths)}">0</span> lộ trình
+                        </span>
+                        <a th:href="@{/lecturer/learning-paths/new}" class="btn btn-primary">
+                            <i class="ti ti-plus me-1"></i>Tạo lộ trình mới
+                        </a>
+                    </div>
+                </div>
 
-                        <!-- Trống: chưa có lộ trình nào -->
-                        <div th:if="${#lists.isEmpty(paths)}" class="text-center text-muted py-5">
-                            <i class="ti ti-route fs-1 d-block mb-2 opacity-50"></i>
-                            Chưa có lộ trình nào. Bấm <span class="fw-semibold">Tạo lộ trình mới</span> để bắt đầu.
-                        </div>
+                <div th:if="${#lists.isEmpty(paths)}" class="lecturer-empty-state">
+                    <span class="lecturer-icon-tile"><i class="ti ti-route-off"></i></span>
+                    <h2>Chưa có lộ trình nào</h2>
+                    <p>Tạo lộ trình đầu tiên để bắt đầu xây dựng cấu trúc môn học.</p>
+                    <a th:href="@{/lecturer/learning-paths/new}" class="btn btn-primary mt-3">
+                        <i class="ti ti-plus me-1"></i>Tạo lộ trình mới
+                    </a>
+                </div>
 
-                        <!-- Accordion: mỗi môn xổ ra danh sách lộ trình -->
-                        <div class="accordion" id="subjectAccordion" th:unless="${#lists.isEmpty(paths)}">
+                <section class="lecturer-path-browser" th:unless="${#lists.isEmpty(paths)}">
+                    <div class="lecturer-section-heading mt-0">
+                        <div>
+                            <h2>Lộ trình theo môn</h2>
+                            <p>Mở từng môn để xem và chỉnh sửa lộ trình bên trong.</p>
+                        </div>
+                        <span class="lecturer-path-subject-count"
+                              th:text="${pathsBySubject.size()} + ' môn học'">0 môn học</span>
+                    </div>
+
+                    <div class="accordion lecturer-path-accordion" id="subjectAccordion">
                             <div class="accordion-item lp-subject-group" th:each="entry, sstat : ${pathsBySubject}"
                                  th:with="subject=${entry.key}, subjectPaths=${entry.value}">
                                 <h2 class="accordion-header" th:id="'subjectHead-' + ${subject.id}">
@@ -125,14 +145,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mt-3" th:unless="${#lists.isEmpty(paths)}">
-                            <span class="text-muted small"
-                                  th:text="'Hiển thị ' + ${#lists.size(paths)} + ' lộ trình trong ' + ${pathsBySubject.size()} + ' môn'"></span>
-                        </div>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     </div>

@@ -7,7 +7,7 @@
   Usage: <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
   activePage values: 'dashboard' | 'learning-paths' | 'question-bank' | 'assessments' | 'classes'
 -->
-<aside th:fragment="lecturerSidebar(activePage)" class="left-sidebar">
+<aside th:fragment="lecturerSidebar(activePage)" class="left-sidebar lecturer-navigation">
   <div>
     <div class="brand-logo d-flex align-items-center justify-content-between">
       <a th:href="@{/lecturer/dashboard}" class="text-nowrap logo-img">
@@ -81,6 +81,16 @@
         </li>
 
       </ul>
+
+      <div class="lecturer-sidebar-note mx-3 mt-4 p-3 text-white">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="ti ti-bulb fs-5" aria-hidden="true"></i>
+          <strong class="small">Mỗi buổi dạy một bước tiến</strong>
+        </div>
+        <p class="small mb-0">
+          Chuẩn bị học liệu rõ ràng để sinh viên theo đúng lộ trình.
+        </p>
+      </div>
     </nav>
   </div>
 </aside>

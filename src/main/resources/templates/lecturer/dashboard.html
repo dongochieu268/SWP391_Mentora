@@ -6,8 +6,9 @@
     <title>Dashboard | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
 </head>
-<body>
+<body class="lecturer-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -18,78 +19,125 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <!-- L6: nhắc tổng kết lớp khi học kỳ đã hết -->
                 <div th:if="${expiredClasses != null and not #lists.isEmpty(expiredClasses)}"
-                     class="alert alert-warning">
-                    <div class="fw-semibold mb-1">
-                        <i class="ti ti-calendar-x me-1"></i>
-                        Học kỳ đã kết thúc — tổng kết lớp
-                    </div>
-                    <ul class="mb-0 small">
-                        <li th:each="c : ${expiredClasses}">
-                            <span th:text="${c.name}"></span>
-                            <span class="text-muted" th:text="'(' + ${c.semester.name} + ')'"></span>
-                            —
-                            <a th:href="@{/lecturer/classes/{id}/results(id=${c.id})}">xem kết quả &amp; kết thúc lớp</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Welcome -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h4 class="card-title mb-1">Xin chào, <span th:text="${user.fullName}">Giảng viên</span>!</h4>
-                        <p class="card-text text-muted mb-0">Chào mừng bạn đến với Mentora. Chọn chức năng bên dưới để bắt đầu.</p>
+                     class="alert alert-warning d-flex align-items-start gap-3 mb-4" role="alert">
+                    <span class="lecturer-icon-tile flex-shrink-0">
+                        <i class="ti ti-calendar-x"></i>
+                    </span>
+                    <div>
+                        <div class="fw-semibold mb-1">Học kỳ đã kết thúc — tổng kết lớp</div>
+                        <ul class="mb-0 small ps-3">
+                            <li th:each="c : ${expiredClasses}">
+                                <span th:text="${c.name}"></span>
+                                <span th:text="'(' + ${c.semester.name} + ')'"></span>
+                                —
+                                <a class="fw-semibold"
+                                   th:href="@{/lecturer/classes/{id}/results(id=${c.id})}">xem kết quả và kết thúc lớp</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- Điều hướng nhanh -->
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <a th:href="@{/lecturer/learning-paths}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body d-flex align-items-center gap-3 p-4">
-                                    <div class="quick-link-icon">
-                                        <i class="ti ti-route fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-semibold mb-1 text-dark">Lộ trình học</h6>
-                                        <p class="text-muted small mb-0">Tạo và chỉnh sửa lộ trình học cho môn của bạn</p>
-                                    </div>
-                                </div>
+                <section class="lecturer-hero lecturer-dashboard-hero">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-7 lecturer-hero-copy">
+                            <span class="lecturer-hero-label">
+                                <i class="ti ti-layout-dashboard"></i> Trung tâm giảng dạy
+                            </span>
+                            <h1>Sẵn sàng cho buổi dạy tiếp theo, <span th:text="${user.fullName}">Giảng viên</span>?</h1>
+                            <p>Mọi công cụ để xây nội dung, tổ chức lớp và theo dõi tiến độ đều ở ngay trong không gian này.</p>
+                            <div class="lecturer-hero-actions">
+                                <a th:href="@{/lecturer/classes/wizard}" class="btn btn-light px-4">
+                                    <i class="ti ti-plus me-1"></i>Tạo lớp mới
+                                </a>
+                                <a th:href="@{/lecturer/materials}" class="btn btn-outline-light px-4">
+                                    <i class="ti ti-books me-1"></i>Soạn học liệu
+                                </a>
                             </div>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a th:href="@{/lecturer/assessments}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body d-flex align-items-center gap-3 p-4">
-                                    <div class="quick-link-icon">
-                                        <i class="ti ti-clipboard-check fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-semibold mb-1 text-dark">Bài test</h6>
-                                        <p class="text-muted small mb-0">Tạo bài test trắc nghiệm dùng cho điểm phân nhánh</p>
-                                    </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="lecturer-command-deck">
+                                <div class="lecturer-command-deck__heading">
+                                    <span>Mở nhanh</span>
+                                    <i class="ti ti-command"></i>
                                 </div>
+                                <a th:href="@{/lecturer/classes}" class="lecturer-command-link text-decoration-none">
+                                    <span class="lecturer-command-icon"><i class="ti ti-school"></i></span>
+                                    <span class="lecturer-command-copy">
+                                        <strong>Lớp học</strong>
+                                        <small>Thành viên và hoạt động lớp</small>
+                                    </span>
+                                    <i class="ti ti-arrow-up-right"></i>
+                                </a>
+                                <a th:href="@{/lecturer/learning-paths}" class="lecturer-command-link text-decoration-none">
+                                    <span class="lecturer-command-icon"><i class="ti ti-route"></i></span>
+                                    <span class="lecturer-command-copy">
+                                        <strong>Lộ trình học</strong>
+                                        <small>Cấu trúc và nhánh kiến thức</small>
+                                    </span>
+                                    <i class="ti ti-arrow-up-right"></i>
+                                </a>
+                                <a th:href="@{/lecturer/assessments}" class="lecturer-command-link text-decoration-none">
+                                    <span class="lecturer-command-icon"><i class="ti ti-clipboard-check"></i></span>
+                                    <span class="lecturer-command-copy">
+                                        <strong>Bài test</strong>
+                                        <small>Đánh giá và điểm phân nhánh</small>
+                                    </span>
+                                    <i class="ti ti-arrow-up-right"></i>
+                                </a>
                             </div>
-                        </a>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <a th:href="@{/lecturer/classes}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body d-flex align-items-center gap-3 p-4">
-                                    <div class="quick-link-icon">
-                                        <i class="ti ti-school fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-semibold mb-1 text-dark">Lớp học</h6>
-                                        <p class="text-muted small mb-0">Tạo lớp, quản lý thành viên và duyệt yêu cầu tham gia</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
+                </section>
+
+                <div class="lecturer-section-heading">
+                    <div>
+                        <h2>Không gian làm việc</h2>
+                        <p>Chọn đúng khu vực theo công việc bạn đang thực hiện.</p>
                     </div>
+                </div>
+
+                <div class="lecturer-workspace-grid">
+                    <a th:href="@{/lecturer/learning-paths}"
+                       class="lecturer-workspace-card lecturer-workspace-card--wide lecturer-workspace-card--path text-decoration-none">
+                        <span class="lecturer-workspace-icon"><i class="ti ti-route"></i></span>
+                        <span class="lecturer-workspace-type">Thiết kế môn học</span>
+                        <h3>Lộ trình học</h3>
+                        <p>Xây dựng cấu trúc bài học và các nhánh kiến thức.</p>
+                        <span class="lecturer-workspace-action">Mở lộ trình <i class="ti ti-arrow-right"></i></span>
+                    </a>
+                    <a th:href="@{/lecturer/classes}"
+                       class="lecturer-workspace-card lecturer-workspace-card--wide lecturer-workspace-card--class text-decoration-none">
+                        <span class="lecturer-workspace-icon"><i class="ti ti-school"></i></span>
+                        <span class="lecturer-workspace-type">Vận hành lớp học</span>
+                        <h3>Lớp học</h3>
+                        <p>Quản lý thành viên, hoạt động và kết quả học tập.</p>
+                        <span class="lecturer-workspace-action">Mở danh sách lớp <i class="ti ti-arrow-right"></i></span>
+                    </a>
+                    <a th:href="@{/lecturer/materials}"
+                       class="lecturer-workspace-card lecturer-workspace-card--material text-decoration-none">
+                        <span class="lecturer-workspace-icon"><i class="ti ti-books"></i></span>
+                        <span class="lecturer-workspace-type">Nội dung</span>
+                        <h3>Material</h3>
+                        <p>Đóng gói học liệu theo từng chủ đề.</p>
+                        <span class="lecturer-workspace-action">Soạn học liệu <i class="ti ti-arrow-right"></i></span>
+                    </a>
+                    <a th:href="@{/lecturer/question-bank}"
+                       class="lecturer-workspace-card lecturer-workspace-card--bank text-decoration-none">
+                        <span class="lecturer-workspace-icon"><i class="ti ti-database"></i></span>
+                        <span class="lecturer-workspace-type">Câu hỏi</span>
+                        <h3>Ngân hàng câu hỏi</h3>
+                        <p>Tổ chức bộ câu hỏi dùng chung theo môn.</p>
+                        <span class="lecturer-workspace-action">Mở ngân hàng <i class="ti ti-arrow-right"></i></span>
+                    </a>
+                    <a th:href="@{/lecturer/assessments}"
+                       class="lecturer-workspace-card lecturer-workspace-card--test text-decoration-none">
+                        <span class="lecturer-workspace-icon"><i class="ti ti-clipboard-check"></i></span>
+                        <span class="lecturer-workspace-type">Đánh giá</span>
+                        <h3>Bài test</h3>
+                        <p>Tạo bài đánh giá và cấu hình phân nhánh.</p>
+                        <span class="lecturer-workspace-action">Quản lý bài test <i class="ti ti-arrow-right"></i></span>
+                    </a>
                 </div>
             </div>
         </div>

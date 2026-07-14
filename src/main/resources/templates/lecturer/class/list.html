@@ -6,8 +6,9 @@
     <title>Lớp học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
 </head>
-<body>
+<body class="lecturer-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -27,100 +28,108 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
 
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div>
-                                <h5 class="card-title fw-semibold mb-1">Quản lý lớp học</h5>
-                                <p class="text-muted small mb-0">Bấm vào lớp để mở quản lý thành viên.</p>
-                            </div>
-                            <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary">
-                                <i class="ti ti-plus me-1"></i> Tạo lớp mới
-                            </a>
-                        </div>
-
-                        <!-- Trống -->
-                        <div th:if="${#lists.isEmpty(classes)}" class="text-center text-muted py-5">
-                            <i class="ti ti-school fs-1 d-block mb-2 opacity-50"></i>
-                            Chưa có lớp học nào. Bấm <span class="fw-semibold">Tạo lớp mới</span> để bắt đầu.
-                        </div>
-
-                        <!-- Lưới thẻ lớp học -->
-                        <div class="row g-3" th:unless="${#lists.isEmpty(classes)}">
-                            <div class="col-md-6 col-xl-4" th:each="c : ${classes}">
-                                <div class="card h-100 border shadow-none mb-0">
-                                    <div class="card-body d-flex flex-column">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <span class="badge bg-info text-dark" th:text="${c.subject.code}"></span>
-                                            <th:block th:replace="~{components/status-badge :: statusBadge(${c.status})}"></th:block>
-                                        </div>
-
-                                        <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
-                                           class="text-decoration-none">
-                                            <h6 class="fw-semibold text-body mb-1" th:text="${c.name}"></h6>
-                                        </a>
-                                        <div class="text-muted small mb-2" th:text="${c.subject.name}"></div>
-
-                                        <div class="text-muted small mb-1">
-                                            <i class="ti ti-route me-1"></i><span th:text="${c.learningPath.name}"></span>
-                                        </div>
-                                        <div class="text-muted small mb-1">
-                                            <i class="ti ti-calendar me-1"></i><span th:text="${c.semester.name}"></span>
-                                        </div>
-                                        <div class="text-muted small mb-3">
-                                            <i class="ti ti-key me-1"></i>Mã mời: <code th:text="${c.inviteCode}"></code>
-                                        </div>
-
-                                        <!-- Giữ thao tác chính dễ thấy, gom thao tác quản trị vào menu phụ. -->
-                                        <div class="d-flex gap-2 mt-auto">
-                                            <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
-                                               class="btn btn-sm btn-primary flex-grow-1">
-                                                <i class="ti ti-eye me-1"></i> Xem chi tiết
-                                            </a>
-                                            <a th:href="@{/lecturer/classes/{id}/qna(id=${c.id})}"
-                                               class="btn btn-sm btn-outline-secondary"
-                                               title="Hỏi đáp"
-                                               aria-label="Hỏi đáp lớp học">
-                                                <i class="ti ti-messages"></i>
-                                            </a>
-                                            <div class="dropdown">
-                                                <button class="table-action-btn" type="button"
-                                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                                        title="Thao tác lớp học"
-                                                        aria-label="Thao tác lớp học">
-                                                    <i class="ti ti-dots-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item"
-                                                           th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}">
-                                                            <i class="ti ti-list-check me-2"></i>Hiển thị node
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item"
-                                                           th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}">
-                                                            <i class="ti ti-edit me-2"></i>Sửa lớp học
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
-                                                              method="post"
-                                                              onsubmit="return confirm('Xóa lớp học này?');">
-                                                            <button type="submit" class="dropdown-item text-danger">
-                                                                <i class="ti ti-trash me-2"></i>Xóa lớp học
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="lecturer-page-heading">
+                    <div>
+                        <span class="lecturer-page-kicker">
+                            <i class="ti ti-school"></i> Quản lý giảng dạy
+                        </span>
+                        <h1>Lớp học</h1>
+                        <p>Theo dõi lớp, quản lý thành viên và xử lý các hoạt động đang diễn ra.</p>
                     </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="lecturer-heading-count">
+                            <i class="ti ti-layout-grid"></i>
+                            <span th:text="${#lists.size(classes)}">0</span> lớp
+                        </span>
+                        <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary">
+                            <i class="ti ti-plus me-1"></i>Tạo lớp mới
+                        </a>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(classes)}" class="lecturer-empty-state">
+                    <span class="lecturer-icon-tile"><i class="ti ti-school-off"></i></span>
+                    <h2>Chưa có lớp học nào</h2>
+                    <p>Tạo lớp đầu tiên để mời sinh viên và bắt đầu quản lý hoạt động học tập.</p>
+                    <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary mt-3">
+                        <i class="ti ti-plus me-1"></i>Tạo lớp mới
+                    </a>
+                </div>
+
+                <div class="lecturer-class-grid" th:unless="${#lists.isEmpty(classes)}">
+                    <article class="lecturer-class-card" th:each="c : ${classes}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="badge bg-primary-subtle text-primary px-2 py-2"
+                                  th:text="${c.subject.code}">Môn học</span>
+                            <th:block th:replace="~{components/status-badge :: statusBadge(${c.status})}"></th:block>
+                        </div>
+
+                        <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
+                           class="text-decoration-none">
+                            <h2 th:text="${c.name}">Tên lớp học</h2>
+                        </a>
+                        <div class="lecturer-class-subject" th:text="${c.subject.name}">Tên môn học</div>
+
+                        <div class="lecturer-class-meta">
+                            <div>
+                                <i class="ti ti-route"></i>
+                                <span th:text="${c.learningPath.name}">Lộ trình học</span>
+                            </div>
+                            <div>
+                                <i class="ti ti-calendar"></i>
+                                <span th:text="${c.semester.name}">Học kỳ</span>
+                            </div>
+                            <div>
+                                <i class="ti ti-key"></i>
+                                <span>Mã mời: <code th:text="${c.inviteCode}">CODE</code></span>
+                            </div>
+                        </div>
+
+                        <div class="lecturer-class-actions">
+                            <a th:href="@{/lecturer/classes/{id}/members(id=${c.id})}"
+                               class="btn btn-sm btn-primary flex-grow-1">
+                                <i class="ti ti-users me-1"></i>Xem chi tiết
+                            </a>
+                            <a th:href="@{/lecturer/classes/{id}/qna(id=${c.id})}"
+                               class="btn btn-sm btn-outline-primary"
+                               title="Hỏi đáp"
+                               aria-label="Hỏi đáp lớp học">
+                                <i class="ti ti-messages"></i>
+                            </a>
+                            <div class="dropdown">
+                                <button class="table-action-btn" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                        title="Thao tác lớp học"
+                                        aria-label="Thao tác lớp học">
+                                    <i class="ti ti-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           th:href="@{/lecturer/classes/{id}/nodes(id=${c.id})}">
+                                            <i class="ti ti-list-check me-2"></i>Hiển thị node
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           th:href="@{/lecturer/classes/{id}/edit(id=${c.id})}">
+                                            <i class="ti ti-edit me-2"></i>Sửa lớp học
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
+                                              method="post"
+                                              onsubmit="return confirm('Xóa lớp học này?');">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="ti ti-trash me-2"></i>Xóa lớp học
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </div>
         </div>

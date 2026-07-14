@@ -7,7 +7,7 @@ import lombok.Getter;
 
 import java.util.List;
 
-/** Material learning content unlocked by passing its configured node level. */
+/** Material learning content shown before the configured level test. */
 @Getter
 @AllArgsConstructor
 public class StudentLevelMaterialView {

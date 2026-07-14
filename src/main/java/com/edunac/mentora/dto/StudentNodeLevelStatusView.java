@@ -17,6 +17,8 @@ public class StudentNodeLevelStatusView {
     private final boolean prerequisitePassed;
     private final boolean reviewCompleted;
     private final boolean hasAttemptsLeft;
+    private final boolean attempted;
+    private final boolean passed;
 
     public StudentNodeLevelStatusView(
             Integer levelId,
@@ -28,7 +30,9 @@ public class StudentNodeLevelStatusView {
             boolean unlocked,
             boolean prerequisitePassed,
             boolean reviewCompleted,
-            boolean hasAttemptsLeft
+            boolean hasAttemptsLeft,
+            boolean attempted,
+            boolean passed
     ) {
         this.levelId = levelId;
         this.levelNumber = levelNumber;
@@ -40,6 +44,8 @@ public class StudentNodeLevelStatusView {
         this.prerequisitePassed = prerequisitePassed;
         this.reviewCompleted = reviewCompleted;
         this.hasAttemptsLeft = hasAttemptsLeft;
+        this.attempted = attempted;
+        this.passed = passed;
     }
 
     public boolean isCanStart() {

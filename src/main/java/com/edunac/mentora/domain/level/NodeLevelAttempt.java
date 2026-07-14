@@ -54,6 +54,9 @@ public class NodeLevelAttempt {
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
+    @Column(name = "deadline_at")
+    private LocalDateTime deadlineAt;
+
     // Evaluated against passingScore AT SUBMIT TIME, then immutable — later
     // changes to the level's passingScore never rewrite past attempts (L3 §9).
     @Column(nullable = false)

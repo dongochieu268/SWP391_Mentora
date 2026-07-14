@@ -67,9 +67,14 @@
                         <!-- S5 §3/§4/§5: CTA theo trạng thái đạt/lượt còn lại -->
                         <div class="d-flex justify-content-center flex-wrap gap-2">
                             <a th:if="${canGoNext}"
-                               th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${nextLevelId})}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nodeId})}"
                                class="btn btn-success">
-                                <i class="ti ti-arrow-big-right-lines me-1"></i> Thử Level tiếp theo
+                                <i class="ti ti-arrow-big-right-lines me-1"></i> Làm tiếp
+                            </a>
+                            <a th:if="${nodeCompleted}"
+                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nodeId})}"
+                               class="btn btn-success">
+                                <i class="ti ti-check me-1"></i> Xem nội dung bài học
                             </a>
                             <a th:if="${canRetry}"
                                th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${levelId})}"

@@ -43,6 +43,9 @@ public class AssessmentAttempt {
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
+    @Column(name = "deadline_at")
+    private LocalDateTime deadlineAt;
+
     @PrePersist
     protected void onCreate() {
         if (startedAt == null) {

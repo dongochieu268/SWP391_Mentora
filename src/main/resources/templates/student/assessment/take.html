@@ -7,20 +7,17 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
 </head>
-<body>
-<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
-     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
-
-    <aside th:replace="~{layout/student-sidebar :: studentSidebar(${activePage})}"></aside>
-
-    <div class="body-wrapper">
-        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
-
-        <div class="body-wrapper-inner">
-            <div class="container-fluid">
-                <div class="mb-4">
-                    <a th:replace="~{components/back-button :: backButton(@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}, 'Trở lại roadmap')}"></a>
-                </div>
+<body class="bg-light">
+<main class="container py-4" style="max-width: 980px">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <img th:src="@{/assets/images/logos/logo.svg}" alt="Mentora" style="height: 38px">
+            <span class="fw-bold fs-5">Chế độ làm bài</span>
+        </div>
+        <span class="badge bg-warning-subtle text-warning px-3 py-2">
+            <i class="ti ti-lock me-1"></i>Không rời trang khi chưa nộp bài
+        </span>
+    </div>
 
                 <div class="card mb-4">
                     <div class="card-body">
@@ -32,14 +29,23 @@
                             <div class="text-end">
                                 <span class="badge bg-primary" th:text="${assessment.totalScore} + ' điểm'"></span>
                                 <span class="badge bg-light text-dark border" th:text="${assessment.durationMinutes} + ' phút'"></span>
+                                <!-- Countdown Timer -->
+                                <div class="mt-2">
+                                    <span class="badge fs-6 px-3 py-2 bg-success text-white" id="timerBadge"
+                                          style="min-width: 90px; font-variant-numeric: tabular-nums;">
+                                        <i class="ti ti-clock me-1"></i>
+                                        <span id="timerDisplay"
+                                              th:text="${assessment.durationMinutes} + ':00'">--:--</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <form th:action="@{/student/classrooms/{cid}/assessments/attempts/{aid}/submit(cid=${classroomId},aid=${attempt.id})}"
-                      method="post"
-                      onsubmit="return confirm('Nộp bài test này?');">
+                <form id="assessmentTestForm"
+                      th:action="@{/student/classrooms/{cid}/assessments/attempts/{aid}/submit(cid=${classroomId},aid=${attempt.id})}"
+                      method="post" autocomplete="off">
                     <div class="card">
                         <div class="card-body">
                             <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-4">
@@ -69,7 +75,7 @@
                                 </div>
 
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary px-4">
+                                    <button id="submitAssessmentButton" type="submit" class="btn btn-primary px-4">
                                         <i class="ti ti-send me-1"></i> Nộp bài
                                     </button>
                                 </div>
@@ -77,10 +83,168 @@
                         </div>
                     </div>
                 </form>
+</main>
+<div class="modal fade" id="examActionModal" tabindex="-1" aria-labelledby="examActionTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="examActionTitle">Xác nhận nộp bài</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="d-flex gap-3 align-items-start">
+                    <span class="bg-primary-subtle text-primary rounded-circle p-2">
+                        <i class="ti ti-alert-circle fs-5"></i>
+                    </span>
+                    <p class="mb-0 pt-1" id="examActionMessage">
+                        Sau khi nộp, bạn không thể sửa đáp án.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" id="examActionCancel" class="btn btn-light" data-bs-dismiss="modal">Tiếp tục làm bài</button>
+                <button type="button" id="examActionConfirm" class="btn btn-primary">
+                    <i class="ti ti-send me-1"></i>Nộp bài
+                </button>
             </div>
         </div>
     </div>
 </div>
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    (() => {
+        const form = document.getElementById('assessmentTestForm');
+        const submitButton = document.getElementById('submitAssessmentButton');
+        const modalElement = document.getElementById('examActionModal');
+        const modalTitle = document.getElementById('examActionTitle');
+        const modalMessage = document.getElementById('examActionMessage');
+        const modalCancel = document.getElementById('examActionCancel');
+        const modalConfirm = document.getElementById('examActionConfirm');
+        const actionModal = modalElement && window.bootstrap
+            ? new bootstrap.Modal(modalElement, {backdrop: 'static', keyboard: false})
+            : null;
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerBadge = document.getElementById('timerBadge');
+        let secondsRemaining = /*[[${secondsRemaining}]]*/ 0;
+        let isSubmitting = false;
+        let autoSubmitted = false;
+        let modalAction = 'submit';
+
+        const markSubmitting = () => {
+            isSubmitting = true;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang nộp...';
+            }
+        };
+
+        const showActionModal = ({title, message, action, primaryText, cancellable, primaryDisabled = false}) => {
+            if (!actionModal) return false;
+            modalAction = action;
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalCancel.classList.toggle('d-none', !cancellable);
+            modalConfirm.textContent = primaryText;
+            modalConfirm.disabled = primaryDisabled;
+            actionModal.show();
+            return true;
+        };
+
+        modalConfirm?.addEventListener('click', () => {
+            if (modalAction === 'submit') {
+                actionModal.hide();
+                markSubmitting();
+                form.submit();
+                return;
+            }
+            actionModal.hide();
+        });
+
+        form?.addEventListener('submit', event => {
+            if (!actionModal) {
+                markSubmitting();
+                return;
+            }
+            event.preventDefault();
+            showActionModal({
+                title: 'Xác nhận nộp bài',
+                message: 'Sau khi nộp, bạn không thể sửa đáp án. Bạn có chắc chắn muốn nộp bài?',
+                action: 'submit',
+                primaryText: 'Nộp bài',
+                cancellable: true
+            });
+        });
+
+        window.addEventListener('beforeunload', event => {
+            if (isSubmitting) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        history.pushState({ assessmentTest: true }, '', window.location.href);
+        window.addEventListener('popstate', () => {
+            history.pushState({ assessmentTest: true }, '', window.location.href);
+            showActionModal({
+                title: 'Bài làm chưa được nộp',
+                message: 'Bạn cần nộp bài trước khi rời khỏi trang này.',
+                action: 'notice',
+                primaryText: 'Đã hiểu',
+                cancellable: false
+            });
+        });
+
+        const pad = value => value < 10 ? '0' + value : String(value);
+
+        function updateDisplay() {
+            const total = Math.max(0, secondsRemaining);
+            const h = Math.floor(total / 3600);
+            const m = Math.floor((total % 3600) / 60);
+            const s = total % 60;
+            timerDisplay.textContent = h > 0
+                ? pad(h) + ':' + pad(m) + ':' + pad(s)
+                : pad(m) + ':' + pad(s);
+        }
+
+        function tick() {
+            secondsRemaining = Math.max(0, secondsRemaining - 1);
+            updateDisplay();
+
+            if (secondsRemaining <= 0) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-danger text-white';
+                if (!autoSubmitted) {
+                    autoSubmitted = true;
+                    markSubmitting();
+                    const modalShown = showActionModal({
+                        title: 'Đã hết thời gian',
+                        message: 'Bài làm của bạn đang được nộp tự động.',
+                        action: 'timeout',
+                        primaryText: 'Đang nộp...',
+                        cancellable: false,
+                        primaryDisabled: true
+                    });
+                    if (modalShown) {
+                        setTimeout(() => form.submit(), 900);
+                    } else {
+                        form.submit();
+                    }
+                }
+                return;
+            }
+            if (secondsRemaining <= 300) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-danger text-white';
+            } else if (secondsRemaining <= 600) {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-warning text-dark';
+            } else {
+                timerBadge.className = 'badge fs-6 px-3 py-2 bg-success text-white';
+            }
+            setTimeout(tick, 1000);
+        }
+
+        updateDisplay();
+        setTimeout(tick, 1000);
+    })();
+    /*]]>*/
+</script>
 </body>
 </html>

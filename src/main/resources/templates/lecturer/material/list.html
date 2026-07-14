@@ -138,30 +138,39 @@
 
                                 <ul class="nav nav-tabs mt-3" id="materialTabs" role="tablist">
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="material-info-tab" data-bs-toggle="tab"
+                                        <button class="nav-link" id="material-info-tab" data-bs-toggle="tab"
+                                                th:classappend="${activeMaterialTab == 'info'} ? ' active'"
                                                 data-bs-target="#material-info-pane" type="button" role="tab"
-                                                aria-controls="material-info-pane" aria-selected="true">
+                                                aria-controls="material-info-pane"
+                                                th:attr="aria-selected=${activeMaterialTab == 'info'}">
                                             <i class="ti ti-info-circle me-1"></i>Th&#244;ng tin
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="material-content-tab" data-bs-toggle="tab"
+                                                th:classappend="${activeMaterialTab == 'content'} ? ' active'"
+                                                th:disabled="${selectedMaterial == null}"
                                                 data-bs-target="#material-content-pane" type="button" role="tab"
-                                                aria-controls="material-content-pane" aria-selected="false">
+                                                aria-controls="material-content-pane"
+                                                th:attr="aria-selected=${activeMaterialTab == 'content'}">
                                             <i class="ti ti-files me-1"></i>N&#7897;i dung h&#7885;c
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="material-questions-tab" data-bs-toggle="tab"
+                                                th:classappend="${activeMaterialTab == 'questions'} ? ' active'"
+                                                th:disabled="${selectedMaterial == null}"
                                                 data-bs-target="#material-questions-pane" type="button" role="tab"
-                                                aria-controls="material-questions-pane" aria-selected="false">
+                                                aria-controls="material-questions-pane"
+                                                th:attr="aria-selected=${activeMaterialTab == 'questions'}">
                                             <i class="ti ti-help me-1"></i>C&#226;u h&#7887;i
                                         </button>
                                     </li>
                                 </ul>
 
                                 <div class="tab-content pt-4" id="materialTabsContent">
-                                    <div class="tab-pane fade show active" id="material-info-pane" role="tabpanel"
+                                    <div class="tab-pane fade" id="material-info-pane" role="tabpanel"
+                                         th:classappend="${activeMaterialTab == 'info'} ? ' show active'"
                                          aria-labelledby="material-info-tab" tabindex="0">
                                         <div class="row g-4">
                                             <div class="col-lg-8">
@@ -185,7 +194,9 @@
                                                     </div>
                                                     <div class="d-flex flex-wrap gap-2">
                                                         <button class="btn btn-primary" type="submit">
-                                                            <i class="ti ti-device-floppy me-1"></i>L&#432;u
+                                                            <i class="ti ti-device-floppy me-1"></i>
+                                                            <span th:if="${selectedMaterial == null}">L&#432;u v&#224; th&#234;m n&#7897;i dung</span>
+                                                            <span th:if="${selectedMaterial != null}">L&#432;u thay &#273;&#7893;i</span>
                                                         </button>
                                                         <a class="btn btn-light border"
                                                            th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, newMaterial=true)}"
@@ -215,6 +226,7 @@
                                     </div>
 
                                     <div class="tab-pane fade" id="material-content-pane" role="tabpanel"
+                                         th:classappend="${activeMaterialTab == 'content'} ? ' show active'"
                                          aria-labelledby="material-content-tab" tabindex="0">
                                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                                             <div>
@@ -278,7 +290,7 @@
                                                     </button>
                                                     <a class="btn btn-light border ms-2"
                                                        th:if="${contentForm.id != null}"
-                                                       th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${selectedMaterial.id})}">
+                                                       th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${selectedMaterial.id}, tab='content')}">
                                                         H&#7911;y s&#7917;a
                                                     </a>
                                                 </div>
@@ -313,7 +325,7 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <a class="btn btn-sm btn-light border me-1"
-                                                               th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${selectedMaterial.id}, contentEditId=${content.id})}"
+                                                               th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${selectedMaterial.id}, contentEditId=${content.id}, tab='content')}"
                                                                title="S&#7917;a n&#7897;i dung"
                                                                aria-label="S&#7917;a n&#7897;i dung">
                                                                 <i class="ti ti-edit"></i>
@@ -337,6 +349,7 @@
                                     </div>
 
                                     <div class="tab-pane fade" id="material-questions-pane" role="tabpanel"
+                                         th:classappend="${activeMaterialTab == 'questions'} ? ' show active'"
                                          aria-labelledby="material-questions-tab" tabindex="0">
                                         <div th:if="${selectedMaterial == null}" class="text-center text-muted py-5 border rounded">
                                             Ch&#7885;n material tr&#432;&#7899;c khi g&#7855;n c&#226;u h&#7887;i.
@@ -510,6 +523,19 @@
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        function syncMaterialTabUrl() {
+            document.querySelectorAll('#materialTabs [data-bs-toggle="tab"]').forEach(function (tabTrigger) {
+                tabTrigger.addEventListener('shown.bs.tab', function () {
+                    const tab = tabTrigger.id.replace('material-', '').replace('-tab', '');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', tab);
+                    window.history.replaceState({}, '', url);
+                });
+            });
+        }
+
+        syncMaterialTabUrl();
+
         const contentTypeSelect = document.getElementById('contentType');
         const contentFields = Array.from(document.querySelectorAll('.js-content-field'));
 

@@ -59,6 +59,22 @@ class LecturerMaterialTemplateStructureTest {
     }
 
     @Test
+    void materialWorkflowUsesTabsWithoutDuplicateNavigationButtons() throws IOException {
+        String template = resource("templates/lecturer/material/list.html");
+
+        assertTrue(template.contains("activeMaterialTab"));
+        assertTrue(template.contains("L&#432;u v&#224; th&#234;m n&#7897;i dung"));
+        assertTrue(template.contains("N&#7897;i dung h&#7885;c"));
+        assertTrue(template.contains("data-bs-target=\"#material-info-pane\""));
+        assertTrue(template.contains("data-bs-target=\"#material-content-pane\""));
+        assertTrue(template.contains("data-bs-target=\"#material-questions-pane\""));
+        assertFalse(template.contains("Th&#244;ng tin material"));
+        assertFalse(template.contains("Ti&#7871;p t&#7909;c: C&#226;u h&#7887;i"));
+        assertFalse(template.contains("data-material-tab-target"));
+        assertTrue(template.contains("syncMaterialTabUrl"));
+    }
+
+    @Test
     void materialPageDoesNotContainMojibakeText() throws IOException {
         String template = resource("templates/lecturer/material/list.html");
 

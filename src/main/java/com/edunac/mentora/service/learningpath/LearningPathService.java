@@ -115,6 +115,19 @@ public class LearningPathService {
         }
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
+
+
+        for (LearningNode n : nodes) {
+            if (nodeProgressRepository.existsByLearningNodeId(n.getId())) {
+                throw new IllegalStateException(
+                        "Không thể xóa lộ trình vì vẫn còn dữ liệu tiến trình học liên quan.");
+            }
+            if (nodeLevelService.nodeHasAttempts(n.getId())) {
+                throw new IllegalStateException(
+                        "Không thể xóa lộ trình vì một số node đang có dữ liệu làm bài của học sinh.");
+            }
+        }
+
         for (LearningNode n : nodes) {
             n.setPrerequisite(null);
             n.setBranchOwnerNode(null);
@@ -122,7 +135,9 @@ public class LearningPathService {
         nodeRepository.saveAll(nodes);
         for (LearningNode n : nodes) {
             branchRuleRepository.findByNodeId(n.getId()).ifPresent(branchRuleRepository::delete);
+            classroomNodeStatusRepository.deleteByNodeId(n.getId());
             deleteContentsForNode(n.getId());
+            nodeLevelService.deleteLevelsForNode(n.getId());
         }
         nodeRepository.deleteAll(nodes);
         pathRepository.delete(path);
@@ -565,7 +580,6 @@ public class LearningPathService {
             });
         }
 
-        // L1 §4: clone levels + levelMaterials, KHÔNG clone attempts
         for (LearningNode oldNode : sourceNodes) {
             LearningNode clonedNode = nodeMap.get(oldNode.getId());
             nodeLevelService.cloneLevels(oldNode.getId(), clonedNode.getId());

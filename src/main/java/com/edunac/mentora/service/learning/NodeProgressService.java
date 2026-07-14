@@ -148,7 +148,7 @@ public class NodeProgressService {
 
 
     public void updateOnAttemptSubmitted(Integer nodeId, Integer studentId, Integer classroomId,
-                                         Integer levelNumber, BigDecimal score) {
+                                         Integer levelNumber, BigDecimal score, boolean nodeCompleted) {
         NodeProgress progress = nodeProgressRepository
                 .findByStudent_IdAndLearningNode_IdAndClassroom_Id(studentId, nodeId, classroomId)
                 .orElseGet(() -> {
@@ -163,7 +163,7 @@ public class NodeProgressService {
                     return np;
                 });
 
-        if (!progress.isCompleted()) {
+        if (nodeCompleted && !progress.isCompleted()) {
             progress.setCompleted(true);
             progress.setCompletedAt(LocalDateTime.now());
         }

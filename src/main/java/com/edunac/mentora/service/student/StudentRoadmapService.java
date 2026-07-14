@@ -16,6 +16,7 @@ import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.level.LevelMaterialRepository;
 import com.edunac.mentora.repository.level.NodeLevelRepository;
+import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.service.classroom.ClassroomMemberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,7 @@ public class StudentRoadmapService {
     private final NodeProgressRepository progressRepository;
     private final NodeLevelRepository nodeLevelRepository;
     private final LevelMaterialRepository levelMaterialRepository;
+    private final NodeLevelAttemptRepository nodeLevelAttemptRepository;
 
     public StudentRoadmapService(
             ClassroomMemberService memberService,
@@ -43,7 +45,8 @@ public class StudentRoadmapService {
             ClassroomNodeStatusRepository nodeStatusRepository,
             NodeProgressRepository progressRepository,
             NodeLevelRepository nodeLevelRepository,
-            LevelMaterialRepository levelMaterialRepository
+            LevelMaterialRepository levelMaterialRepository,
+            NodeLevelAttemptRepository nodeLevelAttemptRepository
     ) {
         this.memberService = memberService;
         this.nodeRepository = nodeRepository;
@@ -51,6 +54,7 @@ public class StudentRoadmapService {
         this.progressRepository = progressRepository;
         this.nodeLevelRepository = nodeLevelRepository;
         this.levelMaterialRepository = levelMaterialRepository;
+        this.nodeLevelAttemptRepository = nodeLevelAttemptRepository;
     }
 
     public StudentRoadmapView buildRoadmap(Integer classroomId, User student) {
@@ -67,6 +71,7 @@ public class StudentRoadmapService {
         Map<Integer, NodeProgress> progressMap    = loadProgressMap(classroomId, student.getId());
         Map<Integer, Long>         levelCountMap  = buildLevelCountMap(levels);
         Map<Integer, BigDecimal>   masteryMaxMap  = buildMasteryMaxScoreMap(levels);
+        Map<Integer, Integer>      passedLevelMap = buildHighestPassedLevelMap(classroomId, student.getId());
 
         int visibleCount          = 0;
         int completedVisibleCount = 0;
@@ -86,7 +91,7 @@ public class StudentRoadmapService {
                             ? node.getPrerequisite().getTitle() : null;
 
                     int totalLevels = levelCountMap.getOrDefault(node.getId(), 0L).intValue();
-                    Integer bestLevelNumber = progress != null ? progress.getBestLevelNumber() : null;
+                    Integer bestLevelNumber = passedLevelMap.get(node.getId());
 
                     return new StudentRoadmapNodeView(
                             node, state, prereqTitle,
@@ -162,6 +167,19 @@ public class StudentRoadmapService {
             Integer nodeId = level.getLearningNode().getId();
             map.merge(nodeId, 1L, Long::sum);
         }
+        return map;
+    }
+
+    /** Roadmap level progress is the highest level actually passed, not the
+     * level associated with the best score (ties may belong to an earlier level). */
+    private Map<Integer, Integer> buildHighestPassedLevelMap(Integer classroomId, Integer studentId) {
+        Map<Integer, Integer> map = new HashMap<>();
+        nodeLevelAttemptRepository
+                .findByClassroom_IdAndStudent_IdAndStatusAndPassedTrue(classroomId, studentId, "SUBMITTED")
+                .forEach(attempt -> map.merge(
+                        attempt.getNodeLevel().getLearningNode().getId(),
+                        attempt.getNodeLevel().getLevelNumber(),
+                        Math::max));
         return map;
     }
 

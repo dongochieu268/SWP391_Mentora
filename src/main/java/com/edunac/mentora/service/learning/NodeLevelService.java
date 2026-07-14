@@ -291,6 +291,7 @@ public class NodeLevelService {
         form.setMaxScore(level.getMaxScore());
         form.setPassingScore(level.getPassingScore());
         form.setMaxAttempts(level.getMaxAttempts());
+        form.setDurationMinutes(level.getDurationMinutes());
         return form;
     }
 
@@ -301,6 +302,7 @@ public class NodeLevelService {
         level.setMaxScore(form.getMaxScore());
         level.setPassingScore(form.getPassingScore());
         level.setMaxAttempts(form.getMaxAttempts());
+        level.setDurationMinutes(form.getDurationMinutes());
     }
 
     private void validateScoreFields(BigDecimal maxScore, BigDecimal passingScore) {

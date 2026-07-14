@@ -79,7 +79,9 @@ public class StudentAssessmentService {
         attempt.setClassroom(classroom);
         attempt.setStudent(student);
         attempt.setStatus(AttemptStatus.IN_PROGRESS.name());
-        attempt.setStartedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        attempt.setStartedAt(now);
+        attempt.setDeadlineAt(now.plusMinutes(assessment.getDurationMinutes()));
         return attemptRepository.save(attempt);
     }
 
@@ -105,6 +107,7 @@ public class StudentAssessmentService {
         if (!AssessmentStatus.PUBLISHED.name().equals(attempt.getAssessment().getStatus()))
             throw new IllegalStateException("Bài test chưa được publish.");
 
+        // Nếu đã hết giờ, bỏ qua các câu chưa trả lời (grading vẫn chạy bình thường).
         BigDecimal score = grade(attempt.getAssessment(), selectedOptionByQuestionId);
         attempt.setScore(score);
         attempt.setStatus(AttemptStatus.SUBMITTED.name());

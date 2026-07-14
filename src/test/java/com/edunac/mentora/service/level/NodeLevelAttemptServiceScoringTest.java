@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -71,6 +73,9 @@ class NodeLevelAttemptServiceScoringTest {
         // save() trả về chính đối tượng được truyền vào (giả lập JPA save).
         when(nodeLevelAttemptRepository.save(any(NodeLevelAttempt.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(nodeLevelRepository
+                .findTopByLearningNode_IdAndLevelNumberGreaterThanOrderByLevelNumberAsc(any(), any()))
+                .thenReturn(Optional.empty());
     }
 
     @Test
@@ -90,7 +95,8 @@ class NodeLevelAttemptServiceScoringTest {
         assertEquals(0, BigDecimal.valueOf(10).compareTo(result.getScore()));
         assertTrue(result.isPassed());
         assertEquals(AttemptStatus.SUBMITTED.name(), result.getStatus());
-        verify(nodeProgressService).updateOnAttemptSubmitted(any(), eq(STUDENT_ID), eq(CLASSROOM_ID), any(), eq(result.getScore()));
+        verify(nodeProgressService).updateOnAttemptSubmitted(
+                any(), eq(STUDENT_ID), eq(CLASSROOM_ID), any(), eq(result.getScore()), anyBoolean());
     }
 
     @Test
@@ -133,7 +139,8 @@ class NodeLevelAttemptServiceScoringTest {
         NodeLevelAttempt result = service.submitAttempt(ATTEMPT_ID, STUDENT_ID, CLASSROOM_ID, Map.of());
 
         assertEquals(0, BigDecimal.valueOf(7).compareTo(result.getScore()));
-        verify(nodeProgressService, never()).updateOnAttemptSubmitted(any(), any(), any(), any(), any());
+        verify(nodeProgressService, never()).updateOnAttemptSubmitted(
+                any(), any(), any(), any(), any(), anyBoolean());
     }
 
     @Test

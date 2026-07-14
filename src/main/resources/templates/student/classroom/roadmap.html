@@ -102,7 +102,8 @@
                                             <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
                                                 <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
                                                 <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
-                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info">Có thể học</span>
+                                                <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info"
+                                                      th:text="${item.bestScore != null ? 'Đang học' : 'Có thể học'}">Có thể học</span>
                                                 <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
                                                 <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa mở</span>
                                                 <span th:if="${item.hasLevels}" class="badge bg-primary-subtle text-primary"
@@ -129,7 +130,10 @@
                                             <a th:if="${item.state.name() == 'ACCESSIBLE'}"
                                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
                                                class="btn btn-sm btn-primary fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-player-play me-1"></i> Vào học
+                                                <i class="ti ti-player-play me-1"></i>
+                                                <span th:if="${item.hasLevels and item.bestScore == null}">Bắt đầu học</span>
+                                                <span th:if="${item.hasLevels and item.bestScore != null}">Làm tiếp</span>
+                                                <span th:unless="${item.hasLevels}">Vào học</span>
                                             </a>
                                             <a th:if="${item.state.name() == 'COMPLETED'}"
                                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"

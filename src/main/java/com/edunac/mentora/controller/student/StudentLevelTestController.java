@@ -90,10 +90,14 @@ public class StudentLevelTestController {
                 throw new IllegalStateException("Bạn không có quyền truy cập node này.");
             }
 
+            if (!nodeLevelAttemptService.isNextLevelUnlocked(levelId, user.getId(), classroomId)) {
+                throw new IllegalStateException("Bạn cần đạt level trước khi làm level này.");
+            }
+
             if (studentLevelReviewService.requiresReview(nodeLevel)
                     && !studentLevelReviewService.isReviewed(levelId, user.getId(), classroomId)) {
                 throw new IllegalStateException(
-                        "Bạn cần ôn material và bấm 'Đã ôn xong' trước khi làm level này.");
+                        "Bạn cần học material và bấm 'Đã học xong' trước khi làm level này.");
             }
 
             NodeLevelAttempt attempt = nodeLevelAttemptService.startAttempt(levelId, user.getId(), classroomId);
@@ -202,10 +206,10 @@ public class StudentLevelTestController {
                     .findTopByLearningNode_IdAndLevelNumberGreaterThanOrderByLevelNumberAsc(
                             nodeId, nodeLevel.getLevelNumber());
 
-            // S5 §5: hết lượt → cả 2 CTA ẩn, chỉ còn thông báo hết lượt.
-            boolean noAttemptsLeft = !attemptsRemain;
-            // S5 §3: đạt + có level kế tiếp + còn lượt (đọc cờ passed đã lưu — bất biến).
-            boolean canGoNext = attempt.isPassed() && nextLevel.isPresent() && attemptsRemain;
+            boolean noAttemptsLeft = !attempt.isPassed() && !attemptsRemain;
+            // Qua level hiện tại luôn được học tiếp, không phụ thuộc số lượt còn lại của level đã qua.
+            boolean canGoNext = attempt.isPassed() && nextLevel.isPresent();
+            boolean nodeCompleted = attempt.isPassed() && nextLevel.isEmpty();
             // S5 §4: chưa đạt + còn lượt.
             boolean canRetry = !attempt.isPassed() && attemptsRemain;
 
@@ -214,9 +218,11 @@ public class StudentLevelTestController {
             model.addAttribute("nodeLevel", nodeLevel);
             model.addAttribute("classroomId", classroomId);
             model.addAttribute("levelId", levelId);
+            model.addAttribute("nodeId", nodeId);
             model.addAttribute("user", user);
             model.addAttribute("canRetry", canRetry);
             model.addAttribute("canGoNext", canGoNext);
+            model.addAttribute("nodeCompleted", nodeCompleted);
             model.addAttribute("noAttemptsLeft", noAttemptsLeft);
             model.addAttribute("nextLevelId", nextLevel.map(NodeLevel::getId).orElse(null));
             model.addAttribute("activePage", "classrooms");

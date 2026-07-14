@@ -7,8 +7,9 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
     <link rel="stylesheet" th:href="@{/assets/css/question-bank.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
 </head>
-<body>
+<body class="lecturer-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
     <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
@@ -27,18 +28,26 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                 </div>
 
-                <div class="qb-page-head">
+                <div class="lecturer-page-heading lecturer-library-hero lecturer-material-hero">
                     <div>
+                        <span class="lecturer-page-kicker">
+                            <i class="ti ti-books"></i> Thư viện học liệu
+                        </span>
                         <h1>Material</h1>
                         <p>&#272;&#243;ng g&#243;i n&#7897;i dung h&#7885;c v&#224; pool c&#226;u h&#7887;i theo t&#7915;ng ch&#7911; &#273;&#7873;.</p>
                     </div>
+                    <span class="lecturer-heading-count lecturer-hero-counter">
+                        <i class="ti ti-folders"></i>
+                        <span th:text="${#lists.size(materials)}">0</span> material
+                    </span>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-xl-4">
-                        <section class="card h-100">
+                <div class="row g-3 lecturer-material-layout">
+                    <div class="col-xl-4 lecturer-material-sidebar">
+                        <section class="card h-100 lecturer-material-library">
                             <div class="card-body">
-                                <form method="get" th:action="@{/lecturer/materials}" class="mb-4">
+                                <form method="get" th:action="@{/lecturer/materials}"
+                                      class="mb-4 lecturer-material-subject">
                                     <label class="form-label" for="subjectFilter">M&#244;n h&#7885;c</label>
                                     <div class="d-flex gap-2">
                                         <select class="form-select" id="subjectFilter" name="subjectId"
@@ -57,7 +66,7 @@
                                     </div>
                                 </form>
 
-                                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                <div class="d-flex align-items-center justify-content-between gap-2 mb-3 lecturer-library-title">
                                     <h2 class="fs-5 mb-0">Material</h2>
                                     <a class="btn btn-primary btn-sm"
                                        th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, newMaterial=true)}">
@@ -70,18 +79,24 @@
                                     <span><span th:text="${#lists.size(materials)}">0</span> m&#7909;c</span>
                                 </div>
 
-                                <div th:if="${#lists.isEmpty(materials)}" class="text-center text-muted py-5 border rounded">
-                                    <i class="ti ti-folders fs-5 d-block mb-2"></i>
-                                    Ch&#432;a c&#243; material cho m&#244;n n&#224;y.
+                                <div th:if="${#lists.isEmpty(materials)}"
+                                     class="lecturer-empty-state lecturer-material-empty">
+                                    <span class="lecturer-icon-tile"><i class="ti ti-folders"></i></span>
+                                    <h3>Ch&#432;a c&#243; material</h3>
+                                    <p>T&#7841;o material &#273;&#7847;u ti&#234;n cho m&#244;n h&#7885;c n&#224;y.</p>
                                 </div>
 
-                                <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(materials)}">
-                                    <a class="list-group-item list-group-item-action px-0 py-3"
+                                <div class="list-group list-group-flush lecturer-material-list"
+                                     th:unless="${#lists.isEmpty(materials)}">
+                                    <a class="list-group-item list-group-item-action lecturer-material-item"
                                        th:each="material : ${materials}"
-                                       th:classappend="${selectedMaterial != null and selectedMaterial.id == material.id} ? ' active px-3 rounded'"
+                                       th:classappend="${selectedMaterial != null and selectedMaterial.id == material.id} ? ' active'"
                                        th:href="@{/lecturer/materials(subjectId=${selectedSubjectId}, materialId=${material.id})}">
-                                        <div class="d-flex align-items-start justify-content-between gap-2">
-                                            <div>
+                                        <div class="d-flex align-items-start gap-3">
+                                            <span class="lecturer-material-item-icon">
+                                                <i class="ti ti-notebook"></i>
+                                            </span>
+                                            <div class="flex-grow-1 min-w-0">
                                                 <div class="fw-semibold" th:text="${material.title}">Material</div>
                                                 <div class="small"
                                                      th:classappend="${selectedMaterial != null and selectedMaterial.id == material.id} ? ' text-white-50' : ' text-muted'">
@@ -92,7 +107,7 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <i class="ti ti-chevron-right mt-1"></i>
+                                            <i class="ti ti-chevron-right lecturer-material-chevron"></i>
                                         </div>
                                     </a>
                                 </div>
@@ -100,11 +115,11 @@
                         </section>
                     </div>
 
-                    <div class="col-xl-8">
-                        <section class="card">
+                    <div class="col-xl-8 lecturer-material-workspace">
+                        <section class="card lecturer-material-studio">
                             <div class="card-body">
                                 <div id="material-summary"
-                                     class="d-flex flex-wrap align-items-start justify-content-between gap-3 pb-3 border-bottom">
+                                     class="d-flex flex-wrap align-items-start justify-content-between gap-3 lecturer-material-summary">
                                     <div>
                                         <p class="text-uppercase text-muted small fw-semibold mb-1">Material &#273;ang l&#224;m vi&#7879;c</p>
                                         <h2 class="fs-4 mb-1" th:if="${selectedMaterial != null}" th:text="${selectedMaterial.title}">
@@ -124,19 +139,19 @@
                                             Nh&#7853;p th&#244;ng tin c&#417; b&#7843;n tr&#432;&#7899;c, sau &#273;&#243; th&#234;m n&#7897;i dung v&#224; c&#226;u h&#7887;i.
                                         </p>
                                     </div>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <span class="badge bg-light text-dark border">
+                                    <div class="d-flex flex-wrap gap-2 lecturer-material-stats">
+                                        <span class="lecturer-material-stat">
                                             <i class="ti ti-file-text me-1"></i>
                                             <span th:text="${#lists.size(materialContents)}">0</span> n&#7897;i dung
                                         </span>
-                                        <span class="badge bg-light text-dark border">
+                                        <span class="lecturer-material-stat">
                                             <i class="ti ti-help-circle me-1"></i>
                                             <span th:text="${#lists.size(materialQuestions)}">0</span> c&#226;u h&#7887;i
                                         </span>
                                     </div>
                                 </div>
 
-                                <ul class="nav nav-tabs mt-3" id="materialTabs" role="tablist">
+                                <ul class="nav nav-tabs lecturer-workflow-tabs" id="materialTabs" role="tablist">
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="material-info-tab" data-bs-toggle="tab"
                                                 th:classappend="${activeMaterialTab == 'info'} ? ' active'"
@@ -168,12 +183,12 @@
                                     </li>
                                 </ul>
 
-                                <div class="tab-content pt-4" id="materialTabsContent">
+                                <div class="tab-content lecturer-material-canvas" id="materialTabsContent">
                                     <div class="tab-pane fade" id="material-info-pane" role="tabpanel"
                                          th:classappend="${activeMaterialTab == 'info'} ? ' show active'"
                                          aria-labelledby="material-info-tab" tabindex="0">
                                         <div class="row g-4">
-                                            <div class="col-lg-8">
+                                            <div class="col-lg-8 lecturer-editor-panel">
                                                 <h3 class="fs-5 mb-3">
                                                     <span th:if="${selectedMaterial != null}">S&#7917;a material</span>
                                                     <span th:if="${selectedMaterial == null}">T&#7841;o material</span>
@@ -207,7 +222,7 @@
                                                 </form>
                                             </div>
                                             <div class="col-lg-4" th:if="${selectedMaterial != null}">
-                                                <div class="border rounded p-3">
+                                                <div class="lecturer-danger-panel">
                                                     <h4 class="fs-6 mb-2">V&#249;ng nguy hi&#7875;m</h4>
                                                     <p class="text-muted small">
                                                         Ch&#7881; x&#243;a &#273;&#432;&#7907;c khi material ch&#432;a g&#7855;n v&#7899;i level v&#224; ch&#432;a c&#243; n&#7897;i dung.
@@ -245,7 +260,7 @@
                                         <div th:if="${selectedMaterial != null}">
                                             <form th:action="@{/lecturer/materials/{id}/contents/save(id=${selectedMaterial.id})}"
                                                   th:object="${contentForm}" method="post" enctype="multipart/form-data"
-                                                  class="row g-3 mb-4 pb-4 border-bottom">
+                                                  class="row g-3 lecturer-content-composer">
                                                 <input type="hidden" name="subjectId" th:value="${selectedSubjectId}">
                                                 <input type="hidden" th:field="*{id}">
                                                 <input type="hidden" th:field="*{materialId}">
@@ -296,7 +311,7 @@
                                                 </div>
                                             </form>
 
-                                            <div class="table-responsive">
+                                            <div class="table-responsive lecturer-content-table">
                                                 <table class="table table-hover align-middle mb-0">
                                                     <thead>
                                                     <tr>

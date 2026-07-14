@@ -7,8 +7,9 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
     <link rel="stylesheet" th:href="@{/assets/css/question-bank.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
 </head>
-<body>
+<body class="lecturer-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
     <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
@@ -19,19 +20,42 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-                <div class="qb-page-head">
+                <div class="lecturer-page-heading lecturer-library-hero lecturer-question-hero">
                     <div>
+                        <span class="lecturer-page-kicker">
+                            <i class="ti ti-database"></i> Kho học thuật
+                        </span>
                         <h1>Ngân hàng câu hỏi</h1>
-                        <p>Kho câu hỏi dùng chung theo từng môn học.</p>
+                        <p>Tổ chức và tái sử dụng câu hỏi theo từng môn học.</p>
                     </div>
-                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#questionModal">
-                        <i class="ti ti-plus me-1"></i> Thêm câu hỏi
-                    </button>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="lecturer-heading-count lecturer-hero-counter">
+                            <i class="ti ti-help-hexagon"></i>
+                            <span th:text="${#lists.size(questions)}">0</span> câu hỏi
+                        </span>
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#questionModal">
+                            <i class="ti ti-plus me-1"></i>Thêm câu hỏi
+                        </button>
+                    </div>
                 </div>
 
-                <section class="card">
+                <section class="card lecturer-filter-panel lecturer-question-browser">
                     <div class="card-body">
-                        <form method="get" th:action="@{/lecturer/question-bank}" class="qb-filter-grid">
+                        <div class="lecturer-question-toolbar">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="lecturer-icon-tile"><i class="ti ti-adjustments-horizontal"></i></span>
+                                <div>
+                                    <h2>B&#7897; l&#7885;c c&#226;u h&#7887;i</h2>
+                                    <p>Thu h&#7865;p danh s&#225;ch theo m&#244;n, n&#7897;i dung v&#224; &#273;&#7897; kh&#243;.</p>
+                                </div>
+                            </div>
+                            <span class="lecturer-question-result-count">
+                                <span th:text="${#lists.size(questions)}">0</span> k&#7871;t qu&#7843;
+                            </span>
+                        </div>
+
+                        <form method="get" th:action="@{/lecturer/question-bank}"
+                              class="qb-filter-grid lecturer-question-filters">
                             <select class="form-select" name="subjectId" onchange="this.form.submit()" aria-label="Môn học">
                                 <option th:each="subject : ${activeSubjects}" th:value="${subject.id}"
                                         th:selected="${subject.id == selectedSubjectId}"
@@ -48,16 +72,22 @@
                                 <option th:each="item : ${difficultyOptions}" th:value="${item.name()}"
                                         th:selected="${item.name() == selectedDifficulty}" th:text="${item.name()}"></option>
                             </select>
-                            <button class="btn btn-outline-primary" type="submit"><i class="ti ti-search"></i></button>
+                            <button class="btn btn-outline-primary" type="submit"
+                                    title="T&#236;m ki&#7871;m" aria-label="T&#236;m ki&#7871;m">
+                                <i class="ti ti-search"></i>
+                            </button>
                         </form>
 
-                        <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-5">
-                            <i class="ti ti-database-off fs-1 d-block mb-2"></i>
-                            Chưa có câu hỏi phù hợp trong môn này.
+                        <div th:if="${#lists.isEmpty(questions)}" class="lecturer-empty-state">
+                            <span class="lecturer-icon-tile"><i class="ti ti-database-off"></i></span>
+                            <h2>Chưa có câu hỏi phù hợp</h2>
+                            <p>Thay đổi bộ lọc hoặc thêm câu hỏi mới cho môn học này.</p>
                         </div>
 
-                        <div class="qb-list" th:unless="${#lists.isEmpty(questions)}">
-                            <article class="qb-row" th:each="question : ${questions}">
+                        <div class="qb-list lecturer-question-grid" th:unless="${#lists.isEmpty(questions)}">
+                            <article class="qb-row lecturer-question-card"
+                                     th:each="question, questionStat : ${questions}">
+                                <span class="lecturer-question-number" th:text="${questionStat.count}">1</span>
                                 <div class="qb-content">
                                     <h2 th:text="${question.content}"></h2>
                                     <div class="qb-meta">
@@ -73,7 +103,8 @@
                                             th:text="${option.content}"></li>
                                     </ol>
                                 </div>
-                                <div th:if="${question.createdBy.id == user.id}" class="d-flex gap-1">
+                                <div th:if="${question.createdBy.id == user.id}"
+                                     class="d-flex gap-1 lecturer-question-actions">
                                     <button class="btn btn-sm btn-light border" type="button" title="Sửa câu hỏi"
                                             data-bs-toggle="modal" th:data-bs-target="${'#editBankQuestion' + question.id}">
                                         <i class="ti ti-pencil"></i>
@@ -128,7 +159,7 @@
 
 <div class="modal fade" id="questionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
-            <form class="modal-content" th:action="@{/lecturer/question-bank/questions}" method="post" th:object="${form}">
+            <form class="modal-content lecturer-question-modal" th:action="@{/lecturer/question-bank/questions}" method="post" th:object="${form}">
                 <div class="modal-header">
                     <h2 class="modal-title fs-5">Thêm câu hỏi vào ngân hàng</h2>
                     <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng"></button>

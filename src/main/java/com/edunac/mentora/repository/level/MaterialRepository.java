@@ -11,6 +11,8 @@ public interface MaterialRepository extends JpaRepository<Material, Integer> {
 
     List<Material> findBySubjectIdOrderByCreatedAtDesc(Integer subjectId);
 
+    List<Material> findBySubjectIdAndCreatedBy_IdOrderByCreatedAtDesc(Integer subjectId, Integer lecturerId);
+
     List<Material> findBySubjectId(Integer subjectId);
 
     List<Material> findByCreatedBy_IdOrderByCreatedAtDesc(Integer lecturerId);

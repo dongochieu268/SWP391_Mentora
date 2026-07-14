@@ -48,6 +48,16 @@ public class MaterialService {
     }
 
     @Transactional(readOnly = true)
+    public List<Material> findOwnedBySubject(Integer subjectId, User creator) {
+        requireRequester(creator);
+        if (subjectId == null) {
+            return List.of();
+        }
+        return materialRepository.findBySubjectIdAndCreatedBy_IdOrderByCreatedAtDesc(
+                subjectId, creator.getId());
+    }
+
+    @Transactional(readOnly = true)
     public List<Material> findByCreator(User creator) {
         requireRequester(creator);
         return materialRepository.findByCreatedBy_IdOrderByCreatedAtDesc(creator.getId());

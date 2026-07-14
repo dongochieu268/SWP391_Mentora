@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Không thể mở trang | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+</head>
+<body class="bg-light">
+<main class="min-vh-100 d-flex align-items-center justify-content-center p-4">
+    <div class="card border-0 shadow-sm text-center" style="max-width: 560px; width: 100%;">
+        <div class="card-body p-5">
+            <img th:src="@{/assets/images/logos/logo.svg}" alt="Mentora" class="mb-4" style="height: 46px;">
+            <div class="display-4 fw-bold text-primary mb-2" th:text="${status != null ? status : 'Oops'}">404</div>
+            <h4 class="fw-bold mb-3" th:switch="${status}">
+                <span th:case="404">Không tìm thấy nội dung</span>
+                <span th:case="403">Bạn không có quyền truy cập</span>
+                <span th:case="*">Không thể hoàn thành thao tác</span>
+            </h4>
+            <p class="text-muted mb-4" th:switch="${status}">
+                <span th:case="404">Đường dẫn không còn tồn tại hoặc nội dung chưa được mở.</span>
+                <span th:case="403">Vui lòng quay lại trang trước hoặc đăng nhập bằng tài khoản phù hợp.</span>
+                <span th:case="*">Hệ thống gặp sự cố khi xử lý yêu cầu. Vui lòng thử lại.</span>
+            </p>
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="ti ti-arrow-left me-1"></i>Quay lại
+                </button>
+                <a th:href="@{/}" class="btn btn-primary">
+                    <i class="ti ti-home me-1"></i>Về trang chính
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

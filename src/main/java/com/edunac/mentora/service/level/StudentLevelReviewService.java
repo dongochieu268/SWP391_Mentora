@@ -22,16 +22,20 @@ public class StudentLevelReviewService {
         return repository.existsByNodeLevel_IdAndStudent_IdAndClassroom_Id(levelId,studentId,classroomId);
     }
     public boolean requiresReview(NodeLevel level) {
-        return level.getLevelNumber()>1 && !levelMaterialRepository.findByNodeLevel_Id(level.getId()).isEmpty();
+        return !levelMaterialRepository.findByNodeLevel_Id(level.getId()).isEmpty();
     }
     @Transactional
     public void markReviewed(Integer levelId,Integer nodeId,Integer studentId,Integer classroomId) {
         NodeLevel level=levelRepository.findById(levelId).orElseThrow(()->new EntityNotFoundException("Không tìm thấy level."));
         if(!level.getLearningNode().getId().equals(nodeId)) throw new IllegalArgumentException("Level không thuộc bài học này.");
-        NodeLevel previous=levelRepository.findTopByLearningNode_IdAndLevelNumberLessThanOrderByLevelNumberDesc(nodeId,level.getLevelNumber())
-                .orElseThrow(()->new IllegalStateException("Level 1 không cần xác nhận ôn tập."));
-        if(!attemptRepository.existsByNodeLevel_IdAndStudent_IdAndClassroom_IdAndStatusAndPassedTrue(previous.getId(),studentId,classroomId,"SUBMITTED"))
-            throw new IllegalStateException("Bạn cần đạt level trước để mở nội dung ôn tập.");
+        if(!requiresReview(level)) throw new IllegalStateException("Level này không có material cần xác nhận.");
+        levelRepository.findTopByLearningNode_IdAndLevelNumberLessThanOrderByLevelNumberDesc(nodeId,level.getLevelNumber())
+                .ifPresent(previous -> {
+                    if(!attemptRepository.existsByNodeLevel_IdAndStudent_IdAndClassroom_IdAndStatusAndPassedTrue(
+                            previous.getId(),studentId,classroomId,"SUBMITTED")) {
+                        throw new IllegalStateException("Bạn cần đạt level trước để mở nội dung học.");
+                    }
+                });
         if(isReviewed(levelId,studentId,classroomId)) return;
         StudentLevelReview review=new StudentLevelReview();
         review.setNodeLevel(level); review.setStudent(userRepository.getReferenceById(studentId));

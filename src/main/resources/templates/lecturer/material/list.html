@@ -296,6 +296,7 @@
                                                      th:classappend="${contentForm.contentType != 'VIDEO' and contentForm.contentType != 'FILE'} ? ' d-none'">
                                                     <label class="form-label" for="mediaFile">T&#7843;i t&#7879;p/video</label>
                                                     <input class="form-control" id="mediaFile" name="mediaFile" type="file">
+                                                    <div class="text-danger small mt-1 d-none" id="mediaFileSizeError"></div>
                                                 </div>
                                                 <div class="col-12">
                                                     <button class="btn btn-primary" type="submit">
@@ -576,6 +577,30 @@
         syncContentFields();
         if (contentTypeSelect) {
             contentTypeSelect.addEventListener('change', syncContentFields);
+        }
+
+        // SY-07: chặn phía client trước khi vượt spring.servlet.multipart.max-file-size
+        // (200MB), tránh vỡ ở tầng Tomcat với trang lỗi kỹ thuật thô.
+        var MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
+        var mediaFileInput = document.getElementById('mediaFile');
+        var mediaFileSizeError = document.getElementById('mediaFileSizeError');
+        if (mediaFileInput && mediaFileSizeError) {
+            var mediaContentForm = mediaFileInput.closest('form');
+            mediaFileInput.addEventListener('change', function () {
+                mediaFileSizeError.classList.add('d-none');
+                mediaFileSizeError.textContent = '';
+            });
+            if (mediaContentForm) {
+                mediaContentForm.addEventListener('submit', function (e) {
+                    var file = mediaFileInput.files && mediaFileInput.files[0];
+                    if (file && file.size > MAX_UPLOAD_BYTES) {
+                        e.preventDefault();
+                        mediaFileSizeError.textContent = 'Tệp quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) +
+                                'MB). Kích thước tối đa cho phép là 200MB.';
+                        mediaFileSizeError.classList.remove('d-none');
+                    }
+                });
+            }
         }
 
         const questionRows = Array.from(document.querySelectorAll('[data-question-bank-row]'));

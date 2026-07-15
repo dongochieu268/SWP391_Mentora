@@ -158,6 +158,7 @@
                         <input type="file" class="form-control" id="mediaFile" name="mediaFile"
                                accept="video/*,.mp4,.webm,.mov,.avi,.mkv">
                         <div class="form-text" id="uploadHint"></div>
+                        <div class="text-danger small mt-1 d-none" id="mediaFileSizeError"></div>
                         <div th:if="${contentForm.id != null and contentForm.contentUrl != null}"
                              class="alert alert-light border mt-2 mb-0 py-2 small" id="currentFileBox">
                             <strong>Tệp hiện tại:</strong>
@@ -243,6 +244,26 @@
             toggleFields();
         });
         toggleFields();
+
+
+        var MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
+        var mediaFileSizeError = document.getElementById('mediaFileSizeError');
+        var contentForm = document.getElementById('contentForm');
+
+        mediaFile.addEventListener('change', function () {
+            mediaFileSizeError.classList.add('d-none');
+            mediaFileSizeError.textContent = '';
+        });
+
+        contentForm.addEventListener('submit', function (e) {
+            var file = mediaFile.files && mediaFile.files[0];
+            if (file && file.size > MAX_UPLOAD_BYTES) {
+                e.preventDefault();
+                mediaFileSizeError.textContent = 'Tệp quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) +
+                        'MB). Kích thước tối đa cho phép là 200MB.';
+                mediaFileSizeError.classList.remove('d-none');
+            }
+        });
     })();
 </script>
 </body>

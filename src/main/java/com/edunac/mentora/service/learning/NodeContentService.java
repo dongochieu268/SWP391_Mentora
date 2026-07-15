@@ -8,10 +8,8 @@ import com.edunac.mentora.domain.level.Material;
 import com.edunac.mentora.dto.NodeContentForm;
 import com.edunac.mentora.repository.learning.NodeContentRepository;
 import com.edunac.mentora.service.level.MaterialService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -60,7 +58,7 @@ public class NodeContentService {
     public NodeContent findByIdAndNodeId(Integer contentId, Integer nodeId) {
         requireNodeId(nodeId);
         NodeContent content = nodeContentRepository.findByIdAndNode_Id(contentId, nodeId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nội dung"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nội dung"));
         guardSingleOwner(content);
         return content;
     }
@@ -68,7 +66,7 @@ public class NodeContentService {
     public NodeContent findByIdAndMaterialId(Integer contentId, Integer materialId, User requester) {
         Material material = materialService.requireOwned(materialId, requester);
         NodeContent content = nodeContentRepository.findByIdAndMaterial_Id(contentId, material.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nội dung"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nội dung"));
         guardSingleOwner(content);
         return content;
     }
@@ -183,36 +181,35 @@ public class NodeContentService {
             return previousUrl;
         }
         if (isCreate) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tệp để tải lên");
+            throw new IllegalArgumentException("Vui lòng chọn tệp để tải lên");
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chọn tệp mới hoặc giữ tệp hiện tại");
+        throw new IllegalArgumentException("Chọn tệp mới hoặc giữ tệp hiện tại");
     }
 
     private void validateForm(NodeContentForm form, MultipartFile mediaFile) {
         if (!ContentType.isValid(form.getContentType())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Loại nội dung phải là TEXT, VIDEO, FILE hoặc LINK");
+            throw new IllegalArgumentException("Loại nội dung phải là TEXT, VIDEO, FILE hoặc LINK");
         }
 
         String type = form.getContentType().trim().toUpperCase();
         if (ContentType.TEXT.name().equals(type)) {
             if (form.getContentText() == null || form.getContentText().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung văn bản không được để trống");
+                throw new IllegalArgumentException("Nội dung văn bản không được để trống");
             }
         } else if (ContentType.LINK.name().equals(type)) {
             if (form.getContentUrl() == null || form.getContentUrl().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Liên kết không được để trống");
+                throw new IllegalArgumentException("Liên kết không được để trống");
             }
         } else if (ContentType.VIDEO.name().equals(type) || ContentType.FILE.name().equals(type)) {
             boolean hasFile = mediaFile != null && !mediaFile.isEmpty();
             boolean hasExisting = form.getId() != null;
             if (!hasFile && !hasExisting) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tệp để tải lên");
+                throw new IllegalArgumentException("Vui lòng chọn tệp để tải lên");
             }
         }
 
         if (form.getDisplayOrder() != null && form.getDisplayOrder() < 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thứ tự hiển thị phải >= 1");
+            throw new IllegalArgumentException("Thứ tự hiển thị phải >= 1");
         }
     }
 
@@ -224,7 +221,7 @@ public class NodeContentService {
 
     private void requireNodeId(Integer nodeId) {
         if (nodeId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Node không hợp lệ");
+            throw new IllegalArgumentException("Node không hợp lệ");
         }
     }
 

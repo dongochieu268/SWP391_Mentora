@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -94,10 +93,10 @@ public class LecturerNodeContentController {
         try {
             nodeContentService.saveForm(form, mediaFile);
             redirectAttributes.addFlashAttribute("successMessage",
-                    form.getId() == null ? "Đã thêm nội dung!" : "Đã cập nhật nội dung!");
-        } catch (ResponseStatusException ex) {
+                    form.getId() == null ? "Đã thêm nội dung." : "Đã cập nhật nội dung.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("errorMessage",
-                    ex.getReason() != null ? ex.getReason() : "Không thể lưu nội dung.");
+                    ex.getMessage() != null ? ex.getMessage() : "Không thể lưu nội dung.");
         }
 
         return "redirect:/lecturer/nodes/" + nodeId + "/contents";
@@ -115,8 +114,8 @@ public class LecturerNodeContentController {
         try {
             nodeContentService.delete(contentId, nodeId);
             redirectAttributes.addFlashAttribute("successMessage", "Đã xóa nội dung.");
-        } catch (ResponseStatusException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", ex.getReason());
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/lecturer/nodes/" + nodeId + "/contents";
     }

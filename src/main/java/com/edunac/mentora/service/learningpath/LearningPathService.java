@@ -278,11 +278,9 @@ public class LearningPathService {
         if (nodeProgressRepository.existsByLearningNodeId(nodeId)) {
             throw new IllegalStateException("Không thể xóa node vì vẫn còn dữ liệu tiến trình học liên quan.");
         }
-        // L1 §3 — chặn xóa node khi bất kỳ level nào của nó đã có NodeLevelAttempt.
-        if (nodeLevelService.nodeHasAttempts(nodeId)) {
-            throw new IllegalStateException(
-                    "Node đang có dữ liệu tiến trình học sinh, không thể xóa.");
-        }
+        // nodeLevelService.nodeHasAttempts(nodeId) không cần kiểm tra ở đây: attempt chỉ
+        // phát sinh qua lớp học, mà ensureStructureEditable() phía trên đã chặn xóa node
+        // ngay khi lộ trình đang được bất kỳ lớp học nào sử dụng.
 
         branchRuleRepository.findByNodeId(nodeId).ifPresent(branchRuleRepository::delete);
         classroomNodeStatusRepository.deleteByNodeId(nodeId);

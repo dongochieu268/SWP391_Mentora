@@ -199,10 +199,14 @@ public class NodeLevelAttemptService {
 
         boolean passed = total > 0 && score.compareTo(nodeLevel.getPassingScore()) >= 0;
 
+        LocalDateTime now = LocalDateTime.now();
+        boolean timedOut = attempt.getDeadlineAt() != null && now.isAfter(attempt.getDeadlineAt());
+
         attempt.setScore(score);
         attempt.setPassed(passed);
+        attempt.setTimedOut(timedOut);
         attempt.setStatus(AttemptStatus.SUBMITTED.name());
-        attempt.setSubmittedAt(LocalDateTime.now());
+        attempt.setSubmittedAt(now);
 
         attempt = nodeLevelAttemptRepository.save(attempt);
 

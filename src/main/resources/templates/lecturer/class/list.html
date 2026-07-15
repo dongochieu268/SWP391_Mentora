@@ -117,6 +117,25 @@
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
+                                    <li th:unless="${c.completed}">
+                                        <form th:action="@{/lecturer/classes/{id}/complete(id=${c.id})}"
+                                              method="post"
+                                              onsubmit="return confirm('Kết thúc lớp học? Học sinh sẽ không thể bắt đầu lượt làm bài mới. Bạn có thể mở lại lớp sau.');">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="ti ti-flag-check me-2"></i>Kết thúc lớp
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li th:if="${c.completed}">
+                                        <form th:action="@{/lecturer/classes/{id}/reopen(id=${c.id})}"
+                                              method="post"
+                                              onsubmit="return confirm('Mở lại lớp học này?');">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="ti ti-lock-open me-2"></i>Mở lại lớp
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form th:action="@{/lecturer/classes/{id}/delete(id=${c.id})}"
                                               method="post"

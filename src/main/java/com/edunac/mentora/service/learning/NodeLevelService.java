@@ -60,6 +60,16 @@ public class NodeLevelService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy level."));
     }
 
+
+    @Transactional(readOnly = true)
+    public NodeLevel findByIdForOwner(Integer levelId, User requester) {
+        NodeLevel level = findById(levelId);
+        Integer ownerId = level.getLearningNode().getLearningPath().getCreatedBy().getId();
+        if (!ownerId.equals(requester.getId())) {
+            throw new IllegalArgumentException("Không tìm thấy level.");
+        }
+        return level;
+    }
     /** Material cùng môn với node — dùng cho dropdown thêm tài liệu. */
     @Transactional(readOnly = true)
     public List<Material> availableMaterials(Integer nodeId) {

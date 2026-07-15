@@ -73,7 +73,9 @@
                                         <tbody>
                                         <tr th:each="pre : ${prerequisites}">
                                             <td>
-                                                <span class="fw-bold text-dark" th:text="${pre.prerequisiteSubjectId}"></span>
+                                                <span class="fw-bold text-dark"
+                                                      th:with="preSubject=${subjectsById.get(pre.prerequisiteSubjectId)}"
+                                                      th:text="${preSubject != null ? preSubject.code + ' - ' + preSubject.name : pre.prerequisiteSubjectId}"></span>
                                             </td>
                                             <td class="text-end">
                                                 <form th:action="@{/admin/subjects/{sId}/prerequisites/delete/{preId}(sId=${mainSubject.id}, preId=${pre.prerequisiteSubjectId})}"

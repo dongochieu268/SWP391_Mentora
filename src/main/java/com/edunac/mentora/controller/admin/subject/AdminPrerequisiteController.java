@@ -1,11 +1,15 @@
 package com.edunac.mentora.controller.admin.subject;
 
+import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.service.subject.SubjectService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/subjects/{subjectId}/prerequisites")
@@ -27,6 +31,8 @@ public class AdminPrerequisiteController {
         model.addAttribute("mainSubject", subjectService.findById(subjectId));
         model.addAttribute("allSubjects", subjectService.getAvailablePrerequisites(subjectId));
         model.addAttribute("prerequisites", subjectService.getPrerequisites(subjectId));
+        model.addAttribute("subjectsById", subjectService.getAllSubjects().stream()
+                .collect(Collectors.toMap(Subject::getId, Function.identity())));
 
         return "subjects/prerequisite";
     }

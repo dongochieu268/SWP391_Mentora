@@ -4,6 +4,8 @@ import com.edunac.mentora.domain.User;
 import com.edunac.mentora.domain.branching.BranchRule;
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.learningpath.LearningPath;
+import com.edunac.mentora.domain.classroom.ClassroomNodeStatus;
+import com.edunac.mentora.domain.classroom.NodeVisibilityStatus;
 import com.edunac.mentora.domain.subject.Subject;
 import com.edunac.mentora.domain.learning.NodeContent;
 import com.edunac.mentora.dto.LearningNodeForm;
@@ -113,6 +115,19 @@ public class LearningPathService {
         }
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(id);
+
+
+        for (LearningNode n : nodes) {
+            if (nodeProgressRepository.existsByLearningNodeId(n.getId())) {
+                throw new IllegalStateException(
+                        "Không thể xóa lộ trình vì vẫn còn dữ liệu tiến trình học liên quan.");
+            }
+            if (nodeLevelService.nodeHasAttempts(n.getId())) {
+                throw new IllegalStateException(
+                        "Không thể xóa lộ trình vì một số node đang có dữ liệu làm bài của học sinh.");
+            }
+        }
+
         for (LearningNode n : nodes) {
             n.setPrerequisite(null);
             n.setBranchOwnerNode(null);
@@ -120,7 +135,9 @@ public class LearningPathService {
         nodeRepository.saveAll(nodes);
         for (LearningNode n : nodes) {
             branchRuleRepository.findByNodeId(n.getId()).ifPresent(branchRuleRepository::delete);
+            classroomNodeStatusRepository.deleteByNodeId(n.getId());
             deleteContentsForNode(n.getId());
+            nodeLevelService.deleteLevelsForNode(n.getId());
         }
         nodeRepository.deleteAll(nodes);
         pathRepository.delete(path);
@@ -154,6 +171,10 @@ public class LearningPathService {
 
         // L3 §7: tự sinh Level 1 mặc định khi tạo node mới
         nodeLevelService.createDefaultLevel(saved.getId());
+
+        // A newly-created lesson is published to every classroom currently
+        // using this path. Explicitly hidden existing lessons are untouched.
+        createVisibleStatusForPathClassrooms(pathId, saved);
 
         return saved;
     }
@@ -378,6 +399,20 @@ public class LearningPathService {
         }
     }
 
+    private void createVisibleStatusForPathClassrooms(Integer pathId, LearningNode node) {
+        for (var classroom : classroomRepository.findByLearningPathId(pathId)) {
+            if (classroomNodeStatusRepository
+                    .findByClassroomIdAndNodeId(classroom.getId(), node.getId()).isPresent()) {
+                continue;
+            }
+            ClassroomNodeStatus status = new ClassroomNodeStatus();
+            status.setClassroom(classroom);
+            status.setNode(node);
+            status.setStatus(NodeVisibilityStatus.VISIBLE.name());
+            classroomNodeStatusRepository.save(status);
+        }
+    }
+
     public LearningPath findByIdAndOwner(Integer id, User requester) {
         LearningPath path = pathRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lộ trình."));
@@ -545,7 +580,6 @@ public class LearningPathService {
             });
         }
 
-        // L1 §4: clone levels + levelMaterials, KHÔNG clone attempts
         for (LearningNode oldNode : sourceNodes) {
             LearningNode clonedNode = nodeMap.get(oldNode.getId());
             nodeLevelService.cloneLevels(oldNode.getId(), clonedNode.getId());

@@ -117,7 +117,11 @@ public class NodeLevelAttemptService {
         attempt.setClassroom(classroom);
         attempt.setAttemptNumber((int) currentCount + 1);
         attempt.setStatus(AttemptStatus.IN_PROGRESS.name());
-        attempt.setStartedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        attempt.setStartedAt(now);
+        if (nodeLevel.getDurationMinutes() != null) {
+            attempt.setDeadlineAt(now.plusMinutes(nodeLevel.getDurationMinutes()));
+        }
 
         attempt = nodeLevelAttemptRepository.save(attempt);
 
@@ -202,13 +206,18 @@ public class NodeLevelAttemptService {
 
         attempt = nodeLevelAttemptRepository.save(attempt);
 
+        boolean finalLevelPassed = passed && nodeLevelRepository
+                .findTopByLearningNode_IdAndLevelNumberGreaterThanOrderByLevelNumberAsc(
+                        nodeLevel.getLearningNode().getId(), nodeLevel.getLevelNumber())
+                .isEmpty();
 
         nodeProgressService.updateOnAttemptSubmitted(
                 nodeLevel.getLearningNode().getId(),
                 attempt.getStudent().getId(),
                 attempt.getClassroom().getId(),
                 nodeLevel.getLevelNumber(),
-                score);
+                score,
+                finalLevelPassed);
 
         return attempt;
     }

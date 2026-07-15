@@ -25,8 +25,7 @@
                 </div>
 
                 <div class="row">
-                    <!-- Cột trái: Nội dung bài học -->
-                    <div class="col-lg-8">
+                    <div class="col-12">
                         <div class="card shadow-sm border-0 mb-4">
                             <div class="card-body p-4">
                                 <h4 class="fw-bold mb-3" th:text="${node.title}">Tên bài học</h4>
@@ -109,6 +108,7 @@
                                      LESSON node: hiển thị nội dung thông thường
                                      ===================================================== -->
                                 <div th:unless="${isBranchTest}">
+                                    <div th:if="${!hasStartableLevel or progress.completed}">
                                     <div th:if="${#lists.isEmpty(contents)}"
                                          class="text-center text-muted py-4">
                                         Bài học này chưa có nội dung.
@@ -165,138 +165,152 @@
                                             </a>
                                         </div>
                                     </div>
+                                    </div>
+
+                                    <div th:unless="${hasStartableLevel}" class="mt-4 text-end">
+                                        <button id="btnComplete"
+                                                class="btn px-4 fw-semibold"
+                                                th:classappend="${progress.completed ? 'btn-success disabled' : 'btn-primary'}"
+                                                th:disabled="${progress.completed or !progress.prerequisiteMet}"
+                                                th:data-classroom="${classroomId}"
+                                                th:data-node="${node.id}">
+                                            <span id="btnText"
+                                                  th:text="${progress.completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}"></span>
+                                        </button>
+                                    </div>
                                 </div>
 
                             </div>
                         </div>
                     </div>
 
-                    <!-- Cột phải: Trạng thái + nút hoàn thành -->
-                    <div class="col-lg-4">
-                        <div class="card shadow-sm border-0 mb-3">
-                            <div class="card-body p-4 text-center">
-                                <h6 class="fw-bold mb-3">Trạng thái bài học</h6>
-
-                                <div id="statusBadge" class="mb-2">
-                                    <span th:if="${progress.completed}"
-                                          class="status-badge status-active">
-                                        <i class="ti ti-check me-1"></i> Đã hoàn thành
-                                    </span>
-                                    <span th:if="${!progress.completed and !progress.prerequisiteMet}"
-                                          class="status-badge status-inactive">
-                                        <i class="ti ti-lock me-1"></i> Bị khóa
-                                    </span>
-                                    <span th:if="${!progress.completed and progress.prerequisiteMet}"
-                                          class="status-badge status-pending">
-                                        <i class="ti ti-clock me-1"></i> Chưa hoàn thành
-                                    </span>
-                                </div>
-
-                                <p class="small text-muted mb-4" th:if="${progress.bestScore != null}">
-                                    Điểm cao nhất: <strong th:text="${progress.bestScore}"></strong>
-                                    <th:block th:if="${progress.bestLevelNumber != null}">
-                                        (Level <strong th:text="${progress.bestLevelNumber}"></strong>)
-                                    </th:block>
-                                </p>
-
-                                <!-- Nút hoàn thành chỉ hiện với node LESSON thường (không branch test, không có level nào có câu hỏi — OQ2) -->
-                                <button th:unless="${isBranchTest or hasStartableLevel}"
-                                        id="btnComplete"
-                                        class="btn w-100 py-2 fw-semibold"
-                                        th:classappend="${progress.completed ? 'btn-success disabled'
-                                                        : (!progress.prerequisiteMet ? 'btn-secondary disabled'
-                                                        : 'btn-primary')}"
-                                        th:disabled="${progress.completed or !progress.prerequisiteMet}"
-                                        th:data-classroom="${classroomId}"
-                                        th:data-node="${node.id}">
-                                    <span id="btnText"
-                                          th:text="${progress.completed ? 'Đã lưu tiến độ'
-                                                   : (!progress.prerequisiteMet ? 'Cần hoàn thành bài tiên quyết trước'
-                                                   : 'Đánh dấu hoàn thành')}">
-                                    </span>
-                                </button>
-
-                                <!-- BRANCH_TEST: thông báo thay nút -->
-                                <div th:if="${isBranchTest}" class="text-muted small fst-italic">
-                                    <i class="ti ti-info-circle me-1"></i>
-                                    Tiến độ sẽ được cập nhật tự động sau khi nộp bài test.
-                                </div>
-
-                                <!-- Node có level: thông báo thay nút, tiến độ cập nhật khi nộp bài level test -->
-                                <div th:if="${!isBranchTest and hasStartableLevel}" class="text-muted small fst-italic">
-                                    <i class="ti ti-info-circle me-1"></i>
-                                    Tiến độ sẽ được cập nhật tự động sau khi bạn nộp bài ở một trong các level bên dưới.
-                                </div>
-
-                                <div class="mt-3 text-start">
-                                    <div class="d-flex justify-content-between small text-muted mb-1">
-                                        <span>Tiến độ lớp học</span>
-                                        <span id="progressText"
-                                              th:text="${progress.completedNodes} + '/' + ${progress.totalNodes} + ' bài'">
-                                        </span>
-                                    </div>
-                                    <div class="progress progress-compact">
-                                        <div id="progressBar"
-                                             class="progress-bar bg-success"
-                                             role="progressbar"
-                                             th:style="'width: ' + ${progress.progressPercent} + '%'"
-                                             th:attr="aria-valuenow=${progress.progressPercent}"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <a th:if="${prevNodeId != null}"
-                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${prevNodeId})}"
-                               class="btn btn-outline-secondary w-50">← Bài trước</a>
-
-                            <a th:if="${nextNodeId != null}"
-                               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
-                               class="btn btn-outline-primary w-50 ms-auto">Bài tiếp →</a>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- ── Danh sách level (S2) ── -->
+                <div class="d-flex gap-2 mb-3">
+                    <a th:if="${prevNodeId != null}"
+                       th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${prevNodeId})}"
+                       class="btn btn-outline-secondary">← Bài trước</a>
+                    <a th:if="${nextNodeId != null}"
+                       th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroomId},nid=${nextNodeId})}"
+                       class="btn btn-outline-primary ms-auto">Bài tiếp →</a>
+                </div>
+
+                <!-- Mỗi level mở/đóng nội dung học và chỉ mở bài test sau khi xác nhận học xong. -->
                 <div class="row mt-3" th:if="${hasStartableLevel}">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body p-4">
                                 <h6 class="fw-bold mb-3">Danh sách level</h6>
-                                <div th:each="lvl : ${levelStatus}"
-                                     class="d-flex align-items-center justify-content-between gap-3 py-2 border-bottom">
-                                    <div>
-                                        <div class="fw-semibold">
-                                            Level <span th:text="${lvl.levelNumber}"></span>
-                                            <span th:if="${lvl.title != null}" th:text="'– ' + ${lvl.title}"></span>
+                                <div class="accordion" id="levelAccordion">
+                                    <div th:each="lvl : ${levelStatus}" class="accordion-item border rounded mb-2"
+                                         th:id="${'level-' + lvl.levelId}">
+                                        <h2 class="accordion-header">
+                                            <button type="button" class="accordion-button bg-white"
+                                                    th:classappend="${openLevelId != null and openLevelId == lvl.levelId} ? '' : ' collapsed'"
+                                                    data-bs-toggle="collapse"
+                                                    th:attr="data-bs-target=${'#levelContent-' + lvl.levelId},aria-controls=${'levelContent-' + lvl.levelId},aria-expanded=${openLevelId != null and openLevelId == lvl.levelId}">
+                                                <span class="flex-grow-1 text-start">
+                                                    <span class="d-block fw-semibold text-dark">
+                                                        Level <span th:text="${lvl.levelNumber}"></span>
+                                                        <span th:if="${lvl.title != null}" th:text="'– ' + ${lvl.title}"></span>
+                                                    </span>
+                                                    <span class="d-block small text-muted fw-normal mt-1">
+                                                        Điểm tối đa <span th:text="${lvl.maxScore}"></span>
+                                                        · Điểm đạt <span th:text="${lvl.passingScore}"></span>
+                                                    </span>
+                                                </span>
+                                                <span th:if="${lvl.passed}" class="badge bg-success-subtle text-success me-3 px-3 py-2">
+                                                    <i class="ti ti-check me-1"></i>Đã đạt
+                                                </span>
+                                                <span th:if="${!lvl.passed and !lvl.prerequisitePassed}"
+                                                      class="badge bg-secondary-subtle text-secondary me-3 px-3 py-2">
+                                                    <i class="ti ti-lock me-1"></i>Cần qua level trước
+                                                </span>
+                                                <span th:if="${!lvl.passed and lvl.prerequisitePassed and !lvl.reviewCompleted}"
+                                                      class="badge bg-warning-subtle text-warning me-3 px-3 py-2">
+                                                    <i class="ti ti-book me-1"></i>Cần học nội dung
+                                                </span>
+                                                <span th:if="${!lvl.passed and lvl.canStart}"
+                                                      class="badge bg-primary-subtle text-primary me-3 px-3 py-2"
+                                                      th:text="${lvl.attempted ? 'Cần làm lại' : 'Sẵn sàng làm bài'}"></span>
+                                                <span th:if="${!lvl.passed and lvl.reviewCompleted and !lvl.hasQuestions}"
+                                                      class="badge bg-light text-muted border me-3 px-3 py-2">Chưa có câu hỏi</span>
+                                                <span th:if="${!lvl.passed and lvl.reviewCompleted and lvl.hasQuestions and !lvl.hasAttemptsLeft}"
+                                                      class="badge bg-light text-muted border me-3 px-3 py-2">Đã hết lượt</span>
+                                            </button>
+                                        </h2>
+
+                                        <div class="accordion-collapse collapse"
+                                             th:id="${'levelContent-' + lvl.levelId}"
+                                             th:classappend="${openLevelId != null and openLevelId == lvl.levelId} ? ' show' : ''"
+                                             data-bs-parent="#levelAccordion">
+                                            <div class="accordion-body border-top">
+                                                <div th:if="${!lvl.prerequisitePassed}" class="text-muted py-2">
+                                                    <i class="ti ti-lock me-1"></i>
+                                                    Bạn cần đạt level trước để mở nội dung học của level này.
+                                                </div>
+
+                                                <th:block th:if="${lvl.prerequisitePassed}">
+                                                    <div th:each="item : ${levelMaterials}" th:if="${item.levelId == lvl.levelId}"
+                                                         class="mb-4">
+                                                        <h6 class="fw-bold mb-2" th:text="${item.material.title}">Material</h6>
+                                                        <p th:if="${item.material.description != null}"
+                                                           class="text-muted" th:text="${item.material.description}"></p>
+                                                        <div th:if="${#lists.isEmpty(item.contents)}" class="text-muted small">
+                                                            Material này chưa có nội dung học.
+                                                        </div>
+                                                        <div th:each="content : ${item.contents}" class="mb-3">
+                                                            <div th:if="${content.title != null}" class="fw-semibold mb-2"
+                                                                 th:text="${content.title}"></div>
+                                                            <div th:if="${content.contentType == 'TEXT'}"
+                                                                 th:utext="${content.contentText}" class="learning-text-block"></div>
+                                                            <div th:if="${content.contentType == 'VIDEO'}"
+                                                                 class="ratio ratio-16x9 rounded overflow-hidden border">
+                                                                <iframe th:src="${content.contentUrl}" allowfullscreen></iframe>
+                                                            </div>
+                                                            <a th:if="${content.contentType == 'FILE' or content.contentType == 'LINK'}"
+                                                               th:href="${content.contentUrl}" target="_blank"
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                <i class="ti ti-external-link me-1"></i>Mở tài liệu
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div th:if="${!lvl.passed and !lvl.reviewCompleted}" class="text-end">
+                                                        <form th:action="@{/student/classrooms/{cid}/nodes/{nid}/levels/{lid}/reviewed(cid=${classroomId},nid=${node.id},lid=${lvl.levelId})}"
+                                                              method="post">
+                                                            <button type="submit" class="btn btn-success px-4">
+                                                                <i class="ti ti-check me-1"></i>Đã học xong
+                                                            </button>
+                                                        </form>
+                                                    </div>
+
+                                                    <div th:if="${!lvl.passed and lvl.reviewCompleted}" class="text-end">
+                                                        <a th:if="${lvl.canStart}"
+                                                           th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${lvl.levelId})}"
+                                                           class="btn btn-primary px-4 fw-semibold">
+                                                            <i class="ti ti-pencil me-1"></i>
+                                                            <span th:text="${lvl.attempted ? 'Làm lại Level ' + lvl.levelNumber : 'Làm Level ' + lvl.levelNumber}"></span>
+                                                        </a>
+                                                        <span th:if="${!lvl.hasQuestions}" class="text-muted">Level này chưa có câu hỏi.</span>
+                                                        <span th:if="${lvl.hasQuestions and !lvl.hasAttemptsLeft}" class="text-muted">Bạn đã hết lượt làm bài.</span>
+                                                    </div>
+
+                                                    <div th:if="${lvl.passed}">
+                                                        <div class="alert alert-success mb-3">
+                                                            <i class="ti ti-check me-1"></i>Bạn đã hoàn thành level này.
+                                                        </div>
+                                                        <div th:if="${lvl.canStart}" class="text-end">
+                                                            <a th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${lvl.levelId})}"
+                                                               class="btn btn-outline-primary px-4 fw-semibold">
+                                                                <i class="ti ti-refresh me-1"></i>
+                                                                Làm lại Level <span th:text="${lvl.levelNumber}"></span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </th:block>
+                                            </div>
                                         </div>
-                                        <div class="small text-muted">
-                                            Điểm tối đa <span th:text="${lvl.maxScore}"></span>
-                                            · Điểm đạt <span th:text="${lvl.passingScore}"></span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <a th:if="${lvl.canStart}"
-                                           th:href="@{/student/classrooms/{cid}/levels/{lid}/take(cid=${classroomId},lid=${lvl.levelId})}"
-                                           class="btn btn-sm btn-primary fw-semibold px-3">
-                                            <i class="ti ti-pencil me-1"></i>Làm bài
-                                        </a>
-                                        <button th:if="${!lvl.canStart and !lvl.hasQuestions}"
-                                                class="btn btn-sm btn-light text-muted px-3" disabled>
-                                            Chưa có câu hỏi
-                                        </button>
-                                        <button th:if="${!lvl.canStart and lvl.hasQuestions and !lvl.unlocked}"
-                                                class="btn btn-sm btn-light text-muted px-3" disabled>
-                                            <i class="ti ti-lock me-1"></i>Cần qua level trước
-                                        </button>
-                                        <button th:if="${!lvl.canStart and lvl.hasQuestions and lvl.unlocked and !lvl.hasAttemptsLeft}"
-                                                class="btn btn-sm btn-light text-muted px-3" disabled>
-                                            Đã hết lượt làm bài
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -374,21 +388,9 @@
             })
                 .then(async response => {
                     if (response.ok) {
-                        const data = await response.json();
-
-                        document.getElementById('statusBadge').innerHTML =
-                            '<span class="status-badge status-active"><i class="ti ti-check me-1"></i> Đã hoàn thành</span>';
-
-                        btnComplete.className = 'btn w-100 py-2 fw-semibold btn-success disabled';
-                        btnComplete.innerHTML = 'Đã lưu tiến độ';
-
-                        const progressText = document.getElementById('progressText');
-                        const progressBar = document.getElementById('progressBar');
-                        if (progressText) progressText.textContent = data.completedNodes + '/' + data.totalNodes + ' bài';
-                        if (progressBar) {
-                            progressBar.style.width = data.progressPercent + '%';
-                            progressBar.setAttribute('aria-valuenow', data.progressPercent);
-                        }
+                        await response.json();
+                        btnComplete.className = 'btn px-4 fw-semibold btn-success disabled';
+                        btnComplete.innerHTML = 'Đã hoàn thành';
                     } else {
                         const errorText = await response.text();
                         const msg = errorText ? errorText.replace(/^\d{3}\s*/, '').trim() : 'Có lỗi xảy ra. Vui lòng thử lại!';

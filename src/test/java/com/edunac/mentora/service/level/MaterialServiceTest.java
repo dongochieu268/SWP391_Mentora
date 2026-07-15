@@ -78,6 +78,19 @@ class MaterialServiceTest {
     }
 
     @Test
+    void findOwnedBySubjectFiltersBySubjectAndLecturer() {
+        Material material = materialOwnedBy(11, activeSubject, lecturer);
+        when(materialRepository.findBySubjectIdAndCreatedBy_IdOrderByCreatedAtDesc(
+                activeSubject.getId(), lecturer.getId())).thenReturn(List.of(material));
+
+        List<Material> materials = service.findOwnedBySubject(activeSubject.getId(), lecturer);
+
+        assertEquals(List.of(material), materials);
+        verify(materialRepository).findBySubjectIdAndCreatedBy_IdOrderByCreatedAtDesc(
+                activeSubject.getId(), lecturer.getId());
+    }
+
+    @Test
     void createRejectsInactiveSubject() {
         activeSubject.setStatus(SubjectStatus.HIDDEN.name());
         when(subjectRepository.findById(activeSubject.getId())).thenReturn(Optional.of(activeSubject));

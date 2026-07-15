@@ -71,13 +71,13 @@ class LecturerMaterialControllerTest {
         BankQuestion bankQuestion = new BankQuestion();
         NodeContent content = new NodeContent();
         when(subjectService.getActiveSubjects()).thenReturn(List.of(subject));
-        when(materialService.findBySubject(subject.getId())).thenReturn(List.of(material));
+        when(materialService.findOwnedBySubject(subject.getId(), lecturer)).thenReturn(List.of(material));
         when(materialService.findQuestionsByMaterial(material.getId(), lecturer)).thenReturn(List.of(tagged));
         when(nodeContentService.getByMaterialId(material.getId(), lecturer)).thenReturn(List.of(content));
         when(questionBankService.findActiveBySubject(subject.getId(), null, null, null)).thenReturn(List.of(bankQuestion));
 
         ExtendedModelMap model = new ExtendedModelMap();
-        String view = controller.list(subject.getId(), material.getId(), false, null, session, model);
+        String view = controller.list(subject.getId(), material.getId(), false, null, "info", session, model);
 
         assertEquals("lecturer/material/list", view);
         assertEquals("materials", model.get("activePage"));
@@ -99,7 +99,7 @@ class LecturerMaterialControllerTest {
         editForm.setContentType("TEXT");
         editForm.setContentText("Edit me");
         when(subjectService.getActiveSubjects()).thenReturn(List.of(subject));
-        when(materialService.findBySubject(subject.getId())).thenReturn(List.of(material));
+        when(materialService.findOwnedBySubject(subject.getId(), lecturer)).thenReturn(List.of(material));
         when(materialService.findQuestionsByMaterial(material.getId(), lecturer)).thenReturn(List.of());
         when(nodeContentService.getByMaterialId(material.getId(), lecturer)).thenReturn(List.of(content));
         when(questionBankService.findActiveBySubject(subject.getId(), null, null, null)).thenReturn(List.of());
@@ -108,7 +108,7 @@ class LecturerMaterialControllerTest {
         when(nodeContentService.toForm(content)).thenReturn(editForm);
 
         ExtendedModelMap model = new ExtendedModelMap();
-        String view = controller.list(subject.getId(), material.getId(), false, content.getId(), session, model);
+        String view = controller.list(subject.getId(), material.getId(), false, content.getId(), "content", session, model);
 
         assertEquals("lecturer/material/list", view);
         assertSame(editForm, model.get("contentForm"));
@@ -120,11 +120,11 @@ class LecturerMaterialControllerTest {
         Material material = new Material();
         material.setId(11);
         when(subjectService.getActiveSubjects()).thenReturn(List.of(subject));
-        when(materialService.findBySubject(subject.getId())).thenReturn(List.of(material));
+        when(materialService.findOwnedBySubject(subject.getId(), lecturer)).thenReturn(List.of(material));
         when(questionBankService.findActiveBySubject(subject.getId(), null, null, null)).thenReturn(List.of());
 
         ExtendedModelMap model = new ExtendedModelMap();
-        String view = controller.list(subject.getId(), null, true, null, session, model);
+        String view = controller.list(subject.getId(), null, true, null, "info", session, model);
 
         assertEquals("lecturer/material/list", view);
         assertEquals(null, model.get("selectedMaterial"));
@@ -134,11 +134,15 @@ class LecturerMaterialControllerTest {
     }
 
     @Test
-    void createMaterialRedirectsToNewMaterialModeForFastSequentialEntry() {
+    void createMaterialSelectsCreatedMaterialAndContinuesToContentTab() {
         MaterialForm form = new MaterialForm();
         form.setSubjectId(subject.getId());
         form.setTitle("OOP Basics");
         form.setDescription("Encapsulation");
+        Material created = new Material();
+        created.setId(15);
+        when(materialService.create(subject.getId(), "OOP Basics", "Encapsulation", lecturer))
+                .thenReturn(created);
 
         String redirect = controller.create(
                 form,
@@ -147,7 +151,7 @@ class LecturerMaterialControllerTest {
                 new RedirectAttributesModelMap()
         );
 
-        assertEquals("redirect:/lecturer/materials?subjectId=3&newMaterial=true", redirect);
+        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=15&tab=content", redirect);
         verify(materialService).create(subject.getId(), "OOP Basics", "Encapsulation", lecturer);
     }
 
@@ -161,7 +165,7 @@ class LecturerMaterialControllerTest {
                 new RedirectAttributesModelMap()
         );
 
-        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=11", redirect);
+        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=11&tab=questions", redirect);
         verify(materialService).assignQuestions(11, List.of(21, 22), lecturer);
     }
 
@@ -182,7 +186,7 @@ class LecturerMaterialControllerTest {
                 new RedirectAttributesModelMap()
         );
 
-        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=11", redirect);
+        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=11&tab=content", redirect);
         assertEquals(11, form.getMaterialId());
         verify(nodeContentService).saveMaterialForm(form, null, lecturer);
     }
@@ -197,7 +201,7 @@ class LecturerMaterialControllerTest {
                 new RedirectAttributesModelMap()
         );
 
-        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=11", redirect);
+        assertEquals("redirect:/lecturer/materials?subjectId=3&materialId=11&tab=content", redirect);
         verify(nodeContentService).deleteMaterialContent(21, 11, lecturer);
     }
 }

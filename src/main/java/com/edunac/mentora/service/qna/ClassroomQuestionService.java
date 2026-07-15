@@ -93,14 +93,14 @@ public class ClassroomQuestionService {
     public void deleteAsLecturer(Integer classroomId, Integer questionId, User lecturer) {
         Classroom classroom = classroomService.findForTeacher(classroomId, lecturer);
         ClassroomQuestion question = questionRepository.findByIdAndClassroomId(questionId, classroom.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay cau hoi trong lop."));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi trong lớp."));
         replyRepository.deleteByQuestionId(question.getId());
         questionRepository.delete(question);
     }
 
     private void answer(Integer classroomId, Integer questionId, User responder, String answerContent, boolean officialAnswer) {
         ClassroomQuestion question = questionRepository.findByIdAndClassroomId(questionId, classroomId)
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay cau hoi trong lop."));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi trong lớp."));
 
         ClassroomQuestionReply reply = new ClassroomQuestionReply();
         reply.setQuestion(question);

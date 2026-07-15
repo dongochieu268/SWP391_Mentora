@@ -43,7 +43,8 @@ public class LecturerNodeLevelController {
             @RequestParam(required = false) Integer editLevel,
             @RequestParam(required = false) Integer addMaterial,
             HttpSession session,
-            Model model) {
+            Model model,
+            RedirectAttributes ra) {
 
         User user = currentUser(session);
         LearningNode node = learningNodeService.findByIdForOwner(nodeId, user);
@@ -74,9 +75,14 @@ public class LecturerNodeLevelController {
 
         if (!model.containsAttribute("levelForm")) {
             if (editLevel != null) {
-                NodeLevel lvl = nodeLevelService.findById(editLevel);
-                model.addAttribute("levelForm", nodeLevelService.toForm(lvl));
-                model.addAttribute("openLevelModal", true);
+                try {
+                    NodeLevel lvl = nodeLevelService.findByIdForOwner(editLevel, user);
+                    model.addAttribute("levelForm", nodeLevelService.toForm(lvl));
+                    model.addAttribute("openLevelModal", true);
+                } catch (IllegalArgumentException e) {
+                    ra.addFlashAttribute("errorMessage", e.getMessage());
+                    return "redirect:/lecturer/nodes/" + nodeId + "/levels";
+                }
             } else if (Boolean.TRUE.equals(addLevel)) {
                 NodeLevelForm form = new NodeLevelForm();
                 form.setNodeId(nodeId);

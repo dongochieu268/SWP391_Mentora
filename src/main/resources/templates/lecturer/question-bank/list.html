@@ -106,6 +106,7 @@
                                 <div th:if="${question.createdBy.id == user.id}"
                                      class="d-flex gap-1 lecturer-question-actions">
                                     <button class="btn btn-sm btn-light border" type="button" title="Sửa câu hỏi"
+                                            aria-label="Sửa câu hỏi"
                                             data-bs-toggle="modal" th:data-bs-target="${'#editBankQuestion' + question.id}">
                                         <i class="ti ti-pencil"></i>
                                     </button>

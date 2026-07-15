@@ -229,7 +229,8 @@
                                     <form th:action="@{/lecturer/classes/{cid}/qna/questions/{qid}/delete(cid=${classroom.id}, qid=${q.id})}"
                                           method="post"
                                           onsubmit="return confirm('Xóa câu hỏi này và toàn bộ phản hồi liên quan?');">
-                                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa câu hỏi">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa câu hỏi"
+                                                aria-label="Xóa câu hỏi">
                                             <i class="ti ti-trash"></i>
                                         </button>
                                     </form>

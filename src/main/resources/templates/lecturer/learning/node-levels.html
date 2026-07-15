@@ -144,7 +144,8 @@
                                             <form th:action="@{/lecturer/nodes/{nid}/levels/{lid}/materials/{mid}/remove(nid=${node.id},lid=${level.id},mid=${lm.id})}"
                                                   method="post"
                                                   onsubmit="return confirm('Gỡ tài liệu này khỏi level?')">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        title="Gỡ tài liệu" aria-label="Gỡ tài liệu">
                                                     <i class="ti ti-x"></i>
                                                 </button>
                                             </form>

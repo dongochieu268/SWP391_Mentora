@@ -288,6 +288,6 @@
 </div>
 <div th:if="${openMaterialModal}" class="modal-backdrop fade show"></div>
 
-<script th:src="@{/assets/js/app.min.js}"></script>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 </body>
 </html>

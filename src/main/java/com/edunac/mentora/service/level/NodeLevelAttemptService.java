@@ -117,11 +117,7 @@ public class NodeLevelAttemptService {
         attempt.setClassroom(classroom);
         attempt.setAttemptNumber((int) currentCount + 1);
         attempt.setStatus(AttemptStatus.IN_PROGRESS.name());
-        LocalDateTime now = LocalDateTime.now();
-        attempt.setStartedAt(now);
-        if (nodeLevel.getDurationMinutes() != null) {
-            attempt.setDeadlineAt(now.plusMinutes(nodeLevel.getDurationMinutes()));
-        }
+        attempt.setStartedAt(LocalDateTime.now());
 
         attempt = nodeLevelAttemptRepository.save(attempt);
 
@@ -199,25 +195,25 @@ public class NodeLevelAttemptService {
 
         boolean passed = total > 0 && score.compareTo(nodeLevel.getPassingScore()) >= 0;
 
+        LocalDateTime now = LocalDateTime.now();
+        boolean timedOut = nodeLevel.getDurationMinutes() != null
+                && now.isAfter(attempt.getStartedAt().plusMinutes(nodeLevel.getDurationMinutes()));
+
         attempt.setScore(score);
         attempt.setPassed(passed);
+        attempt.setTimedOut(timedOut);
         attempt.setStatus(AttemptStatus.SUBMITTED.name());
-        attempt.setSubmittedAt(LocalDateTime.now());
+        attempt.setSubmittedAt(now);
 
         attempt = nodeLevelAttemptRepository.save(attempt);
 
-        boolean finalLevelPassed = passed && nodeLevelRepository
-                .findTopByLearningNode_IdAndLevelNumberGreaterThanOrderByLevelNumberAsc(
-                        nodeLevel.getLearningNode().getId(), nodeLevel.getLevelNumber())
-                .isEmpty();
 
         nodeProgressService.updateOnAttemptSubmitted(
                 nodeLevel.getLearningNode().getId(),
                 attempt.getStudent().getId(),
                 attempt.getClassroom().getId(),
                 nodeLevel.getLevelNumber(),
-                score,
-                finalLevelPassed);
+                score);
 
         return attempt;
     }

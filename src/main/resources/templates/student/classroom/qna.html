@@ -114,8 +114,9 @@
             }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -126,7 +127,7 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
-                <div class="mb-4">
+                <div class="student-qna-heading mb-4">
                     <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
                         <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

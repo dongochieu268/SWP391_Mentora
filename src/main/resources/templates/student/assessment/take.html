@@ -6,10 +6,11 @@
     <title th:text="${assessment.title} + ' | Mentora'">Làm bài test | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body class="bg-light">
-<main class="container py-4" style="max-width: 980px">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+<body class="student-exam-page">
+<main class="container py-4 student-exam-shell">
+    <div class="student-exam-header mb-4">
         <div class="d-flex align-items-center gap-2">
             <img th:src="@{/assets/images/logos/logo.svg}" alt="Mentora" style="height: 38px">
             <span class="fw-bold fs-5">Chế độ làm bài</span>
@@ -19,7 +20,7 @@
         </span>
     </div>
 
-                <div class="card mb-4">
+                <div class="card mb-4 student-exam-intro">
                     <div class="card-body">
                         <div class="d-flex flex-wrap justify-content-between gap-3">
                             <div>
@@ -53,7 +54,7 @@
                             </div>
 
                             <div th:unless="${#lists.isEmpty(questions)}">
-                                <div class="border rounded p-3 mb-3" th:each="q, stat : ${questions}">
+                                <div class="student-question-card" th:each="q, stat : ${questions}">
                                     <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                                         <span class="badge bg-light text-dark border" th:text="${'Câu ' + stat.count}"></span>
                                         <span class="badge bg-info text-dark" th:text="${q.difficulty}"></span>

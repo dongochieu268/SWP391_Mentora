@@ -6,8 +6,432 @@
     <title th:text="${classroom.name} + ' – Lộ trình | Mentora'">Lộ trình học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <style>
+        .student-roadmap-page {
+            --roadmap-blue: #2563eb;
+            --roadmap-blue-dark: #1e3a8a;
+            --roadmap-green: #16a34a;
+            --roadmap-ink: #172033;
+            --roadmap-muted: #667085;
+        }
+
+        .student-roadmap-page .student-roadmap-hero {
+            background:
+                    radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.18) 0 76px, transparent 77px),
+                    radial-gradient(circle at 77% 115%, rgba(96, 165, 250, 0.22) 0 150px, transparent 151px),
+                    linear-gradient(125deg, #172554 0%, #1d4ed8 55%, #3b82f6 100%);
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(30, 64, 175, 0.18);
+            color: #fff;
+            overflow: hidden;
+            padding: 34px 38px;
+            position: relative;
+        }
+
+        .student-roadmap-page .student-roadmap-hero-inner {
+            align-items: center;
+            display: grid;
+            gap: 36px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .student-roadmap-page .hero-kicker {
+            align-items: center;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 999px;
+            display: inline-flex;
+            font-size: 0.78rem;
+            font-weight: 700;
+            gap: 7px;
+            letter-spacing: 0.04em;
+            padding: 7px 12px;
+            text-transform: uppercase;
+        }
+
+        .student-roadmap-page .hero-title {
+            color: #fff;
+            font-size: clamp(1.75rem, 3vw, 2.35rem);
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            line-height: 1.15;
+            margin: 16px 0 9px;
+        }
+
+        .student-roadmap-page .hero-path {
+            align-items: center;
+            color: rgba(255, 255, 255, 0.76);
+            display: flex;
+            font-size: 0.94rem;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .student-roadmap-page .hero-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .student-roadmap-page .hero-stat {
+            align-items: center;
+            background: rgba(255, 255, 255, 0.11);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 12px;
+            display: inline-flex;
+            gap: 9px;
+            padding: 9px 13px;
+        }
+
+        .student-roadmap-page .hero-stat i {
+            font-size: 1.15rem;
+        }
+
+        .student-roadmap-page .hero-stat strong {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .student-roadmap-page .hero-progress-panel {
+            align-items: center;
+            backdrop-filter: blur(8px);
+            background: rgba(8, 24, 68, 0.24);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            display: flex;
+            gap: 18px;
+            min-width: 265px;
+            padding: 18px 20px;
+        }
+
+        .student-roadmap-page .hero-progress-ring {
+            align-items: center;
+            background: conic-gradient(#fff var(--progress), rgba(255, 255, 255, 0.2) 0);
+            border-radius: 50%;
+            display: flex;
+            flex: 0 0 104px;
+            height: 104px;
+            justify-content: center;
+            position: relative;
+            width: 104px;
+        }
+
+        .student-roadmap-page .hero-progress-ring::after {
+            background: #2049a8;
+            border-radius: 50%;
+            content: "";
+            inset: 8px;
+            position: absolute;
+        }
+
+        .student-roadmap-page .hero-progress-value {
+            position: relative;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .student-roadmap-page .hero-progress-value strong {
+            color: #fff;
+            display: block;
+            font-size: 1.45rem;
+            line-height: 1;
+        }
+
+        .student-roadmap-page .hero-progress-value span {
+            color: rgba(255, 255, 255, 0.74);
+            display: block;
+            font-size: 0.67rem;
+            margin-top: 5px;
+        }
+
+        .student-roadmap-page .hero-progress-copy span {
+            color: rgba(255, 255, 255, 0.7);
+            display: block;
+            font-size: 0.76rem;
+            margin-bottom: 3px;
+        }
+
+        .student-roadmap-page .hero-progress-copy strong {
+            color: #fff;
+            display: block;
+            font-size: 1.05rem;
+            line-height: 1.35;
+        }
+
+        .student-roadmap-page .roadmap-card {
+            border: 0;
+            border-radius: 22px;
+            box-shadow: 0 10px 35px rgba(16, 24, 40, 0.06);
+            overflow: hidden;
+        }
+
+        .student-roadmap-page .roadmap-card .card-body {
+            padding: 28px;
+        }
+
+        .student-roadmap-page .roadmap-section-heading {
+            align-items: center;
+            display: flex;
+            gap: 13px;
+        }
+
+        .student-roadmap-page .roadmap-section-icon {
+            align-items: center;
+            background: #eff6ff;
+            border-radius: 14px;
+            color: var(--roadmap-blue);
+            display: inline-flex;
+            flex: 0 0 46px;
+            font-size: 1.45rem;
+            height: 46px;
+            justify-content: center;
+            width: 46px;
+        }
+
+        .student-roadmap-page .roadmap-section-heading h2 {
+            color: var(--roadmap-ink);
+            font-size: 1.18rem;
+            margin: 0 0 3px;
+        }
+
+        .student-roadmap-page .roadmap-section-heading p {
+            color: var(--roadmap-muted);
+            font-size: 0.82rem;
+            margin: 0;
+        }
+
+        .student-roadmap-page .roadmap-count {
+            background: #f2f4f7;
+            border-radius: 999px;
+            color: #475467;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-left: auto;
+            padding: 7px 11px;
+        }
+
+        .student-roadmap-page .node-connector {
+            background: #dbe4f0;
+            height: 18px;
+            margin-left: 23px;
+            width: 2px;
+        }
+
+        .student-roadmap-page .roadmap-node {
+            background: #fff;
+            border: 1px solid #e4e7ec !important;
+            border-radius: 18px !important;
+            padding: 20px 20px !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .student-roadmap-page .roadmap-node:hover {
+            border-color: #bfdbfe !important;
+            box-shadow: 0 13px 30px rgba(37, 99, 235, 0.09);
+            transform: translateY(-2px);
+        }
+
+        .student-roadmap-page .roadmap-node.state-completed {
+            background: linear-gradient(90deg, #f0fdf4 0, #fff 30%);
+            border-color: #bbf7d0 !important;
+        }
+
+        .student-roadmap-page .roadmap-node.state-accessible {
+            background: linear-gradient(90deg, #eff6ff 0, #fff 30%);
+            border-color: #bfdbfe !important;
+        }
+
+        .student-roadmap-page .roadmap-node.state-locked {
+            background: #f8fafc;
+        }
+
+        .student-roadmap-page .roadmap-node.state-hidden {
+            background: #f9fafb;
+            opacity: 0.68;
+        }
+
+        .student-roadmap-page .roadmap-node-row {
+            gap: 16px;
+            grid-template-columns: 48px minmax(0, 1fr) auto;
+        }
+
+        .student-roadmap-page .roadmap-node-index {
+            width: 48px;
+        }
+
+        .student-roadmap-page .roadmap-step-number {
+            align-items: center;
+            background: #f2f4f7;
+            border: 1px solid #e4e7ec;
+            border-radius: 15px;
+            color: #667085;
+            display: inline-flex;
+            font-size: 0.88rem;
+            font-weight: 800;
+            height: 46px;
+            justify-content: center;
+            width: 46px;
+        }
+
+        .student-roadmap-page .state-completed .roadmap-step-number {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+        }
+
+        .student-roadmap-page .state-accessible .roadmap-step-number {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+            box-shadow: 0 7px 16px rgba(37, 99, 235, 0.22);
+        }
+
+        .student-roadmap-page .roadmap-node-title {
+            color: var(--roadmap-ink);
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .student-roadmap-page .roadmap-node-description {
+            color: var(--roadmap-muted) !important;
+            line-height: 1.55;
+            margin-top: 6px;
+            max-width: 760px;
+        }
+
+        .student-roadmap-page .roadmap-level-pill,
+        .student-roadmap-page .roadmap-score-pill {
+            align-items: center;
+            border-radius: 999px;
+            display: inline-flex;
+            font-size: 0.72rem;
+            font-weight: 700;
+            min-height: 25px;
+            padding: 4px 9px;
+        }
+
+        .student-roadmap-page .roadmap-level-pill {
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .student-roadmap-page .roadmap-score-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .student-roadmap-page .roadmap-note {
+            align-items: center;
+            border-radius: 9px;
+            display: inline-flex;
+            gap: 5px;
+            margin-top: 9px;
+            padding: 6px 9px;
+        }
+
+        .student-roadmap-page .roadmap-note.is-locked {
+            background: #fff7ed;
+            color: #b45309 !important;
+        }
+
+        .student-roadmap-page .roadmap-note.is-hidden {
+            background: #f2f4f7;
+            color: #667085 !important;
+        }
+
+        .student-roadmap-page .roadmap-node-action {
+            min-width: 126px;
+        }
+
+        .student-roadmap-page .roadmap-node-action .btn {
+            border-radius: 11px;
+            justify-content: center;
+            min-height: 40px;
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        .student-roadmap-page .btn-roadmap-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            box-shadow: 0 7px 16px rgba(37, 99, 235, 0.18);
+        }
+
+        .student-roadmap-page .btn-roadmap-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .student-roadmap-page .empty-roadmap-state {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 42px 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 767.98px) {
+            .student-roadmap-page .student-roadmap-hero {
+                border-radius: 18px;
+                padding: 25px 21px;
+            }
+
+            .student-roadmap-page .student-roadmap-hero-inner {
+                gap: 24px;
+                grid-template-columns: 1fr;
+            }
+
+            .student-roadmap-page .hero-progress-panel {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .student-roadmap-page .hero-progress-ring {
+                flex-basis: 88px;
+                height: 88px;
+                width: 88px;
+            }
+
+            .student-roadmap-page .roadmap-card .card-body {
+                padding: 20px 16px;
+            }
+
+            .student-roadmap-page .roadmap-node {
+                padding: 17px 14px !important;
+            }
+
+            .student-roadmap-page .roadmap-node-row {
+                align-items: start;
+                grid-template-columns: 42px minmax(0, 1fr);
+            }
+
+            .student-roadmap-page .roadmap-node-index {
+                width: 42px;
+            }
+
+            .student-roadmap-page .roadmap-step-number {
+                border-radius: 13px;
+                height: 40px;
+                width: 40px;
+            }
+
+            .student-roadmap-page .node-connector {
+                margin-left: 20px;
+            }
+
+            .student-roadmap-page .roadmap-node-action {
+                grid-column: 2;
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -17,7 +441,7 @@
         <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
 
         <div class="body-wrapper-inner">
-            <div class="container-fluid">
+            <div class="container-fluid student-roadmap-page">
                 <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
                     <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -27,68 +451,75 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
 
-                <!-- ── Header + Progress ── -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <a th:replace="~{components/back-button :: backButton(@{/student/classrooms}, 'Danh sách lớp học')}"></a>
-                        <h4 class="card-title mt-2 mb-1" th:text="${classroom.name}"></h4>
-                        <div class="d-flex flex-wrap gap-2 align-items-center">
-                            <span class="badge bg-info text-dark" th:text="${classroom.subject.code}"></span>
-                            <span class="text-muted" th:text="${classroom.learningPath.name}"></span>
-                        </div>
-                        <div class="row mt-3 g-3">
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="small fw-semibold">Tiến độ</span>
-                                    <span class="small text-muted"
-                                          th:text="${roadmap.completedVisibleCount} + '/' + ${roadmap.visibleNodeCount} + ' bài đã học'"></span>
-                                </div>
-                                <div class="progress progress-standard">
-                                    <div class="progress-bar bg-success" role="progressbar"
-                                         th:style="'width:' + ${roadmap.completionPercent} + '%'"
-                                         th:attr="aria-valuenow=${roadmap.completionPercent}"
-                                         aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <p class="small text-muted mb-0 mt-1"
-                                   th:text="${roadmap.completionPercent} + '% đã học'"></p>
+                <div class="mb-3">
+                    <a th:replace="~{components/back-button :: backButton(@{/student/classrooms}, 'Danh sách lớp học')}"></a>
+                </div>
+
+                <!-- ── Hero + learning progress ── -->
+                <section class="student-roadmap-hero mb-4">
+                    <div class="student-roadmap-hero-inner">
+                        <div>
+                            <span class="hero-kicker">
+                                <i class="ti ti-school"></i>
+                                <span th:text="${classroom.subject.code}"></span>
+                            </span>
+                            <h1 class="hero-title" th:text="${classroom.name}"></h1>
+                            <p class="hero-path">
+                                <i class="ti ti-route"></i>
+                                <span th:text="${classroom.learningPath.name}"></span>
+                            </p>
+
+                            <div class="hero-stats">
+                                <span class="hero-stat">
+                                    <i class="ti ti-circle-check"></i>
+                                    <strong th:text="${roadmap.completedVisibleCount} + ' bài đã hoàn thành'"></strong>
+                                </span>
+                                <span class="hero-stat">
+                                    <i class="ti ti-books"></i>
+                                    <strong th:text="${roadmap.visibleNodeCount} + ' bài trong lộ trình'"></strong>
+                                </span>
                             </div>
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="small fw-semibold">Điểm</span>
-                                    <span class="small text-muted" th:if="${roadmap.hasScorableNodes}"
-                                          th:text="${roadmap.totalScoreEarned} + '/' + ${roadmap.totalScorePossible}"></span>
+                        </div>
+
+                        <div class="hero-progress-panel">
+                            <div class="hero-progress-ring"
+                                 th:style="'--progress:' + ${roadmap.completionPercent} + '%'">
+                                <div class="hero-progress-value">
+                                    <strong th:text="${roadmap.completionPercent} + '%'"></strong>
+                                    <span>hoàn thành</span>
                                 </div>
-                                <div class="progress progress-standard" th:if="${roadmap.hasScorableNodes}">
-                                    <div class="progress-bar bg-primary" role="progressbar"
-                                         th:style="'width:' + ${roadmap.scorePercent} + '%'"
-                                         th:attr="aria-valuenow=${roadmap.scorePercent}"
-                                         aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <p class="small text-muted mb-0 mt-1" th:if="${roadmap.hasScorableNodes}"
-                                   th:text="${roadmap.scorePercent} + '% điểm tối đa'"></p>
-                                <p class="small text-muted mb-0" th:unless="${roadmap.hasScorableNodes}">
-                                    Chưa có bài test nào.
-                                </p>
+                            </div>
+                            <div class="hero-progress-copy">
+                                <span>Tiến độ của bạn</span>
+                                <strong th:text="${roadmap.completedVisibleCount} + '/' + ${roadmap.visibleNodeCount} + ' bài học'"></strong>
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- ── Roadmap Body ── -->
-                <div class="card">
+                <div class="card roadmap-card">
                     <div class="card-body">
-                        <h5 class="card-title fw-semibold mb-4">
-                            <i class="ti ti-route me-1"></i>Lộ trình học tập
-                            <span class="badge bg-secondary ms-1" th:text="${#lists.size(roadmap.nodes)}"></span>
-                        </h5>
+                        <div class="roadmap-section-heading mb-4">
+                            <span class="roadmap-section-icon"><i class="ti ti-route"></i></span>
+                            <div>
+                                <h2>Lộ trình học tập</h2>
+                                <p>Hoàn thành từng chặng để mở khóa nội dung tiếp theo.</p>
+                            </div>
+                            <span class="roadmap-count"
+                                  th:text="${#lists.size(roadmap.nodes)} + ' chặng'"></span>
+                        </div>
 
-                        <div th:if="${#lists.isEmpty(roadmap.nodes)}" class="text-center text-muted py-4">
-                            Lớp chưa có node nào trong lộ trình.
+                        <div th:if="${#lists.isEmpty(roadmap.nodes)}" class="empty-roadmap-state text-muted">
+                            <i class="ti ti-route-off fs-3 d-block mb-2"></i>
+                            <strong class="d-block text-dark mb-1">Chưa có lộ trình học</strong>
+                            Lớp chưa có bài học nào trong lộ trình.
                         </div>
 
                         <div th:if="${not #lists.isEmpty(roadmap.nodes) and roadmap.visibleNodeCount == 0}"
-                             class="text-center text-muted py-4">
+                             class="empty-roadmap-state text-muted">
                             <i class="ti ti-eye-off fs-3 d-block mb-2"></i>
+                            <strong class="d-block text-dark mb-1">Nội dung chưa được mở</strong>
                             Giảng viên chưa mở bài học nào.
                         </div>
 
@@ -99,36 +530,43 @@
                                 <!-- connector line (trừ node đầu tiên) -->
                                 <div class="node-connector" th:unless="${stat.first}"></div>
 
-                                <div class="list-group-item px-3 py-3 border rounded roadmap-node mb-0"
-                                     th:classappend="${item.state.name() == 'HIDDEN'} ? ' is-hidden' : ''">
+                                <div class="list-group-item roadmap-node mb-0"
+                                     th:classappend="${' state-' + #strings.toLowerCase(item.state.name())}">
                                     <div class="roadmap-node-row">
                                         <div class="roadmap-node-index">
-                                            <span class="badge rounded-circle bg-light text-dark border"
-                                                  th:text="${stat.count}"></span>
+                                            <span class="roadmap-step-number">
+                                                <i th:if="${item.state.name() == 'COMPLETED'}" class="ti ti-check"></i>
+                                                <span th:unless="${item.state.name() == 'COMPLETED'}"
+                                                      th:text="${stat.count}"></span>
+                                            </span>
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-                                                <h6 class="mb-0 fw-semibold" th:text="${item.node.title}"></h6>
+                                                <h3 class="roadmap-node-title mb-0 fw-bold" th:text="${item.node.title}"></h3>
                                                 <span th:if="${item.state.name() == 'COMPLETED'}" class="status-badge status-active">Đã hoàn thành</span>
                                                 <span th:if="${item.state.name() == 'ACCESSIBLE'}" class="status-badge status-info"
                                                       th:text="${item.bestScore != null ? 'Đang học' : 'Có thể học'}">Có thể học</span>
                                                 <span th:if="${item.state.name() == 'LOCKED'}" class="status-badge status-pending">Đang khóa</span>
                                                 <span th:if="${item.state.name() == 'HIDDEN'}" class="status-badge status-inactive">Chưa mở</span>
-                                                <span th:if="${item.hasLevels}" class="badge bg-primary-subtle text-primary"
-                                                      th:text="'Lv. ' + ${item.bestLevelNumber != null ? item.bestLevelNumber : 0} + '/' + ${item.totalLevels}"></span>
-                                                <span th:if="${item.bestScore != null}" class="badge bg-light text-dark border"
-                                                      th:text="'Điểm cao nhất: ' + ${item.bestScore}"></span>
+                                                <span th:if="${item.hasLevels}" class="roadmap-level-pill">
+                                                    <i class="ti ti-layers-subtract me-1"></i>
+                                                    <span th:text="'Lv. ' + ${item.bestLevelNumber != null ? item.bestLevelNumber : 0} + '/' + ${item.totalLevels}"></span>
+                                                </span>
+                                                <span th:if="${item.bestScore != null}" class="roadmap-score-pill">
+                                                    <i class="ti ti-star me-1"></i>
+                                                    <span th:text="'Điểm cao nhất: ' + ${item.bestScore}"></span>
+                                                </span>
                                             </div>
-                                            <p class="text-muted small mb-0"
+                                            <p class="roadmap-node-description small mb-0"
                                                th:if="${item.node.description != null}"
                                                th:text="${item.node.description}"></p>
-                                            <p class="small mb-0 text-warning"
+                                            <p class="roadmap-note is-locked small mb-0"
                                                th:if="${item.state.name() == 'LOCKED' and item.prerequisiteTitle != null}">
                                                 <i class="ti ti-lock me-1"></i>
                                                 Hoàn thành node tiên quyết:
                                                 <strong th:text="${item.prerequisiteTitle}"></strong>
                                             </p>
-                                            <p class="small mb-0 text-muted"
+                                            <p class="roadmap-note is-hidden small mb-0"
                                                th:if="${item.state.name() == 'HIDDEN'}">
                                                 <i class="ti ti-lock me-1"></i>
                                                 Giảng viên chưa mở nội dung này.
@@ -137,7 +575,7 @@
                                         <div class="roadmap-node-action">
                                             <a th:if="${item.state.name() == 'ACCESSIBLE'}"
                                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
-                                               class="btn btn-sm btn-primary fw-semibold px-3 d-inline-flex align-items-center">
+                                               class="btn btn-sm btn-primary btn-roadmap-primary fw-semibold px-3 d-inline-flex align-items-center">
                                                 <i class="ti ti-player-play me-1"></i>
                                                 <span th:if="${item.hasLevels and item.bestScore == null}">Bắt đầu học</span>
                                                 <span th:if="${item.hasLevels and item.bestScore != null}">Làm tiếp</span>
@@ -146,7 +584,7 @@
                                             <a th:if="${item.state.name() == 'COMPLETED'}"
                                                th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${classroom.id}, nid=${item.node.id})}"
                                                class="btn btn-sm btn-outline-success fw-semibold px-3 d-inline-flex align-items-center">
-                                                <i class="ti ti-refresh me-1"></i> Xem lại
+                                                <i class="ti ti-book-2 me-1"></i> Xem lại
                                             </a>
                                             <button th:if="${item.locked}"
                                                     class="btn btn-sm btn-light text-muted px-3 d-inline-flex align-items-center" disabled>

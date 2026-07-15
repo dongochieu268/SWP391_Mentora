@@ -6,8 +6,9 @@
     <title>Kết quả bài test | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -22,15 +23,16 @@
                     <a th:replace="~{components/back-button :: backButton(@{/student/classrooms/{cid}/roadmap(cid=${classroomId})}, 'Trở lại roadmap')}"></a>
                 </div>
 
-                <div class="card">
+                <div class="card student-result-card">
                     <div class="card-body text-center py-5">
+                        <div class="result-icon"><i class="ti ti-trophy"></i></div>
                         <div class="mb-3">
                             <span class="status-badge status-active">Đã nộp bài</span>
                         </div>
                         <h4 class="fw-bold mb-2" th:text="${assessment.title}"></h4>
                         <p class="text-muted mb-4">Kết quả tự chấm trắc nghiệm</p>
 
-                        <div class="d-inline-block p-4 bg-light rounded-3 mb-4">
+                        <div class="student-score-panel mb-4">
                             <div class="text-muted small">Điểm của bạn</div>
                             <div class="display-5 fw-bold text-primary">
                                 <span th:text="${attempt.score}"></span>
@@ -40,20 +42,20 @@
 
                         <div class="row justify-content-center g-3 mb-4">
                             <div class="col-md-3">
-                                <div class="p-3 border rounded">
+                                <div class="student-result-stat">
                                     <div class="text-muted small">Trạng thái</div>
                                     <div class="fw-semibold" th:text="${attempt.status}"></div>
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="p-3 border rounded">
+                                <div class="student-result-stat">
                                     <div class="text-muted small">Bắt đầu</div>
                                     <div class="fw-semibold"
                                          th:text="${attempt.startedAt != null ? #temporals.format(attempt.startedAt, 'dd/MM/yyyy HH:mm') : '-'}"></div>
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="p-3 border rounded">
+                                <div class="student-result-stat">
                                     <div class="text-muted small">Nộp bài</div>
                                     <div class="fw-semibold"
                                          th:text="${attempt.submittedAt != null ? #temporals.format(attempt.submittedAt, 'dd/MM/yyyy HH:mm') : '-'}"></div>

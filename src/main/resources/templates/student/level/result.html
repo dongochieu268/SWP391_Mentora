@@ -6,8 +6,9 @@
     <title th:text="${nodeLevel.title} + ' | Mentora'">Kết quả Level Test | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/student-theme.css}"/>
 </head>
-<body>
+<body class="student-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -25,8 +26,9 @@
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
                 <!-- S5 §1: điểm, thang điểm, ngưỡng đạt, trạng thái -->
-                <div class="card mb-4">
+                <div class="card mb-4 student-result-card">
                     <div class="card-body text-center py-5">
+                        <div class="result-icon"><i class="ti ti-award"></i></div>
                         <div class="mb-3">
                             <span class="status-badge" th:classappend="${attempt.passed} ? 'status-active' : 'status-banned'"
                                   th:text="${attempt.passed} ? 'ĐẠT' : 'CHƯA ĐẠT'"></span>
@@ -34,7 +36,7 @@
                         <h4 class="fw-bold mb-2" th:text="${nodeLevel.title}"></h4>
                         <p class="text-muted mb-4">Kết quả Level Test</p>
 
-                        <div class="d-inline-block p-4 bg-light rounded-3 mb-4">
+                        <div class="student-score-panel mb-4">
                             <div class="text-muted small">Điểm của bạn</div>
                             <div class="display-5 fw-bold text-primary">
                                 <span th:text="${attempt.score}"></span>
@@ -44,19 +46,19 @@
 
                         <div class="row justify-content-center g-3 mb-4">
                             <div class="col-md-4">
-                                <div class="p-3 border rounded">
+                                <div class="student-result-stat">
                                     <div class="text-muted small">Điểm cần đạt</div>
                                     <div class="fw-semibold" th:text="${nodeLevel.passingScore}"></div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="p-3 border rounded">
+                                <div class="student-result-stat">
                                     <div class="text-muted small">Lần thử</div>
                                     <div class="fw-semibold" th:text="${attempt.attemptNumber}"></div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="p-3 border rounded">
+                                <div class="student-result-stat">
                                     <div class="text-muted small">Nộp bài</div>
                                     <div class="fw-semibold"
                                          th:text="${attempt.submittedAt != null ? #temporals.format(attempt.submittedAt, 'dd/MM/yyyy HH:mm') : '-'}"></div>
@@ -101,7 +103,7 @@
                         </div>
 
                         <div th:unless="${#lists.isEmpty(questions)}">
-                            <div class="border rounded p-3 mb-3" th:each="question, stat : ${questions}">
+                            <div class="student-review-question" th:each="question, stat : ${questions}">
                                 <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                                     <span class="badge bg-light text-dark border" th:text="'Câu ' + ${stat.count}"></span>
                                     <span class="badge bg-info text-dark" th:text="${question.difficulty}"></span>

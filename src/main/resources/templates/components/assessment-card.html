@@ -6,7 +6,7 @@
   Fragment: testCard(a) — thẻ hiển thị 1 bài test trong lưới card.
   Usage: <div th:replace="~{components/assessment-card :: testCard(${a})}"></div>
 -->
-<div th:fragment="testCard(a)" class="card h-100 border shadow-none mb-0">
+<div th:fragment="testCard(a)" class="card lecturer-assessment-card h-100 mb-0">
     <div class="card-body d-flex flex-column">
         <h5 class="fw-semibold mb-2" th:text="${a.title}"></h5>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-2">

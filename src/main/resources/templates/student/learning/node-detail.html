@@ -373,12 +373,27 @@
     </div>
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="completeErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="completeErrorToastBody"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+        </div>
+    </div>
+</div>
+
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const btnComplete = document.getElementById('btnComplete');
         if (!btnComplete || btnComplete.disabled) return;
+
+        function showCompleteError(msg) {
+            const toastEl = document.getElementById('completeErrorToast');
+            document.getElementById('completeErrorToastBody').textContent = msg;
+            window.bootstrap.Toast.getOrCreateInstance(toastEl).show();
+        }
 
         btnComplete.addEventListener('click', function () {
             const cid = this.dataset.classroom;
@@ -403,13 +418,13 @@
                     } else {
                         const errorText = await response.text();
                         const msg = errorText ? errorText.replace(/^\d{3}\s*/, '').trim() : 'Có lỗi xảy ra. Vui lòng thử lại!';
-                        alert(msg);
+                        showCompleteError(msg);
                         btnComplete.disabled = false;
                         btnComplete.innerHTML = 'Đánh dấu hoàn thành';
                     }
                 })
                 .catch(() => {
-                    alert('Lỗi kết nối máy chủ!');
+                    showCompleteError('Lỗi kết nối máy chủ!');
                     btnComplete.disabled = false;
                     btnComplete.innerHTML = 'Đánh dấu hoàn thành';
                 });

@@ -7,10 +7,11 @@
     <title>Quản lý học kỳ | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/admin-custom.css}"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
 </head>
 
-<body>
+<body class="admin-app">
 <!--  Body Wrapper -->
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
      data-sidebar-position="fixed" data-header-position="fixed">
@@ -21,6 +22,14 @@
         <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
         <div class="body-wrapper-inner">
             <div class="container-fluid">
+                <section class="admin-page-heading mb-4">
+                    <div class="admin-page-heading-icon"><i class="ti ti-calendar"></i></div>
+                    <div>
+                        <span class="admin-page-eyebrow">CẤU HÌNH HỌC VỤ</span>
+                        <h2 class="mb-1">Quản lý học kỳ</h2>
+                        <p class="mb-0">Thiết lập thời gian và trạng thái hoạt động của từng học kỳ.</p>
+                    </div>
+                </section>
                 <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
                     <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -33,7 +42,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <h5 class="card-title fw-semibold mb-0">Quản lý học kỳ</h5>
+                            <h5 class="card-title fw-semibold mb-0">Danh sách học kỳ</h5>
                             <button type="button" class="btn btn-primary"
                                     data-bs-toggle="modal" data-bs-target="#createSemesterModal">
                                 <i class="ti ti-plus"></i> Thêm học kỳ

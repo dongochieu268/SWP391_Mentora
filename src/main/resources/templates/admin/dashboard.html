@@ -6,8 +6,9 @@
   <title>Dashboard | Mentora</title>
   <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
   <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+  <link rel="stylesheet" th:href="@{/assets/css/admin-custom.css}"/>
 </head>
-<body>
+<body class="admin-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -19,12 +20,21 @@
     <div class="body-wrapper-inner">
       <div class="container-fluid">
 
-        <h5 class="fw-semibold mb-4">Dashboard</h5>
+        <section class="admin-page-hero mb-4">
+          <div>
+            <span class="admin-page-eyebrow">TRUNG TÂM QUẢN TRỊ</span>
+            <h2 class="fw-bold mb-1">Tổng quan hệ thống</h2>
+            <p class="mb-0">Theo dõi và quản lý toàn bộ hoạt động trên Mentora.</p>
+          </div>
+          <div class="admin-page-hero-icon">
+            <i class="ti ti-layout-dashboard"></i>
+          </div>
+        </section>
 
         <!-- Stats -->
         <div class="row g-4 mb-4">
           <div class="col-sm-6 col-lg-3">
-            <div class="card">
+            <div class="card admin-stat-card stat-student">
               <div class="card-body d-flex align-items-center gap-3">
                 <div class="admin-stat-icon d-flex align-items-center justify-content-center">
                   <i class="ti ti-users fs-6"></i>
@@ -37,7 +47,7 @@
             </div>
           </div>
           <div class="col-sm-6 col-lg-3">
-            <div class="card">
+            <div class="card admin-stat-card stat-lecturer">
               <div class="card-body d-flex align-items-center gap-3">
                 <div class="admin-stat-icon d-flex align-items-center justify-content-center">
                   <i class="ti ti-chalkboard fs-6"></i>
@@ -50,7 +60,7 @@
             </div>
           </div>
           <div class="col-sm-6 col-lg-3">
-            <div class="card">
+            <div class="card admin-stat-card stat-subject">
               <div class="card-body d-flex align-items-center gap-3">
                 <div class="admin-stat-icon d-flex align-items-center justify-content-center">
                   <i class="ti ti-book fs-6"></i>
@@ -63,7 +73,7 @@
             </div>
           </div>
           <div class="col-sm-6 col-lg-3">
-            <div class="card">
+            <div class="card admin-stat-card stat-blocked">
               <div class="card-body d-flex align-items-center gap-3">
                 <div class="admin-stat-icon is-alert d-flex align-items-center justify-content-center">
                   <i class="ti ti-ban fs-6"></i>
@@ -81,15 +91,21 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title fw-semibold mb-3">Thao tác nhanh</h5>
-            <div class="d-flex gap-3 flex-wrap">
+            <div class="admin-quick-grid">
               <a th:href="@{/admin/accounts}" class="btn admin-quick-action">
-                <i class="ti ti-users me-1"></i> Quản lý tài khoản
+                <span class="admin-quick-icon"><i class="ti ti-users"></i></span>
+                <span><strong>Quản lý tài khoản</strong><small>Sinh viên và giảng viên</small></span>
+                <i class="ti ti-arrow-right admin-quick-arrow"></i>
               </a>
               <a th:href="@{/admin/subjects}" class="btn admin-quick-action">
-                <i class="ti ti-book me-1"></i> Quản lý môn học
+                <span class="admin-quick-icon"><i class="ti ti-book"></i></span>
+                <span><strong>Quản lý môn học</strong><small>Danh mục và tiên quyết</small></span>
+                <i class="ti ti-arrow-right admin-quick-arrow"></i>
               </a>
               <a th:href="@{/admin/semesters}" class="btn admin-quick-action">
-                <i class="ti ti-calendar me-1"></i> Quản lý học kỳ
+                <span class="admin-quick-icon"><i class="ti ti-calendar"></i></span>
+                <span><strong>Quản lý học kỳ</strong><small>Thời gian và trạng thái</small></span>
+                <i class="ti ti-arrow-right admin-quick-arrow"></i>
               </a>
             </div>
           </div>

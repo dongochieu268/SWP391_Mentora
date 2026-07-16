@@ -6,9 +6,10 @@
     <title>Cấu hình Tiên Quyết | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/admin-custom.css}"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body>
+<body class="admin-app">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -20,14 +21,15 @@
         <div class="body-wrapper-inner">
             <div class="container-fluid">
 
-                <div class="d-flex align-items-center mb-4">
-                    <span class="me-3">
-                        <a th:replace="~{components/back-button :: backButton(@{/admin/subjects}, 'Quay lại')}"></a>
-                    </span>
-                    <h4 class="mb-0 fw-bold">Thiết lập môn tiên quyết cho:
-                        <span class="text-primary" th:text="${mainSubject.code + ' - ' + mainSubject.name}"></span>
-                    </h4>
-                </div>
+                <section class="admin-page-heading mb-4">
+                    <div class="admin-page-heading-icon"><i class="ti ti-route"></i></div>
+                    <div class="flex-grow-1">
+                        <span class="admin-page-eyebrow">QUẢN TRỊ HỌC THUẬT</span>
+                        <h2 class="mb-1">Cấu hình môn tiên quyết</h2>
+                        <p class="mb-0">Thiết lập điều kiện môn học cho <strong th:text="${mainSubject.code + ' - ' + mainSubject.name}"></strong>.</p>
+                    </div>
+                    <a th:replace="~{components/back-button :: backButton(@{/admin/subjects}, 'Quay lại')}"></a>
+                </section>
 
                 <div th:if="${successMessage}" class="alert alert-success fw-bold">
                     <span th:text="${successMessage}"></span>

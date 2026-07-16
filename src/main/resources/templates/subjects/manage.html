@@ -6,8 +6,9 @@
     <title th:text="${pageTitle} + ' | Mentora'">Quản lý môn học | Mentora</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/admin-custom.css}"/>
 </head>
-<body>
+<body th:class="${sidebarType == 'lecturer'} ? 'lecturer-app' : 'admin-app'">
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
      data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -20,6 +21,14 @@
 
         <div class="body-wrapper-inner">
             <div class="container-fluid">
+                <section class="admin-page-heading mb-4" th:if="${sidebarType != 'lecturer'}">
+                    <div class="admin-page-heading-icon"><i class="ti ti-book"></i></div>
+                    <div>
+                        <span class="admin-page-eyebrow">QUẢN TRỊ HỌC THUẬT</span>
+                        <h2 class="mb-1">Quản lý môn học</h2>
+                        <p class="mb-0">Tổ chức danh mục môn học và các điều kiện học tập liên quan.</p>
+                    </div>
+                </section>
                 <div th:if="${successMessage}" class="alert alert-success py-2" th:text="${successMessage}"></div>
                 <div th:if="${errorMessage}" class="alert alert-danger py-2" th:text="${errorMessage}"></div>
 
@@ -27,7 +36,7 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <div>
-                                <h4 class="card-title mb-1" th:text="${pageTitle}">Quản lý môn học</h4>
+                                <h4 class="card-title mb-1" th:text="${sidebarType == 'lecturer' ? pageTitle : 'Danh sách môn học'}">Danh sách môn học</h4>
                             </div>
                             <a th:href="${baseUrl + '?create=true'}" class="btn btn-primary">
                                 <i class="ti ti-plus me-1"></i> Thêm môn học

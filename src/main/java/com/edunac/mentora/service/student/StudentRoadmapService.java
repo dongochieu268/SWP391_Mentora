@@ -18,6 +18,7 @@ import com.edunac.mentora.repository.level.LevelMaterialRepository;
 import com.edunac.mentora.repository.level.NodeLevelRepository;
 import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.service.classroom.ClassroomMemberService;
+import com.edunac.mentora.service.level.NodeLevelProgressionPolicy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class StudentRoadmapService {
     private final NodeLevelRepository nodeLevelRepository;
     private final LevelMaterialRepository levelMaterialRepository;
     private final NodeLevelAttemptRepository nodeLevelAttemptRepository;
+    private final NodeLevelProgressionPolicy progressionPolicy;
 
     public StudentRoadmapService(
             ClassroomMemberService memberService,
@@ -46,7 +48,8 @@ public class StudentRoadmapService {
             NodeProgressRepository progressRepository,
             NodeLevelRepository nodeLevelRepository,
             LevelMaterialRepository levelMaterialRepository,
-            NodeLevelAttemptRepository nodeLevelAttemptRepository
+            NodeLevelAttemptRepository nodeLevelAttemptRepository,
+            NodeLevelProgressionPolicy progressionPolicy
     ) {
         this.memberService = memberService;
         this.nodeRepository = nodeRepository;
@@ -55,6 +58,7 @@ public class StudentRoadmapService {
         this.nodeLevelRepository = nodeLevelRepository;
         this.levelMaterialRepository = levelMaterialRepository;
         this.nodeLevelAttemptRepository = nodeLevelAttemptRepository;
+        this.progressionPolicy = progressionPolicy;
     }
 
     public StudentRoadmapView buildRoadmap(Integer classroomId, User student) {
@@ -81,7 +85,8 @@ public class StudentRoadmapService {
         List<StudentRoadmapNodeView> nodeViews = pathNodes.stream()
                 .map(node -> {
                     boolean visible   = isVisible(node.getId(), visibilityMap);
-                    boolean prereqMet = isPrerequisiteMet(node, progressMap);
+                    boolean prereqMet = isPrerequisiteMet(
+                            node, progressMap, student.getId(), classroomId);
                     NodeProgress progress = progressMap.get(node.getId());
                     boolean completed = progress != null && progress.isCompleted();
 
@@ -140,7 +145,7 @@ public class StudentRoadmapService {
         if (!isVisible(nodeId, visibilityMap)) return false;
 
         Map<Integer, NodeProgress> progressMap = loadProgressMap(classroomId, studentId);
-        if (!isPrerequisiteMet(node, progressMap)) return false;
+        if (!isPrerequisiteMet(node, progressMap, studentId, classroomId)) return false;
 
         return true;
     }
@@ -162,8 +167,22 @@ public class StudentRoadmapService {
     }
 
     private Map<Integer, Long> buildLevelCountMap(List<NodeLevel> levels) {
+        if (levels.isEmpty()) return Map.of();
+
+        List<Integer> levelIds = levels.stream().map(NodeLevel::getId).toList();
+        Map<Integer, Integer> questionCountByLevel = new HashMap<>();
+        for (LevelMaterial levelMaterial : levelMaterialRepository.findByNodeLevel_IdIn(levelIds)) {
+            questionCountByLevel.merge(
+                    levelMaterial.getNodeLevel().getId(),
+                    levelMaterial.getQuestionCount(),
+                    Integer::sum);
+        }
+
         Map<Integer, Long> map = new HashMap<>();
         for (NodeLevel level : levels) {
+            // A configured level without any questions is not a test that a
+            // student can start, so it must not produce an Lv. badge.
+            if (questionCountByLevel.getOrDefault(level.getId(), 0) < 1) continue;
             Integer nodeId = level.getLearningNode().getId();
             map.merge(nodeId, 1L, Long::sum);
         }
@@ -215,10 +234,17 @@ public class StudentRoadmapService {
         return NodeVisibilityStatus.VISIBLE.name().equals(visibilityMap.get(nodeId));
     }
 
-    private boolean isPrerequisiteMet(LearningNode node, Map<Integer, NodeProgress> progressMap) {
+    private boolean isPrerequisiteMet(
+            LearningNode node,
+            Map<Integer, NodeProgress> progressMap,
+            Integer studentId,
+            Integer classroomId) {
         if (node.getPrerequisite() == null) return true;
         NodeProgress prereqProgress = progressMap.get(node.getPrerequisite().getId());
-        return prereqProgress != null && prereqProgress.isCompleted();
+        if (prereqProgress != null && prereqProgress.isCompleted()) return true;
+
+        return progressionPolicy.canProgressBeyondNode(
+                node.getPrerequisite().getId(), studentId, classroomId);
     }
 
     private StudentRoadmapNodeState resolveState(

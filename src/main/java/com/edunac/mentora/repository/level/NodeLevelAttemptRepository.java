@@ -22,6 +22,9 @@ public interface NodeLevelAttemptRepository extends JpaRepository<NodeLevelAttem
     long countByNodeLevel_IdAndStudent_IdAndClassroom_Id(
             Integer nodeLevelId, Integer studentId, Integer classroomId);
 
+    long countByNodeLevel_IdAndStudent_IdAndClassroom_IdAndStatus(
+            Integer nodeLevelId, Integer studentId, Integer classroomId, String status);
+
     boolean existsByNodeLevel_Id(Integer nodeLevelId);
 
     boolean existsByNodeLevel_LearningNode_Id(Integer nodeId);

@@ -11,6 +11,7 @@ import com.edunac.mentora.repository.classroom.ClassroomMemberRepository;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.learning.NodeProgressRepository;
 import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
+import com.edunac.mentora.service.level.NodeLevelProgressionPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class NodeProgressService {
     private final LearningNodeRepository learningNodeRepository;
     private final ClassroomMemberRepository classroomMemberRepository;
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
+    private final NodeLevelProgressionPolicy progressionPolicy;
 
 
     public NodeProgressResponse markNodeCompleted(
@@ -46,7 +48,9 @@ public class NodeProgressService {
             boolean prereqDone = nodeProgressRepository
                     .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
                             studentId, node.getPrerequisite().getId(), classroomId);
-            if (!prereqDone) {
+            boolean prereqReleased = progressionPolicy.canProgressBeyondNode(
+                    node.getPrerequisite().getId(), studentId, classroomId);
+            if (!prereqDone && !prereqReleased) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                         "Bạn cần hoàn thành node tiên quyết trước: "
                                 + node.getPrerequisite().getTitle());
@@ -125,6 +129,10 @@ public class NodeProgressService {
             prerequisiteMet = nodeProgressRepository
                     .existsByStudent_IdAndLearningNode_IdAndClassroom_IdAndCompletedTrue(
                             studentId, currentNode.getPrerequisite().getId(), classroomId);
+            if (!prerequisiteMet) {
+                prerequisiteMet = progressionPolicy.canProgressBeyondNode(
+                        currentNode.getPrerequisite().getId(), studentId, classroomId);
+            }
         }
 
         return NodeProgressResponse.builder()

@@ -56,11 +56,16 @@ public class LecturerNodeLevelController {
 
         // Tổng câu hỏi per level (sum of levelMaterial.questionCount)
         Map<Integer, Integer> totalQuestionsByLevel = new java.util.HashMap<>();
+        Map<Integer, Boolean> lastMaterialWithAttempts = new java.util.HashMap<>();
         for (NodeLevel lvl : levels) {
             int total = lvl.getLevelMaterials().stream()
                     .mapToInt(com.edunac.mentora.domain.level.LevelMaterial::getQuestionCount)
                     .sum();
             totalQuestionsByLevel.put(lvl.getId(), total);
+            lastMaterialWithAttempts.put(
+                    lvl.getId(),
+                    lvl.getLevelMaterials().size() == 1
+                            && nodeLevelService.levelHasAttempts(lvl.getId()));
         }
 
         populateCommon(session, model, node, returnTo);
@@ -68,6 +73,7 @@ public class LecturerNodeLevelController {
         model.addAttribute("availableMaterials", availableMaterials);
         model.addAttribute("bankCounts", bankCounts);
         model.addAttribute("totalQuestionsByLevel", totalQuestionsByLevel);
+        model.addAttribute("lastMaterialWithAttempts", lastMaterialWithAttempts);
 
         // Modal trạng thái mặc định
         model.addAttribute("openLevelModal", false);

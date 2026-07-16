@@ -328,7 +328,7 @@
                 </div>
 
                 <!-- ── Lịch sử làm bài theo level (S6) ── -->
-                <div class="row mt-3" th:if="${hasStartableLevel and not #lists.isEmpty(levelHistory)}">
+                <div class="row mt-3" th:if="${not #lists.isEmpty(levelHistory)}">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body p-4">

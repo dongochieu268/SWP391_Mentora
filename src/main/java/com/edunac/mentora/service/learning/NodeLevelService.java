@@ -241,6 +241,11 @@ public class NodeLevelService {
         levelMaterialRepository.delete(lm);
     }
 
+    @Transactional(readOnly = true)
+    public boolean levelHasAttempts(Integer levelId) {
+        return attemptRepository.existsByNodeLevel_Id(levelId);
+    }
+
     // ===== NODE DELETE SUPPORT (L1 §3, L3 §6) =====
 
     /** L1 §3 — chặn xóa node khi bất kỳ level nào của nó đã có attempt. */

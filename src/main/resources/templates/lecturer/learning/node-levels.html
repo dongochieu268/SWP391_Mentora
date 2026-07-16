@@ -144,7 +144,10 @@
                                         <td class="text-end">
                                             <form th:action="@{/lecturer/nodes/{nid}/levels/{lid}/materials/{mid}/remove(nid=${node.id},lid=${level.id},mid=${lm.id})}"
                                                   method="post"
-                                                  onsubmit="return confirm('Gỡ tài liệu này khỏi level?')">
+                                                  th:attr="data-warning=${lastMaterialWithAttempts[level.id] == true
+                                                      ? 'Level này đã có học sinh làm bài. Gỡ tài liệu cuối cùng sẽ khiến level không còn làm được nữa; lịch sử làm bài vẫn được giữ. Tiếp tục?'
+                                                      : 'Gỡ tài liệu này khỏi level?'}"
+                                                  onsubmit="return confirm(this.dataset.warning)">
                                                 <input type="hidden" name="returnTo" th:value="${returnTo}"/>
                                                 <button type="submit" class="btn btn-sm btn-outline-danger"
                                                         title="Gỡ tài liệu" aria-label="Gỡ tài liệu">

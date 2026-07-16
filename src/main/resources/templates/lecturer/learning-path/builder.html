@@ -163,7 +163,10 @@
                                                    class="btn btn-outline-info" title="Cấu hình level">
                                                     <i class="ti ti-layers-subtract"></i>
                                                 </a>
-                                                <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/contents(nid=${node.id})}"
+                                                <a th:unless="${isTest}"
+                                                   th:href="${mode == 'wizard'}
+                                                       ? @{/lecturer/nodes/{nid}/contents(nid=${node.id}, returnTo=${baseUrl})}
+                                                       : @{/lecturer/nodes/{nid}/contents(nid=${node.id})}"
                                                    class="btn btn-outline-success" title="Quản lý nội dung node">
                                                     <i class="ti ti-file-text"></i>
                                                 </a>

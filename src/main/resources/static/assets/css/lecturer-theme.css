@@ -25,7 +25,8 @@
 
 .lecturer-app .body-wrapper-inner > .container-fluid {
     max-width: 1480px;
-    padding-top: 28px;
+    /* The app header is fixed and 70px tall. Keep page content below it. */
+    padding-top: calc(70px + 28px);
     padding-bottom: 48px;
 }
 
@@ -139,8 +140,19 @@
 }
 
 .lecturer-app .alert {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding-right: 3.5rem;
     border: 0;
     border-radius: 14px;
+}
+
+.lecturer-app .alert-dismissible .btn-close {
+    top: 50%;
+    right: 1rem;
+    padding: .5rem;
+    transform: translateY(-50%);
 }
 
 .lecturer-app .alert-success {
@@ -1507,7 +1519,7 @@
 
 @media (max-width: 767.98px) {
     .lecturer-app .body-wrapper-inner > .container-fluid {
-        padding: 20px 16px 36px;
+        padding: calc(70px + 20px) 16px 36px;
     }
 
     .lecturer-page-heading,

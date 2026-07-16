@@ -89,9 +89,6 @@
                                         <span class="badge bg-secondary ms-1" th:text="${#lists.size(nodes)}">0</span>
                                     </h5>
                                     <span class="badge text-bg-light pb-badge border"><i class="ti ti-book text-primary me-1"></i>Bài học</span>
-                                    <span class="badge pb-badge pb-badge-test"><i class="ti ti-git-branch me-1"></i>Test rẽ nhánh</span>
-                                    <span class="badge bg-success pb-badge">ĐẠT</span>
-                                    <span class="badge bg-danger pb-badge">CHƯA ĐẠT</span>
                                 </div>
                                 <a th:href="@{${baseUrl}(addEnd=true)}" class="btn btn-primary btn-sm">
                                     <i class="ti ti-plus me-1"></i> Thêm node cuối
@@ -165,6 +162,10 @@
                                                        : @{/lecturer/nodes/{nid}/levels(nid=${node.id})}"
                                                    class="btn btn-outline-info" title="Cấu hình level">
                                                     <i class="ti ti-layers-subtract"></i>
+                                                </a>
+                                                <a th:unless="${isTest}" th:href="@{/lecturer/nodes/{nid}/contents(nid=${node.id})}"
+                                                   class="btn btn-outline-success" title="Quản lý nội dung node">
+                                                    <i class="ti ti-file-text"></i>
                                                 </a>
                                                 <form th:if="${isTest and rule == null}"
                                                       th:action="@{/lecturer/learning-paths/{id}/nodes/{nid}/create-test(id=${path.id},nid=${node.id})}"

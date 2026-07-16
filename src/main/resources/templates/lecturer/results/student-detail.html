@@ -81,8 +81,15 @@
                                           th:text="'+' + ${levelResult.extraAttempts} + ' đã cấp'"></span>
                                     <form th:action="@{/lecturer/classes/{cid}/results/students/{sid}/levels/{lid}/grants(cid=${classroom.id}, sid=${detail.member.user.id}, lid=${levelResult.level.id})}"
                                           method="post" class="mb-0"
-                                          onsubmit="return confirm('Cấp thêm 1 lượt làm bài cho học sinh này ở level này?');">
-                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                          th:id="${'grantAttemptForm-' + levelResult.level.id}">
+                                        <button type="button" class="btn btn-outline-warning btn-sm"
+                                                data-bs-toggle="modal" data-bs-target="#grantAttemptModal"
+                                                th:attr="data-form-id=${'grantAttemptForm-' + levelResult.level.id},
+                                                         data-student=${detail.member.user.fullName},
+                                                         data-node=${nodeResult.node.title},
+                                                         data-level=${'Level ' + levelResult.level.levelNumber + (levelResult.level.title != null ? ' — ' + levelResult.level.title : '')},
+                                                         data-current=${#lists.size(levelResult.attempts)},
+                                                         data-limit=${levelResult.level.maxAttempts + levelResult.extraAttempts + 1}">
                                             <i class="ti ti-plus me-1"></i>1 lượt
                                         </button>
                                     </form>
@@ -140,6 +147,84 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="grantAttemptModal" tabindex="-1" aria-labelledby="grantAttemptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="grantAttemptModalLabel">Xác nhận cấp thêm lượt</h5>
+                    <p class="text-muted small mb-0">Kiểm tra thông tin trước khi cấp lượt làm bài.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive rounded border">
+                    <table class="table align-middle mb-0">
+                        <tbody>
+                        <tr>
+                            <th class="bg-light text-muted fw-semibold" style="width: 36%">Học sinh</th>
+                            <td id="grantStudent" class="fw-semibold"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light text-muted fw-semibold">Bài học</th>
+                            <td id="grantNode"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light text-muted fw-semibold">Level</th>
+                            <td id="grantLevel"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light text-muted fw-semibold">Số lượt</th>
+                            <td><span id="grantCurrent"></span> → <strong id="grantLimit" class="text-warning"></strong></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-warning mt-3 mb-0 py-2">
+                    <i class="ti ti-info-circle me-2"></i>
+                    Học sinh sẽ được cấp thêm 1 lượt làm bài cho level này.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" id="confirmGrantAttempt">
+                    <i class="ti ti-plus me-1"></i>Xác nhận cấp lượt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+<script>
+    (() => {
+        const modal = document.getElementById('grantAttemptModal');
+        const confirmButton = document.getElementById('confirmGrantAttempt');
+        let selectedFormId = null;
+
+        modal.addEventListener('show.bs.modal', event => {
+            const trigger = event.relatedTarget;
+            selectedFormId = trigger.dataset.formId;
+            document.getElementById('grantStudent').textContent = trigger.dataset.student;
+            document.getElementById('grantNode').textContent = trigger.dataset.node;
+            document.getElementById('grantLevel').textContent = trigger.dataset.level;
+            document.getElementById('grantCurrent').textContent = trigger.dataset.current;
+            document.getElementById('grantLimit').textContent = trigger.dataset.limit;
+        });
+
+        confirmButton.addEventListener('click', () => {
+            const form = selectedFormId ? document.getElementById(selectedFormId) : null;
+            if (!form) return;
+            confirmButton.disabled = true;
+            form.submit();
+        });
+
+        modal.addEventListener('hidden.bs.modal', () => {
+            selectedFormId = null;
+            confirmButton.disabled = false;
+        });
+    })();
+</script>
 </body>
 </html>

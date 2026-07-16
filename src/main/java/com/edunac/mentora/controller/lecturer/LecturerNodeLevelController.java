@@ -42,6 +42,7 @@ public class LecturerNodeLevelController {
             @RequestParam(required = false) Boolean addLevel,
             @RequestParam(required = false) Integer editLevel,
             @RequestParam(required = false) Integer addMaterial,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             Model model,
             RedirectAttributes ra) {
@@ -62,7 +63,7 @@ public class LecturerNodeLevelController {
             totalQuestionsByLevel.put(lvl.getId(), total);
         }
 
-        populateCommon(session, model, node);
+        populateCommon(session, model, node, returnTo);
         model.addAttribute("levels", levels);
         model.addAttribute("availableMaterials", availableMaterials);
         model.addAttribute("bankCounts", bankCounts);
@@ -81,7 +82,7 @@ public class LecturerNodeLevelController {
                     model.addAttribute("openLevelModal", true);
                 } catch (IllegalArgumentException e) {
                     ra.addFlashAttribute("errorMessage", e.getMessage());
-                    return "redirect:/lecturer/nodes/" + nodeId + "/levels";
+                    return "redirect:/lecturer/nodes/" + nodeId + "/levels" + returnToQuery(returnTo);
                 }
             } else if (Boolean.TRUE.equals(addLevel)) {
                 NodeLevelForm form = new NodeLevelForm();
@@ -116,6 +117,7 @@ public class LecturerNodeLevelController {
     public String saveLevel(
             @PathVariable Integer nodeId,
             @ModelAttribute NodeLevelForm form,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra) {
 
@@ -134,7 +136,7 @@ public class LecturerNodeLevelController {
             ra.addFlashAttribute("levelForm", form);
             ra.addFlashAttribute("openLevelModal", true);
         }
-        return "redirect:/lecturer/nodes/" + nodeId + "/levels";
+        return "redirect:/lecturer/nodes/" + nodeId + "/levels" + returnToQuery(returnTo);
     }
 
     // ===== POST: xóa level =====
@@ -143,6 +145,7 @@ public class LecturerNodeLevelController {
     public String deleteLevel(
             @PathVariable Integer nodeId,
             @PathVariable Integer levelId,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra) {
 
@@ -153,7 +156,7 @@ public class LecturerNodeLevelController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/lecturer/nodes/" + nodeId + "/levels";
+        return "redirect:/lecturer/nodes/" + nodeId + "/levels" + returnToQuery(returnTo);
     }
 
     // ===== POST: thêm material vào level =====
@@ -163,6 +166,7 @@ public class LecturerNodeLevelController {
             @PathVariable Integer nodeId,
             @PathVariable Integer levelId,
             @ModelAttribute LevelMaterialForm form,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra) {
 
@@ -177,7 +181,7 @@ public class LecturerNodeLevelController {
             ra.addFlashAttribute("openMaterialModal", true);
             ra.addFlashAttribute("materialModalLevelId", levelId);
         }
-        return "redirect:/lecturer/nodes/" + nodeId + "/levels";
+        return "redirect:/lecturer/nodes/" + nodeId + "/levels" + returnToQuery(returnTo);
     }
 
     // ===== POST: gỡ material khỏi level =====
@@ -187,6 +191,7 @@ public class LecturerNodeLevelController {
             @PathVariable Integer nodeId,
             @PathVariable Integer levelId,
             @PathVariable Integer levelMaterialId,
+            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra) {
 
@@ -197,7 +202,7 @@ public class LecturerNodeLevelController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/lecturer/nodes/" + nodeId + "/levels";
+        return "redirect:/lecturer/nodes/" + nodeId + "/levels" + returnToQuery(returnTo);
     }
 
     // ===== HELPERS =====
@@ -206,14 +211,25 @@ public class LecturerNodeLevelController {
         return (User) session.getAttribute("loggedInUser");
     }
 
-    private void populateCommon(HttpSession session, Model model, LearningNode node) {
+    private void populateCommon(HttpSession session, Model model, LearningNode node, String returnTo) {
         model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("activePage", "node-levels");
         model.addAttribute("node", node);
         model.addAttribute("pageTitle", "Cấu hình level — " + node.getTitle());
-        String pathBackUrl = node.getLearningPath() != null
+        String defaultBackUrl = node.getLearningPath() != null
                 ? "/lecturer/learning-paths/" + node.getLearningPath().getId()
                 : "/lecturer/learning-paths";
-        model.addAttribute("pathBackUrl", pathBackUrl);
+        boolean fromWizard = returnTo != null && returnTo.startsWith("/lecturer/");
+        model.addAttribute("pathBackUrl", fromWizard ? returnTo : defaultBackUrl);
+        model.addAttribute("returnTo", fromWizard ? returnTo : null);
+        model.addAttribute("fromWizard", fromWizard);
+    }
+
+    /** Chỉ chấp nhận returnTo nội bộ khu lecturer (chống open redirect). */
+    private String returnToQuery(String returnTo) {
+        if (returnTo == null || !returnTo.startsWith("/lecturer/")) {
+            return "";
+        }
+        return "?returnTo=" + java.net.URLEncoder.encode(returnTo, java.nio.charset.StandardCharsets.UTF_8);
     }
 }

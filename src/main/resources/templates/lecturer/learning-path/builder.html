@@ -435,7 +435,8 @@
                     </div><!-- /row builder + panel -->
 
                     <!-- ===== MODAL THÊM / SỬA NODE ===== -->
-                    <div class="modal fade" id="modalNode" tabindex="-1" aria-hidden="true"
+                    <div class="modal fade" id="modalNode" tabindex="-1"
+                         th:attr="aria-hidden=${openNodeModal} ? 'false' : 'true'"
                          th:classappend="${openNodeModal} ? ' show' : ''"
                          th:style="${openNodeModal} ? 'display:block;' : ''">
                         <div class="modal-dialog modal-dialog-centered modal-lg">

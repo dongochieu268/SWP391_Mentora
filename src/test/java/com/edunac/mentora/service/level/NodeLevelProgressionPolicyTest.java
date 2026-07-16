@@ -2,7 +2,6 @@ package com.edunac.mentora.service.level;
 
 import com.edunac.mentora.domain.learningpath.LearningNode;
 import com.edunac.mentora.domain.level.NodeLevel;
-import com.edunac.mentora.repository.level.AttemptGrantRepository;
 import com.edunac.mentora.repository.level.NodeLevelAttemptRepository;
 import com.edunac.mentora.repository.level.NodeLevelRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,6 @@ import static org.mockito.Mockito.when;
 class NodeLevelProgressionPolicyTest {
 
     private NodeLevelAttemptRepository attemptRepository;
-    private AttemptGrantRepository grantRepository;
     private NodeLevelProgressionPolicy policy;
     private NodeLevel level1;
     private NodeLevel level2;
@@ -27,9 +25,7 @@ class NodeLevelProgressionPolicyTest {
     void setUp() {
         NodeLevelRepository levelRepository = mock(NodeLevelRepository.class);
         attemptRepository = mock(NodeLevelAttemptRepository.class);
-        grantRepository = mock(AttemptGrantRepository.class);
-        policy = new NodeLevelProgressionPolicy(
-                levelRepository, attemptRepository, grantRepository);
+        policy = new NodeLevelProgressionPolicy(levelRepository, attemptRepository);
 
         LearningNode node = new LearningNode();
         node.setId(10);
@@ -58,13 +54,11 @@ class NodeLevelProgressionPolicyTest {
     }
 
     @Test
-    void granted_attempt_must_also_be_used_before_next_node_is_released() {
+    void granted_attempt_does_not_lock_an_already_released_next_node() {
         when(attemptRepository.countByNodeLevel_IdAndStudent_IdAndClassroom_IdAndStatus(
                 101, 7, 3, "SUBMITTED"))
                 .thenReturn(2L);
-        when(grantRepository.sumExtraAttempts(101, 7, 3)).thenReturn(1);
-
-        assertFalse(policy.canProgressBeyondNode(10, 7, 3));
+        assertTrue(policy.canProgressBeyondNode(10, 7, 3));
     }
 
     @Test

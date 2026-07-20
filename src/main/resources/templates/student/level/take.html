@@ -54,39 +54,75 @@
 
                     <input type="hidden" name="attemptId" th:value="${attempt.id}"/>
 
-                    <div class="card">
-                        <div class="card-body">
-                            <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-4">
-                                Level này chưa có câu hỏi.
-                            </div>
-
-                            <div th:unless="${#lists.isEmpty(questions)}">
-                                <div class="student-question-card" th:each="question, stat : ${questions}">
-                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-                                        <span class="badge bg-light text-dark border" th:text="'Câu ' + ${stat.count}"></span>
-                                        <span class="badge bg-info text-dark" th:text="${question.difficulty}"></span>
-                                    </div>
-                                    <div class="fw-semibold mb-3" th:text="${question.content}"></div>
-
-                                    <div class="form-check mb-2" th:each="option : ${question.options}">
-                                        <input class="form-check-input"
-                                               type="radio"
-                                               th:name="${'answers_' + question.id}"
-                                               th:id="${'q' + question.id + '_opt' + option.id}"
-                                               th:value="${option.id}">
-                                        <label class="form-check-label"
-                                               th:for="${'q' + question.id + '_opt' + option.id}"
-                                               th:text="${option.content}"></label>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-end">
-                                    <button id="submitTestButton" type="submit" class="btn btn-primary px-4">
-                                        <i class="ti ti-send me-1"></i> Nộp bài
-                                    </button>
-                                </div>
-                            </div>
+                    <div th:if="${#lists.isEmpty(questions)}" class="card">
+                        <div class="card-body text-center text-muted py-4">
+                            Level này chưa có câu hỏi.
                         </div>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(questions)}" class="student-exam-layout">
+                        <aside class="student-question-navigator-column" aria-label="Danh sách câu hỏi">
+                          <div class="student-question-navigator">
+                            <div class="student-question-nav-heading">
+                                <div>
+                                    <span class="student-question-nav-label">Danh sách câu hỏi</span>
+                                    <strong id="answeredQuestionCount"
+                                            th:text="'0/' + ${#lists.size(questions)} + ' câu đã làm'">0/0 câu đã làm</strong>
+                                </div>
+                            </div>
+
+                            <div class="student-question-nav-grid">
+                                <button th:each="question, stat : ${questions}"
+                                   type="button"
+                                   class="student-question-nav-item"
+                                   th:attr="data-question-id=${question.id},aria-label=${'Đi tới câu ' + stat.count}">
+                                    <span th:text="${stat.count}">1</span>
+                                    <i class="ti ti-check" aria-hidden="true"></i>
+                                </button>
+                            </div>
+
+                            <div class="student-question-nav-legend">
+                                <span><i class="is-unanswered"></i>Chưa làm</span>
+                                <span><i class="is-answered"></i>Đã làm</span>
+                            </div>
+
+                            <button id="submitTestButton" type="submit" class="btn btn-primary w-100"
+                                    data-submit-test>
+                                <i class="ti ti-send me-1"></i> Nộp bài
+                            </button>
+                          </div>
+                        </aside>
+
+                        <section class="student-question-list" aria-label="Nội dung câu hỏi">
+                            <article class="student-question-card"
+                                     th:each="question, stat : ${questions}"
+                                     th:id="${'question-' + question.id}">
+                                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                                    <span class="badge bg-light text-dark border" th:text="'Câu ' + ${stat.count}"></span>
+                                    <span class="badge bg-info text-dark" th:text="${question.difficulty}"></span>
+                                </div>
+                                <div class="fw-semibold mb-3" th:text="${question.content}"></div>
+
+                                <div class="form-check mb-2" th:each="option : ${question.options}">
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           th:name="${'answers_' + question.id}"
+                                           th:id="${'q' + question.id + '_opt' + option.id}"
+                                           th:value="${option.id}"
+                                           th:attr="data-question-id=${question.id}">
+                                    <label class="form-check-label"
+                                           th:for="${'q' + question.id + '_opt' + option.id}"
+                                           th:text="${option.content}"></label>
+                                </div>
+                            </article>
+
+                            <div class="student-exam-bottom-submit">
+                                <button id="submitTestButtonBottom" type="submit" class="btn btn-primary"
+                                        data-submit-test>
+                                    <i class="ti ti-send me-1"></i> Nộp bài
+                                </button>
+                            </div>
+                        </section>
                     </div>
                 </form>
 </main>
@@ -121,7 +157,9 @@
     /*<![CDATA[*/
     (() => {
         const form = document.getElementById('levelTestForm');
-        const submitButton = document.getElementById('submitTestButton');
+        const submitButtons = form
+            ? form.querySelectorAll('[data-submit-test]')
+            : [];
         const modalElement = document.getElementById('examActionModal');
         const modalTitle = document.getElementById('examActionTitle');
         const modalMessage = document.getElementById('examActionMessage');
@@ -137,13 +175,25 @@
         let isSubmitting = false;
         let autoSubmitted = false;
         let modalAction = 'submit';
+        const answerInputs = form
+            ? form.querySelectorAll('input[type="radio"][data-question-id]')
+            : [];
+        const questionNavItems = form
+            ? form.querySelectorAll('.student-question-nav-item[data-question-id]')
+            : [];
+        const answeredQuestionCount = document.getElementById('answeredQuestionCount');
+        const examLayout = document.querySelector('.student-exam-layout');
+        const navigatorColumn = document.querySelector('.student-question-navigator-column');
+        const questionNavigator = document.querySelector('.student-question-navigator');
+        const desktopNavigator = window.matchMedia('(min-width: 768px)');
+        let navigatorFrame = null;
 
         const markSubmitting = () => {
             isSubmitting = true;
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang nộp...';
-            }
+            submitButtons.forEach(button => {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang nộp...';
+            });
         };
 
         const showActionModal = ({title, message, action, primaryText, cancellable, primaryDisabled = false}) => {
@@ -182,6 +232,85 @@
                 cancellable: true
             });
         });
+
+        const refreshQuestionProgress = () => {
+            const answeredIds = new Set(
+                Array.from(answerInputs)
+                    .filter(input => input.checked)
+                    .map(input => input.dataset.questionId)
+            );
+
+            questionNavItems.forEach(item => {
+                const answered = answeredIds.has(item.dataset.questionId);
+                const questionNumber = item.querySelector('span')?.textContent || '';
+                item.classList.toggle('is-answered', answered);
+                item.setAttribute(
+                    'aria-label',
+                    `Đi tới câu ${questionNumber} - ${answered ? 'đã làm' : 'chưa làm'}`
+                );
+            });
+
+            if (answeredQuestionCount) {
+                answeredQuestionCount.textContent =
+                    `${answeredIds.size}/${questionNavItems.length} câu đã làm`;
+            }
+        };
+
+        answerInputs.forEach(input => input.addEventListener('change', refreshQuestionProgress));
+        questionNavItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = document.getElementById(`question-${item.dataset.questionId}`);
+                target?.scrollIntoView({behavior: 'smooth', block: 'start'});
+            });
+        });
+        refreshQuestionProgress();
+
+        const resetNavigatorPosition = () => {
+            if (!questionNavigator) return;
+            questionNavigator.classList.remove('is-floating', 'is-at-bottom');
+            questionNavigator.style.left = '';
+            questionNavigator.style.width = '';
+        };
+
+        const updateNavigatorPosition = () => {
+            navigatorFrame = null;
+            if (!desktopNavigator.matches || !examLayout || !navigatorColumn || !questionNavigator) {
+                resetNavigatorPosition();
+                return;
+            }
+
+            const topOffset = 102;
+            const columnRect = navigatorColumn.getBoundingClientRect();
+            const layoutRect = examLayout.getBoundingClientRect();
+            const navigatorHeight = questionNavigator.offsetHeight;
+
+            if (columnRect.top > topOffset) {
+                resetNavigatorPosition();
+                return;
+            }
+
+            if (layoutRect.bottom <= topOffset + navigatorHeight) {
+                questionNavigator.classList.remove('is-floating');
+                questionNavigator.classList.add('is-at-bottom');
+                questionNavigator.style.left = '';
+                questionNavigator.style.width = '';
+                return;
+            }
+
+            questionNavigator.classList.remove('is-at-bottom');
+            questionNavigator.classList.add('is-floating');
+            questionNavigator.style.left = `${columnRect.left}px`;
+            questionNavigator.style.width = `${columnRect.width}px`;
+        };
+
+        const scheduleNavigatorUpdate = () => {
+            if (navigatorFrame !== null) return;
+            navigatorFrame = window.requestAnimationFrame(updateNavigatorPosition);
+        };
+
+        window.addEventListener('scroll', scheduleNavigatorUpdate, {passive: true});
+        window.addEventListener('resize', scheduleNavigatorUpdate);
+        scheduleNavigatorUpdate();
 
         // Trình duyệt vẫn phải cho phép đóng tab/máy sập; cảnh báo này ngăn
         // thao tác rời trang ngoài ý muốn. Khi quay lại, backend resume attempt cũ.

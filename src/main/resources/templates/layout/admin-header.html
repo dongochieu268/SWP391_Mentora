@@ -18,15 +18,16 @@
     </ul>
 
     <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-      <div class="admin-header-label d-none d-md-flex me-auto align-items-center gap-2">
-        <span class="admin-header-dot"></span>
-        <span>Khu vực quản trị</span>
-      </div>
       <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
         <li class="nav-item dropdown">
-          <button class="nav-link border-0 bg-transparent" type="button" id="drop2"
+          <button class="nav-link account-trigger border-0 bg-transparent" type="button" id="drop2"
              data-bs-toggle="dropdown" aria-expanded="false"
              aria-label="Mở menu tài khoản">
+            <span class="account-summary">
+              <strong class="account-name" th:text="${user.fullName}">Nguyễn Văn A</strong>
+              <span class="account-role"
+                    th:text="${user.role.name == 'ADMIN' ? 'Quản trị viên' : (user.role.name == 'LECTURER' ? 'Giảng viên' : (user.role.name == 'STUDENT' ? 'Sinh viên' : user.role.name))}">Vai trò</span>
+            </span>
             <img th:src="@{/assets/images/profile/user-1.jpg}" alt="Ảnh đại diện"
                  width="35" height="35" class="rounded-circle">
           </button>

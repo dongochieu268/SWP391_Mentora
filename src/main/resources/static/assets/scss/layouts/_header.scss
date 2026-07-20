@@ -67,6 +67,44 @@
 
 }
 
+.app-header .navbar .navbar-nav .nav-item .nav-link.account-trigger {
+  gap: 10px;
+  padding: 8px 10px;
+  line-height: 1.2;
+}
+
+.account-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  max-width: 220px;
+  text-align: right;
+}
+
+.account-name,
+.account-role {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.account-name {
+  color: var(--bs-heading-color);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.account-role {
+  margin-top: 3px;
+  color: var(--bs-secondary-color);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .notification {
   content: "";
   position: absolute;
@@ -89,6 +127,10 @@
 }
 
 @include media-breakpoint-down(md) {
+  .account-summary {
+    max-width: 130px;
+  }
+
   .navbar-nav .dropdown-menu {
     position: absolute;
     width: 100%;

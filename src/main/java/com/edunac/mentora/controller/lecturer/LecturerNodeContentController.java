@@ -45,7 +45,7 @@ public class LecturerNodeContentController {
                 ? "/lecturer/learning-paths/" + node.getLearningPath().getId()
                 : "/lecturer/learning-paths";
         boolean fromWizard = returnTo != null && returnTo.startsWith("/lecturer/");
-        populateCommon(session, model, "node-contents");
+        populateCommon(session, model, "learning-paths");
         model.addAttribute("pageTitle", "Nội dung node");
         model.addAttribute("baseUrl", baseUrl);
         model.addAttribute("pathBackUrl", fromWizard ? returnTo : defaultBackUrl);

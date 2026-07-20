@@ -219,7 +219,7 @@ public class LecturerNodeLevelController {
 
     private void populateCommon(HttpSession session, Model model, LearningNode node, String returnTo) {
         model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("activePage", "node-levels");
+        model.addAttribute("activePage", "learning-paths");
         model.addAttribute("node", node);
         model.addAttribute("pageTitle", "Cấu hình level — " + node.getTitle());
         String defaultBackUrl = node.getLearningPath() != null

@@ -86,6 +86,8 @@ public class StudentLearningController {
         LearningNode node = learningNodeRepository.findById(nodeId)
                 .orElseThrow(() -> new RuntimeException("Node không tồn tại"));
 
+        var sidebarRoadmap = roadmapService.buildRoadmap(classroomId, currentUser);
+
         List<NodeContent> contents = nodeContentService.getByNodeId(nodeId);
 
         NodeProgressResponse progress = nodeProgressService
@@ -115,6 +117,8 @@ public class StudentLearningController {
 
         model.addAttribute("user", currentUser);
         model.addAttribute("activePage", "classrooms");
+        model.addAttribute("sidebarRoadmap", sidebarRoadmap);
+        model.addAttribute("sidebarCurrentNodeId", nodeId);
         model.addAttribute("node", node);
         model.addAttribute("contents", contents);
         model.addAttribute("progress", progress);

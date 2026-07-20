@@ -29,6 +29,7 @@ public class StudentRoadmapController {
             User user = currentUser(session);
             var roadmap = roadmapService.buildRoadmap(classroomId, user);
             model.addAttribute("roadmap", roadmap);
+            model.addAttribute("sidebarRoadmap", roadmap);
             model.addAttribute("classroom", roadmap.getClassroom());
             model.addAttribute("user", user);
             model.addAttribute("activePage", "classrooms");

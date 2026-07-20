@@ -50,7 +50,58 @@
 
       </ul>
 
-      <div class="mx-3 mt-4 p-3 rounded-4 text-white"
+      <div th:if="${sidebarRoadmap != null and not #lists.isEmpty(sidebarRoadmap.nodes)}"
+           class="sidebar-roadmap-panel">
+        <div class="sidebar-roadmap-heading">
+          <div>
+            <span>Lộ trình lớp</span>
+            <strong th:text="${sidebarRoadmap.classroom.learningPath.name}">Learning path</strong>
+          </div>
+        </div>
+
+        <div class="sidebar-roadmap-list">
+          <th:block th:each="item, stat : ${sidebarRoadmap.nodes}">
+            <a th:if="${item.state.name() == 'ACCESSIBLE' or item.state.name() == 'COMPLETED'}"
+               th:href="@{/student/classrooms/{cid}/nodes/{nid}(cid=${sidebarRoadmap.classroom.id}, nid=${item.node.id})}"
+               class="sidebar-roadmap-node"
+               th:classappend="${' state-' + #strings.toLowerCase(item.state.name()) + ((sidebarCurrentNodeId != null and item.node.id == sidebarCurrentNodeId) ? ' is-current' : '')}">
+              <span class="sidebar-roadmap-index">
+                <i th:if="${item.state.name() == 'COMPLETED'}" class="ti ti-check"></i>
+                <span th:unless="${item.state.name() == 'COMPLETED'}" th:text="${stat.count}"></span>
+              </span>
+              <span class="sidebar-roadmap-copy">
+                <span class="sidebar-roadmap-title" th:text="${item.node.title}">Node title</span>
+                <span class="sidebar-roadmap-state"
+                      th:text="${sidebarCurrentNodeId != null and item.node.id == sidebarCurrentNodeId ? 'Đang học' : (item.state.name() == 'COMPLETED' ? 'Đã hoàn thành' : 'Có thể học')}"></span>
+              </span>
+            </a>
+
+            <div th:unless="${item.state.name() == 'ACCESSIBLE' or item.state.name() == 'COMPLETED'}"
+                 class="sidebar-roadmap-node is-disabled"
+                 th:classappend="${' state-' + #strings.toLowerCase(item.state.name())}">
+              <span class="sidebar-roadmap-index">
+                <i class="ti ti-lock"></i>
+              </span>
+              <span class="sidebar-roadmap-copy">
+                <span class="sidebar-roadmap-title" th:text="${item.node.title}">Node title</span>
+                <span class="sidebar-roadmap-state"
+                      th:text="${item.state.name() == 'HIDDEN' ? 'Chưa mở' : 'Đang khóa'}"></span>
+              </span>
+            </div>
+          </th:block>
+        </div>
+      </div>
+
+      <div th:if="${sidebarRoadmap != null and #lists.isEmpty(sidebarRoadmap.nodes)}"
+           class="sidebar-roadmap-panel">
+        <div class="sidebar-roadmap-empty">
+          <i class="ti ti-route-off"></i>
+          <span>Chưa có node trong lộ trình.</span>
+        </div>
+      </div>
+
+      <div th:if="${sidebarRoadmap == null}"
+           class="mx-3 mt-4 p-3 rounded-4 text-white"
            style="background: linear-gradient(145deg, #1d4ed8, #4f46e5); box-shadow: 0 14px 28px rgba(37, 99, 235, .2);">
         <div class="d-flex align-items-center gap-2 mb-2">
           <i class="ti ti-sparkles fs-5" aria-hidden="true"></i>

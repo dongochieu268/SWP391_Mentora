@@ -65,6 +65,14 @@ public class UserService {
                 nullIfEmpty(search));
     }
 
+    public long countByRole(String roleName) {
+        return userRepository.countByRole_Name(roleName);
+    }
+
+    public long countByStatus(String status) {
+        return userRepository.countByStatus(status);
+    }
+
     private String nullIfEmpty(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }

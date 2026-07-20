@@ -46,6 +46,10 @@ public class SubjectService {
         return subjectRepository.findByStatusOrderByNameAsc("ACTIVE");
     }
 
+    public long countSubjects() {
+        return subjectRepository.count();
+    }
+
     public Subject findById(Integer id) {
         return subjectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(

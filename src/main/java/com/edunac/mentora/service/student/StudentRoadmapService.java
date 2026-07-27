@@ -22,8 +22,6 @@ import com.edunac.mentora.service.level.NodeLevelProgressionPolicy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,13 +72,10 @@ public class StudentRoadmapService {
         Map<Integer, String>       visibilityMap  = loadVisibilityMap(classroomId);
         Map<Integer, NodeProgress> progressMap    = loadProgressMap(classroomId, student.getId());
         Map<Integer, Long>         levelCountMap  = buildLevelCountMap(levels);
-        Map<Integer, BigDecimal>   masteryMaxMap  = buildMasteryMaxScoreMap(levels);
         Map<Integer, Integer>      passedLevelMap = buildHighestPassedLevelMap(classroomId, student.getId());
 
         int visibleCount          = 0;
         int completedVisibleCount = 0;
-        BigDecimal totalScoreEarned   = BigDecimal.ZERO;
-        BigDecimal totalScorePossible = BigDecimal.ZERO;
 
         List<StudentRoadmapNodeView> nodeViews = pathNodes.stream()
                 .map(node -> {
@@ -112,29 +107,14 @@ public class StudentRoadmapService {
                 if (view.getState() == StudentRoadmapNodeState.COMPLETED) {
                     completedVisibleCount++;
                 }
-
-                BigDecimal maxScore = masteryMaxMap.get(nodeId);
-                if (maxScore != null) {
-                    totalScorePossible = totalScorePossible.add(maxScore);
-                    if (view.getBestScore() != null) {
-                        totalScoreEarned = totalScoreEarned.add(view.getBestScore());
-                    }
-                }
             }
         }
 
         int completionPercent = visibleCount == 0
                 ? 0 : (completedVisibleCount * 100) / visibleCount;
 
-        int scorePercent = totalScorePossible.compareTo(BigDecimal.ZERO) == 0
-                ? 0
-                : totalScoreEarned.multiply(BigDecimal.valueOf(100))
-                        .divide(totalScorePossible, 0, RoundingMode.HALF_UP)
-                        .intValue();
-
         return new StudentRoadmapView(
-                classroom, nodeViews, completionPercent, visibleCount, completedVisibleCount,
-                totalScoreEarned, totalScorePossible, scorePercent);
+                classroom, nodeViews, completionPercent, visibleCount, completedVisibleCount);
     }
 
     public boolean canAccessNode(Integer nodeId, Integer studentId, Integer classroomId) {
@@ -180,17 +160,13 @@ public class StudentRoadmapService {
 
         Map<Integer, Long> map = new HashMap<>();
         for (NodeLevel level : levels) {
-            // A configured level without any questions is not a test that a
-            // student can start, so it must not produce an Lv. badge.
             if (questionCountByLevel.getOrDefault(level.getId(), 0) < 1) continue;
             Integer nodeId = level.getLearningNode().getId();
             map.merge(nodeId, 1L, Long::sum);
         }
         return map;
     }
-
-    /** Roadmap level progress is the highest level actually passed, not the
-     * level associated with the best score (ties may belong to an earlier level). */
+    
     private Map<Integer, Integer> buildHighestPassedLevelMap(Integer classroomId, Integer studentId) {
         Map<Integer, Integer> map = new HashMap<>();
         nodeLevelAttemptRepository
@@ -200,34 +176,6 @@ public class StudentRoadmapService {
                         attempt.getNodeLevel().getLevelNumber(),
                         Math::max));
         return map;
-    }
-
-    /**
-     * Per node, the max maxScore among levels that have >= 1 question configured
-     * (S1 §6): a level with zero questions is not startable and excluded, and a
-     * node whose levels are ALL non-startable contributes no entry (excluded from
-     * both the earned and possible score totals).
-     */
-    private Map<Integer, BigDecimal> buildMasteryMaxScoreMap(List<NodeLevel> levels) {
-        if (levels.isEmpty()) return Map.of();
-
-        List<Integer> levelIds = levels.stream().map(NodeLevel::getId).toList();
-        Map<Integer, Integer> questionCountByLevel = new HashMap<>();
-        for (LevelMaterial lm : levelMaterialRepository.findByNodeLevel_IdIn(levelIds)) {
-            questionCountByLevel.merge(lm.getNodeLevel().getId(), lm.getQuestionCount(), Integer::sum);
-        }
-
-        Map<Integer, BigDecimal> maxScoreByNode = new HashMap<>();
-        for (NodeLevel level : levels) {
-            if (questionCountByLevel.getOrDefault(level.getId(), 0) < 1) continue;
-
-            Integer nodeId = level.getLearningNode().getId();
-            BigDecimal current = maxScoreByNode.get(nodeId);
-            if (current == null || level.getMaxScore().compareTo(current) > 0) {
-                maxScoreByNode.put(nodeId, level.getMaxScore());
-            }
-        }
-        return maxScoreByNode;
     }
 
     private boolean isVisible(Integer nodeId, Map<Integer, String> visibilityMap) {

@@ -41,7 +41,7 @@
                             <i class="ti ti-layout-grid"></i>
                             <span th:text="${#lists.size(classes)}">0</span> lớp
                         </span>
-                        <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary">
+                        <a th:href="@{/lecturer/classes/new}" class="btn btn-primary">
                             <i class="ti ti-plus me-1"></i>Tạo lớp mới
                         </a>
                     </div>
@@ -51,7 +51,7 @@
                     <span class="lecturer-icon-tile"><i class="ti ti-school-off"></i></span>
                     <h2>Chưa có lớp học nào</h2>
                     <p>Tạo lớp đầu tiên để mời sinh viên và bắt đầu quản lý hoạt động học tập.</p>
-                    <a th:href="@{/lecturer/classes/wizard}" class="btn btn-primary mt-3">
+                    <a th:href="@{/lecturer/classes/new}" class="btn btn-primary mt-3">
                         <i class="ti ti-plus me-1"></i>Tạo lớp mới
                     </a>
                 </div>

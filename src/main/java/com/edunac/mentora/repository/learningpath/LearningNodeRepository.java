@@ -14,6 +14,8 @@ public interface LearningNodeRepository extends JpaRepository<LearningNode, Inte
 
     List<LearningNode> findByLearningPathIdOrderByNodeOrderAsc(Integer learningPathId);
 
+    boolean existsByLearningPathId(Integer learningPathId);
+
     @Query("""
             SELECT n FROM LearningNode n
             JOIN FETCH n.learningPath p

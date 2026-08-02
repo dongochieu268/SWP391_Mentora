@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${isEdit} ? 'Sửa node | Mentora' : 'Thêm node | Mentora'">Thêm node | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
+</head>
+<body class="lecturer-app">
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <div class="text-muted small mb-1" th:text="${path.name}"></div>
+                                <h5 class="card-title fw-semibold mb-0"
+                                    th:text="${isEdit} ? 'Sửa node' : 'Thêm node mới'"></h5>
+                            </div>
+                            <a th:replace="~{components/back-button :: backButton(@{/lecturer/learning-paths/{id}(id=${path.id})}, 'Quay lại lộ trình')}"></a>
+                        </div>
+
+                        <form th:action="${isEdit}
+                                ? @{/lecturer/learning-paths/{pid}/nodes/{nid}/edit(pid=${path.id},nid=${nodeId})}
+                                : @{/lecturer/learning-paths/{pid}/nodes(pid=${path.id})}"
+                              method="post">
+
+                            <div class="mb-3">
+                                <label for="nodeTitle" class="form-label">Tiêu đề node <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nodeTitle" name="title"
+                                       th:value="${form.title}" maxlength="200" required
+                                       placeholder="VD: Bài 1 — Giới thiệu">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nodeDescription" class="form-label">Mô tả</label>
+                                <textarea class="form-control" id="nodeDescription" name="description" rows="3"
+                                          maxlength="1000" th:text="${form.description}"
+                                          placeholder="Mô tả ngắn về nội dung bài học..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="prerequisiteNodeId" class="form-label">Node tiên quyết</label>
+                                <select class="form-select" id="prerequisiteNodeId" name="prerequisiteNodeId">
+                                    <option value="">-- Không có --</option>
+                                    <option th:each="n : ${nodes}"
+                                            th:if="${n.id != form.id}"
+                                            th:value="${n.id}"
+                                            th:text="${n.title}"
+                                            th:selected="${form.prerequisiteNodeId != null and form.prerequisiteNodeId == n.id}"></option>
+                                </select>
+                                <div class="form-text text-muted">
+                                    Học sinh phải hoàn thành node tiên quyết trước khi mở được node này.
+                                </div>
+                            </div>
+
+                            <div th:unless="${isEdit}" class="alert alert-info py-2 mb-3">
+                                <i class="ti ti-info-circle me-1"></i>
+                                Node mới sẽ được thêm vào <strong>cuối</strong> lộ trình. Dùng nút mũi tên
+                                trên trang lộ trình nếu cần đổi thứ tự sau khi tạo.
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-check me-1"></i>
+                                <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm node'"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

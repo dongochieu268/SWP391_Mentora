@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${path.name} + ' | Mentora'">Lộ trình học | Mentora</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/logos/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/styles.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/lecturer-theme.css}"/>
+</head>
+<body class="lecturer-app">
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+     data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+
+    <aside th:replace="~{layout/lecturer-sidebar :: lecturerSidebar(${activePage})}"></aside>
+
+    <div class="body-wrapper">
+        <header th:replace="~{layout/admin-header :: adminHeader(${user})}"></header>
+
+        <div class="body-wrapper-inner">
+            <div class="container-fluid">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-check me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2">
+                    <i class="ti ti-circle-x me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                    <div>
+                        <a th:replace="~{components/back-button :: backButton(@{/lecturer/learning-paths}, 'Tất cả lộ trình')}"></a>
+                        <h1 class="h4 fw-semibold mt-2 mb-1" th:text="${path.name}"></h1>
+                        <p class="text-muted mb-0" th:if="${path.description}" th:text="${path.description}"></p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/lecturer/learning-paths/{id}/nodes/new(id=${path.id})}" class="btn btn-primary">
+                            <i class="ti ti-plus me-1"></i>Thêm node
+                        </a>
+                        <div class="dropdown">
+                            <button class="table-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="ti ti-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <form th:action="@{/lecturer/learning-paths/{id}/clone(id=${path.id})}" method="post">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="ti ti-copy me-2"></i> Nhân bản lộ trình
+                                        </button>
+                                    </form>
+                                </li>
+                                <li th:if="${!hasClassroom}">
+                                    <form th:action="@{/lecturer/learning-paths/{id}/delete(id=${path.id})}" method="post"
+                                          onsubmit="return confirm('Xóa lộ trình này và toàn bộ node?');">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="ti ti-trash me-2"></i> Xóa lộ trình
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${hasClassroom}" class="alert alert-warning py-2 mb-3">
+                    <i class="ti ti-lock me-1"></i>
+                    Lộ trình đang được lớp học sử dụng — không xóa được node hoặc lộ trình.
+                </div>
+
+                <div th:if="${#lists.isEmpty(nodes)}" class="lecturer-empty-state">
+                    <span class="lecturer-icon-tile"><i class="ti ti-route-off"></i></span>
+                    <h2>Chưa có node nào</h2>
+                    <p>Thêm node đầu tiên để bắt đầu xây dựng lộ trình.</p>
+                    <a th:href="@{/lecturer/learning-paths/{id}/nodes/new(id=${path.id})}" class="btn btn-primary mt-3">
+                        <i class="ti ti-plus me-1"></i>Thêm node
+                    </a>
+                </div>
+
+                <div class="card" th:unless="${#lists.isEmpty(nodes)}">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th style="width:3rem">#</th>
+                                    <th>Node</th>
+                                    <th>Node tiên quyết</th>
+                                    <th>Nội dung</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="n, stat : ${nodes}" th:id="'node-' + ${n.id}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${n.title}"></div>
+                                        <div class="text-muted small" th:if="${n.description}"
+                                             th:text="${#strings.length(n.description) > 100 ? #strings.substring(n.description, 0, 100) + '...' : n.description}"></div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${n.prerequisite != null}" th:text="${n.prerequisite.title}"></span>
+                                        <span th:unless="${n.prerequisite != null}" class="text-muted">—</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border"
+                                              th:if="${contentCounts.get(n.id) != null and contentCounts.get(n.id) > 0}"
+                                              th:text="${contentCounts.get(n.id)} + ' mục'"></span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis"
+                                              th:unless="${contentCounts.get(n.id) != null and contentCounts.get(n.id) > 0}">
+                                            Chưa có nội dung
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <form th:action="@{/lecturer/learning-paths/{pid}/nodes/{nid}/move(pid=${path.id},nid=${n.id})}"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="dir" value="up">
+                                                <button type="submit" class="table-action-btn" th:disabled="${stat.first}" title="Lên">
+                                                    <i class="ti ti-arrow-up"></i>
+                                                </button>
+                                            </form>
+                                            <form th:action="@{/lecturer/learning-paths/{pid}/nodes/{nid}/move(pid=${path.id},nid=${n.id})}"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="dir" value="down">
+                                                <button type="submit" class="table-action-btn" th:disabled="${stat.last}" title="Xuống">
+                                                    <i class="ti ti-arrow-down"></i>
+                                                </button>
+                                            </form>
+                                            <a th:href="@{/lecturer/nodes/{nid}/levels(nid=${n.id})}" class="btn btn-sm btn-outline-primary">
+                                                Cấu hình level
+                                            </a>
+                                            <a th:href="@{/lecturer/nodes/{nid}/contents(nid=${n.id})}" class="btn btn-sm btn-outline-secondary">
+                                                Nội dung
+                                            </a>
+                                            <div class="dropdown">
+                                                <button class="table-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                           th:href="@{/lecturer/learning-paths/{pid}/nodes/{nid}/edit(pid=${path.id},nid=${n.id})}">
+                                                            <i class="ti ti-edit me-2"></i> Sửa node
+                                                        </a>
+                                                    </li>
+                                                    <li th:unless="${hasClassroom}">
+                                                        <form th:action="@{/lecturer/learning-paths/{pid}/nodes/{nid}/delete(pid=${path.id},nid=${n.id})}"
+                                                              method="post" onsubmit="return confirm('Xóa node này?');">
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="ti ti-trash me-2"></i> Xóa node
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{layout/admin-scripts :: adminScripts}"></th:block>
+</body>
+</html>

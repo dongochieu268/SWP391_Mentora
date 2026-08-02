@@ -11,6 +11,7 @@ import com.edunac.mentora.dto.ClassroomForm;
 import com.edunac.mentora.repository.classroom.ClassroomMemberRepository;
 import com.edunac.mentora.repository.classroom.ClassroomNodeStatusRepository;
 import com.edunac.mentora.repository.classroom.ClassroomRepository;
+import com.edunac.mentora.repository.learningpath.LearningNodeRepository;
 import com.edunac.mentora.repository.learningpath.LearningPathRepository;
 import com.edunac.mentora.repository.semester.SemesterRepository;
 import com.edunac.mentora.repository.subject.SubjectRepository;
@@ -39,6 +40,7 @@ public class ClassroomService {
     private final SemesterRepository semesterRepository;
     private final ClassroomMemberRepository classroomMemberRepository;
     private final ClassroomNodeStatusRepository classroomNodeStatusRepository;
+    private final LearningNodeRepository learningNodeRepository;
     private final SecureRandom random = new SecureRandom();
 
     public ClassroomService(
@@ -47,7 +49,8 @@ public class ClassroomService {
             LearningPathRepository learningPathRepository,
             SemesterRepository semesterRepository,
             ClassroomMemberRepository classroomMemberRepository,
-            ClassroomNodeStatusRepository classroomNodeStatusRepository
+            ClassroomNodeStatusRepository classroomNodeStatusRepository,
+            LearningNodeRepository learningNodeRepository
     ) {
         this.classroomRepository = classroomRepository;
         this.subjectRepository = subjectRepository;
@@ -55,6 +58,7 @@ public class ClassroomService {
         this.semesterRepository = semesterRepository;
         this.classroomMemberRepository = classroomMemberRepository;
         this.classroomNodeStatusRepository = classroomNodeStatusRepository;
+        this.learningNodeRepository = learningNodeRepository;
     }
 
     public List<Classroom> findByTeacher(User teacher) {
@@ -94,6 +98,10 @@ public class ClassroomService {
         Subject subject = loadActiveSubject(form.getSubjectId());
         LearningPath path = loadOwnedPath(form.getLearningPathId(), teacher, subject.getId());
         Semester semester = loadActiveSemester(form.getSemesterId());
+
+        if (!learningNodeRepository.existsByLearningPathId(path.getId())) {
+            throw new IllegalArgumentException("Lộ trình chưa có node nào.");
+        }
 
         Classroom classroom = new Classroom();
         classroom.setSubject(subject);

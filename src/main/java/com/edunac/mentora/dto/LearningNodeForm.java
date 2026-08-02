@@ -5,7 +5,6 @@ public class LearningNodeForm {
     private Integer id;
     private String title;
     private String description;
-    private Integer afterNodeId;
     private Integer prerequisiteNodeId;
 
     private String nodeType = "LESSON";
@@ -22,9 +21,6 @@ public class LearningNodeForm {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-
-    public Integer getAfterNodeId() { return afterNodeId; }
-    public void setAfterNodeId(Integer afterNodeId) { this.afterNodeId = afterNodeId; }
 
     public Integer getPrerequisiteNodeId() { return prerequisiteNodeId; }
     public void setPrerequisiteNodeId(Integer prerequisiteNodeId) { this.prerequisiteNodeId = prerequisiteNodeId; }

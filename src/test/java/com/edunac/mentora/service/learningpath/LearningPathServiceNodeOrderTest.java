@@ -112,24 +112,21 @@ class LearningPathServiceNodeOrderTest {
     }
 
     @Test
-    void addNodeNormalizesWithCollisionFreeOrders() {
+    void addNodeAppendsToEndWithCollisionFreeOrders() {
         registerNode(1, "1");
         registerNode(2, "2");
-        registerNode(3, "2.0005");
-        registerNode(4, "3");
-        registerNode(5, "4");
-        nextNodeId = 6;
+        registerNode(3, "3");
+        nextNodeId = 4;
 
         LearningNodeForm form = new LearningNodeForm();
-        form.setTitle("Inserted node");
-        form.setAfterNodeId(2);
+        form.setTitle("Appended node");
 
         LearningNode saved = assertDoesNotThrow(() -> service.addNode(PATH_ID, form, owner));
 
         assertNotNull(saved.getId());
-        assertEquals(new BigDecimal("3"), saved.getNodeOrder());
+        assertEquals(new BigDecimal("4"), saved.getNodeOrder());
         assertEquals(
-                List.of("1", "2", "3", "4", "5", "6"),
+                List.of("1", "2", "3", "4"),
                 sortedNodes().stream().map(node -> node.getNodeOrder().toPlainString()).toList()
         );
         assertPersistedOrdersAreUnique();

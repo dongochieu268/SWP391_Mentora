@@ -22,12 +22,10 @@ class LecturerThemeTemplateStructureTest {
             "templates/lecturer/class/members.html",
             "templates/lecturer/class/nodes.html",
             "templates/lecturer/class/qna.html",
-            "templates/lecturer/course-setup/review.html",
-            "templates/lecturer/course-setup/step1.html",
-            "templates/lecturer/course-setup/step2.html",
             "templates/lecturer/learning/node-contents.html",
             "templates/lecturer/learning/node-levels.html",
-            "templates/lecturer/learning-path/builder.html",
+            "templates/lecturer/learning-path/detail.html",
+            "templates/lecturer/learning-path/node-form.html",
             "templates/lecturer/learning-path/form.html",
             "templates/lecturer/learning-path/list.html",
             "templates/lecturer/material/list.html",
@@ -92,7 +90,7 @@ class LecturerThemeTemplateStructureTest {
         assertTrue(template.contains("lecturer-class-grid"));
         assertTrue(template.contains("lecturer-class-card"));
         assertTrue(template.contains("lecturer-empty-state"));
-        assertTrue(template.contains("@{/lecturer/classes/wizard}"));
+        assertTrue(template.contains("@{/lecturer/classes/new}"));
         assertTrue(template.contains("/members"));
         assertTrue(template.contains("/qna"));
         assertTrue(template.contains("/nodes"));

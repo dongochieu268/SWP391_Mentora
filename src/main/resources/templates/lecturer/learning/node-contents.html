@@ -26,7 +26,7 @@
                     <div class="card-body py-3">
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                             <div>
-                                <a th:replace="~{components/back-button :: backButton(${pathBackUrl}, ${fromWizard} ? 'Quay lại wizard' : 'Danh sách node')}"></a>
+                                <a th:replace="~{components/back-button :: backButton(${pathBackUrl}, 'Danh sách node')}"></a>
                                 <h4 class="card-title mb-1 mt-2" th:text="${node.title}">Node title</h4>
                                 <p class="text-muted mb-0 small">
                                     Lộ trình:
@@ -38,7 +38,7 @@
                                     · Node ID: <span th:text="${node.id}">1</span>
                                 </p>
                             </div>
-                            <a th:href="@{${baseUrl}(create=true, returnTo=${returnTo})}" class="btn btn-primary">
+                            <a th:href="@{${baseUrl}(create=true)}" class="btn btn-primary">
                                 <i class="ti ti-plus me-1"></i> Thêm nội dung
                             </a>
                         </div>
@@ -87,7 +87,7 @@
                                     <td th:text="${c.createdAt != null ? #temporals.format(c.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
                                     <td class="text-end">
                                         <div class="table-actions justify-content-end">
-                                            <a th:href="@{${baseUrl}(editId=${c.id}, returnTo=${returnTo})}"
+                                            <a th:href="@{${baseUrl}(editId=${c.id})}"
                                                class="table-action-btn"
                                                title="Sửa nội dung"
                                                aria-label="Sửa nội dung">
@@ -95,7 +95,6 @@
                                             </a>
                                             <form th:action="${baseUrl + '/delete/' + c.id}" method="post" class="table-action-form"
                                                   onsubmit="return confirm('Bạn có chắc muốn xóa nội dung này?');">
-                                                <input type="hidden" name="returnTo" th:value="${returnTo}"/>
                                                 <button type="submit" class="table-action-btn is-danger"
                                                         title="Xóa nội dung"
                                                         aria-label="Xóa nội dung">
@@ -126,12 +125,11 @@
                 <div class="modal-header">
                     <h5 class="modal-title"
                         th:text="${contentForm.id != null} ? 'Sửa nội dung' : 'Thêm nội dung'">Thêm nội dung</h5>
-                    <a th:href="@{${baseUrl}(returnTo=${returnTo})}" class="btn-close" aria-label="Close"></a>
+                    <a th:href="@{${baseUrl}}" class="btn-close" aria-label="Close"></a>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" th:field="*{id}"/>
                     <input type="hidden" th:field="*{nodeId}"/>
-                    <input type="hidden" name="returnTo" th:value="${returnTo}"/>
 
                     <div class="mb-3">
                         <label for="contentType" class="form-label">Loại nội dung <span class="text-danger">*</span></label>
@@ -184,7 +182,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a th:href="@{${baseUrl}(returnTo=${returnTo})}" class="btn btn-light">Hủy</a>
+                    <a th:href="@{${baseUrl}}" class="btn btn-light">Hủy</a>
                     <button type="submit" class="btn btn-primary">Lưu</button>
                 </div>
             </form>

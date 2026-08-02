@@ -158,7 +158,6 @@ public class LecturerAssessmentController {
     @PostMapping("/{id}/questions/{questionId}/edit")
     public String updateQuestion(@PathVariable Integer id, @PathVariable Integer questionId,
                                  @ModelAttribute QuestionForm form,
-                                 @RequestParam(required = false) String returnTo,
                                  HttpSession session, RedirectAttributes ra) {
         try {
             assessmentService.updateQuestion(id, questionId, form, currentUser(session));
@@ -166,7 +165,7 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectTarget(returnTo, id);
+        return "redirect:/lecturer/assessments/" + id;
     }
 
     @PostMapping("/{id}/questions/import")
@@ -214,7 +213,6 @@ public class LecturerAssessmentController {
     public String update(
             @PathVariable Integer id,
             @ModelAttribute AssessmentForm form,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -224,14 +222,13 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectTarget(returnTo, id);
+        return "redirect:/lecturer/assessments/" + id;
     }
 
     @PostMapping("/{id}/questions")
     public String addQuestion(
             @PathVariable Integer id,
             @ModelAttribute QuestionForm form,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -241,14 +238,13 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectTarget(returnTo, id);
+        return "redirect:/lecturer/assessments/" + id;
     }
 
     @PostMapping("/{id}/questions/{questionId}/delete")
     public String deleteQuestion(
             @PathVariable Integer id,
             @PathVariable Integer questionId,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -258,13 +254,12 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectTarget(returnTo, id);
+        return "redirect:/lecturer/assessments/" + id;
     }
 
     @PostMapping("/{id}/publish")
     public String publish(
             @PathVariable Integer id,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes ra
     ) {
@@ -274,15 +269,7 @@ public class LecturerAssessmentController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return redirectTarget(returnTo, id);
-    }
-
-    /** Chỉ chấp nhận returnTo nội bộ khu lecturer (chống open redirect); mặc định về trang bài test. */
-    private String redirectTarget(String returnTo, Integer assessmentId) {
-        String base = (returnTo != null && returnTo.startsWith("/lecturer/"))
-                ? returnTo
-                : "/lecturer/assessments/" + assessmentId;
-        return "redirect:" + base;
+        return "redirect:/lecturer/assessments/" + id;
     }
 
     @PostMapping("/{id}/clone")

@@ -34,23 +34,19 @@ public class LecturerNodeContentController {
             @PathVariable Integer nodeId,
             @RequestParam(required = false) Integer editId,
             @RequestParam(required = false) Boolean create,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             Model model
     ) {
         User user = (User) session.getAttribute("loggedInUser");
         LearningNode node = learningNodeService.findByIdForOwner(nodeId, user);
         String baseUrl = "/lecturer/nodes/" + nodeId + "/contents";
-        String defaultBackUrl = node.getLearningPath() != null
+        String pathBackUrl = node.getLearningPath() != null
                 ? "/lecturer/learning-paths/" + node.getLearningPath().getId()
                 : "/lecturer/learning-paths";
-        boolean fromWizard = returnTo != null && returnTo.startsWith("/lecturer/");
         populateCommon(session, model, "learning-paths");
         model.addAttribute("pageTitle", "Nội dung node");
         model.addAttribute("baseUrl", baseUrl);
-        model.addAttribute("pathBackUrl", fromWizard ? returnTo : defaultBackUrl);
-        model.addAttribute("returnTo", fromWizard ? returnTo : null);
-        model.addAttribute("fromWizard", fromWizard);
+        model.addAttribute("pathBackUrl", pathBackUrl);
         model.addAttribute("node", node);
         model.addAttribute("contents", nodeContentService.getByNodeId(nodeId));
 
@@ -82,7 +78,6 @@ public class LecturerNodeContentController {
             @Valid @ModelAttribute("contentForm") NodeContentForm form,
             BindingResult bindingResult,
             @RequestParam(value = "mediaFile", required = false) MultipartFile mediaFile,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
@@ -92,7 +87,7 @@ public class LecturerNodeContentController {
 
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("errorMessage", firstValidationError(bindingResult));
-            return "redirect:/lecturer/nodes/" + nodeId + "/contents" + returnToQuery(returnTo);
+            return "redirect:/lecturer/nodes/" + nodeId + "/contents";
         }
 
         try {
@@ -104,14 +99,13 @@ public class LecturerNodeContentController {
                     ex.getMessage() != null ? ex.getMessage() : "Không thể lưu nội dung.");
         }
 
-        return "redirect:/lecturer/nodes/" + nodeId + "/contents" + returnToQuery(returnTo);
+        return "redirect:/lecturer/nodes/" + nodeId + "/contents";
     }
 
     @PostMapping("/nodes/{nodeId}/contents/delete/{contentId}")
     public String deleteContent(
             @PathVariable Integer nodeId,
             @PathVariable Integer contentId,
-            @RequestParam(required = false) String returnTo,
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
@@ -123,7 +117,7 @@ public class LecturerNodeContentController {
         } catch (IllegalArgumentException | IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
-        return "redirect:/lecturer/nodes/" + nodeId + "/contents" + returnToQuery(returnTo);
+        return "redirect:/lecturer/nodes/" + nodeId + "/contents";
     }
 
     private String firstValidationError(BindingResult bindingResult) {
@@ -136,13 +130,5 @@ public class LecturerNodeContentController {
     private void populateCommon(HttpSession session, Model model, String activePage) {
         model.addAttribute("activePage", activePage);
         model.addAttribute("user", session.getAttribute("loggedInUser"));
-    }
-
-    /** Chỉ chấp nhận returnTo nội bộ khu lecturer (chống open redirect). */
-    private String returnToQuery(String returnTo) {
-        if (returnTo == null || !returnTo.startsWith("/lecturer/")) {
-            return "";
-        }
-        return "?returnTo=" + java.net.URLEncoder.encode(returnTo, java.nio.charset.StandardCharsets.UTF_8);
     }
 }

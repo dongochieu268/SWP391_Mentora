@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,6 @@ import java.util.Map;
 @Service
 @Transactional
 public class LearningPathService {
-
-    private static final BigDecimal NORMALIZE_THRESHOLD = new BigDecimal("0.001");
 
     private final LearningPathRepository pathRepository;
     private final LearningNodeRepository nodeRepository;
@@ -153,7 +150,7 @@ public class LearningPathService {
         validateNodeTitle(form.getTitle());
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
-        BigDecimal order = computeOrder(nodes, form.getAfterNodeId());
+        BigDecimal order = computeOrder(nodes);
 
         LearningNode node = new LearningNode();
         node.setLearningPath(path);
@@ -165,7 +162,6 @@ public class LearningPathService {
         applyBranchingFields(node, form, pathId);
 
         LearningNode saved = nodeRepository.save(node);
-        normalizeIfNeeded(pathId);
 
         saveBranchRuleIfNeeded(saved, form);
 
@@ -290,63 +286,36 @@ public class LearningPathService {
         nodeRepository.delete(node);
     }
 
-    /**
-     * Di chuyển một node thuộc luồng chính lên/xuống một bậc trong sơ đồ.
-     * Node BRANCH_TEST mang theo toàn bộ node nhánh PASS/FAIL của nó (cả khối di chuyển cùng nhau).
-     */
+    /** Di chuyển một node lên/xuống một bậc — đổi chỗ node_order với node liền kề. */
     public void moveNode(Integer pathId, Integer nodeId, String direction, User requester) {
         findByIdAndOwner(pathId, requester);
         if (!"up".equals(direction) && !"down".equals(direction)) {
             throw new IllegalArgumentException("Hướng di chuyển không hợp lệ.");
         }
 
-        List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
-        List<LearningNode> mains = new java.util.ArrayList<>();
-        Map<Integer, List<LearningNode>> branchByOwner = new java.util.LinkedHashMap<>();
-        List<LearningNode> orphanBranches = new java.util.ArrayList<>();
-
-        for (LearningNode n : nodes) {
-            boolean isBranch = "PASS".equals(n.getBranchTag()) || "FAIL".equals(n.getBranchTag());
-            if (isBranch) {
-                if (n.getBranchOwnerNode() != null) {
-                    branchByOwner.computeIfAbsent(n.getBranchOwnerNode().getId(), k -> new java.util.ArrayList<>()).add(n);
-                } else {
-                    orphanBranches.add(n);
-                }
-            } else {
-                mains.add(n);
+        List<LearningNode> nodes = new java.util.ArrayList<>(
+                nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId));
+        int idx = -1;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).getId().equals(nodeId)) {
+                idx = i;
+                break;
             }
         }
-
-        List<List<LearningNode>> blocks = new java.util.ArrayList<>();
-        int idx = -1;
-        for (int i = 0; i < mains.size(); i++) {
-            LearningNode main = mains.get(i);
-            List<LearningNode> block = new java.util.ArrayList<>();
-            block.add(main);
-            block.addAll(branchByOwner.getOrDefault(main.getId(), List.of()));
-            blocks.add(block);
-            if (main.getId().equals(nodeId)) idx = i;
-        }
         if (idx < 0) {
-            throw new IllegalArgumentException("Chỉ có thể di chuyển node thuộc luồng chính.");
+            throw new IllegalArgumentException("Không tìm thấy node.");
         }
 
         int target = "up".equals(direction) ? idx - 1 : idx + 1;
-        if (target < 0 || target >= blocks.size()) {
+        if (target < 0 || target >= nodes.size()) {
             throw new IllegalArgumentException("Node đã ở vị trí biên, không thể di chuyển thêm.");
         }
-        java.util.Collections.swap(blocks, idx, target);
 
-        List<LearningNode> toSave = new java.util.ArrayList<>();
-        for (List<LearningNode> block : blocks) {
-            toSave.addAll(block);
-        }
-        toSave.addAll(orphanBranches);
-        saveWithUniqueOrders(toSave);
+        java.util.Collections.swap(nodes, idx, target);
+        saveWithUniqueOrders(nodes);
     }
 
-    /** Gắn (hoặc cập nhật) bài test cho node BRANCH_TEST — dùng khi tạo test inline từ builder. */
+    /** Gắn (hoặc cập nhật) bài test cho node BRANCH_TEST. [LEGACY] không còn đường click từ UI hiện tại. */
     public void attachAssessment(Integer pathId, Integer nodeId, Integer assessmentId, Integer minScore, User requester) {
         LearningPath path = findByIdAndOwner(pathId, requester);
         LearningNode node = nodeRepository.findById(nodeId)
@@ -377,7 +346,7 @@ public class LearningPathService {
         branchRuleRepository.save(rule);
     }
 
-    /** Số lượng nội dung học tập của từng node trong lộ trình (hiển thị trên builder). */
+    /** Số lượng nội dung học tập của từng node trong lộ trình (hiển thị ở trang chi tiết lộ trình). */
     public Map<Integer, Integer> contentCounts(Integer pathId) {
         Map<Integer, Integer> counts = new HashMap<>();
         for (LearningNode n : nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId)) {
@@ -464,39 +433,10 @@ public class LearningPathService {
         }
     }
 
-    private BigDecimal computeOrder(List<LearningNode> nodes, Integer afterNodeId) {
+    /** Node mới luôn được thêm vào cuối lộ trình (không còn chèn giữa qua UI). */
+    private BigDecimal computeOrder(List<LearningNode> nodes) {
         if (nodes.isEmpty()) return BigDecimal.ONE;
-
-        if (afterNodeId == null) {
-            return nodes.get(nodes.size() - 1).getNodeOrder().add(BigDecimal.ONE);
-        }
-
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i).getId().equals(afterNodeId)) {
-                if (i == nodes.size() - 1) {
-                    return nodes.get(i).getNodeOrder().add(BigDecimal.ONE);
-                }
-                BigDecimal prev = nodes.get(i).getNodeOrder();
-                BigDecimal next = nodes.get(i + 1).getNodeOrder();
-                return prev.add(next).divide(BigDecimal.valueOf(2), 9, RoundingMode.HALF_UP);
-            }
-        }
-        throw new IllegalArgumentException("Vị trí chèn không hợp lệ.");
-    }
-
-    private void normalizeIfNeeded(Integer pathId) {
-        List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
-        if (nodes.size() < 2) return;
-
-        BigDecimal minGap = null;
-        for (int i = 1; i < nodes.size(); i++) {
-            BigDecimal gap = nodes.get(i).getNodeOrder().subtract(nodes.get(i - 1).getNodeOrder()).abs();
-            if (minGap == null || gap.compareTo(minGap) < 0) minGap = gap;
-        }
-
-        if (minGap != null && minGap.compareTo(NORMALIZE_THRESHOLD) < 0) {
-            saveWithUniqueOrders(nodes);
-        }
+        return nodes.get(nodes.size() - 1).getNodeOrder().add(BigDecimal.ONE);
     }
 
     private void saveWithUniqueOrders(List<LearningNode> orderedNodes) {

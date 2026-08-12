@@ -1,0 +1,17 @@
+target/
+uploads/
+.git/
+.gitignore
+.vscode/
+.idea/
+.worktrees/
+.playwright-mcp/
+.claude/
+.agents/
+.firecrawl/
+node_modules/
+tests/
+docs/
+graphify-out/
+*.png
+*.md

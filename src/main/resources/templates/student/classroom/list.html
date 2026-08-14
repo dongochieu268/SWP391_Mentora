@@ -49,11 +49,11 @@
                                         <p class="text-muted mb-4">Nhập mã mời được giảng viên gửi để yêu cầu tham gia lớp học.</p>
                                     </div>
                                 </div>
-                                <form th:action="@{/student/classrooms/join}" method="post"
+                                <form th:action="@{/student/classrooms/join}" method="post" novalidate
                                       class="d-flex flex-column flex-sm-row gap-2">
                                     <label for="inviteCode" class="visually-hidden">Mã lớp</label>
                                     <input type="text" id="inviteCode" name="inviteCode" class="form-control flex-grow-1"
-                                           placeholder="Ví dụ: SWP1842" maxlength="20" autocomplete="off" required/>
+                                           placeholder="Ví dụ: SWP1842" autocomplete="off"/>
                                     <button type="submit" class="btn btn-primary px-4">
                                         <i class="ti ti-door-enter me-1"></i> Tham gia
                                     </button>

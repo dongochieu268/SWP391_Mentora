@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ import java.util.Map;
 @Service
 @Transactional
 public class LearningPathService {
+
+    private static final BigDecimal NORMALIZE_THRESHOLD = new BigDecimal("0.001");
 
     private final LearningPathRepository pathRepository;
     private final LearningNodeRepository nodeRepository;
@@ -87,6 +90,7 @@ public class LearningPathService {
             throw new IllegalArgumentException("Chỉ có thể tạo lộ trình cho môn học đang ACTIVE.");
         }
         validatePathName(name);
+        validatePathDescription(description);
 
         LearningPath path = new LearningPath();
         path.setSubject(subject);
@@ -100,6 +104,7 @@ public class LearningPathService {
     public LearningPath update(Integer id, String name, String description, User requester) {
         LearningPath path = findByIdAndOwner(id, requester);
         validatePathName(name);
+        validatePathDescription(description);
         path.setName(name.trim());
         path.setDescription(blankToNull(description));
         return pathRepository.save(path);
@@ -148,6 +153,7 @@ public class LearningPathService {
     public LearningNode addNode(Integer pathId, LearningNodeForm form, User requester) {
         LearningPath path = findByIdAndOwner(pathId, requester);
         validateNodeTitle(form.getTitle());
+        validateNodeDescription(form.getDescription());
 
         List<LearningNode> nodes = nodeRepository.findByLearningPathIdOrderByNodeOrderAsc(pathId);
         BigDecimal order = computeOrder(nodes);
@@ -183,6 +189,7 @@ public class LearningPathService {
             throw new IllegalArgumentException("Node không thuộc lộ trình này.");
         }
         validateNodeTitle(form.getTitle());
+        validateNodeDescription(form.getDescription());
 
         node.setTitle(form.getTitle().trim());
         node.setDescription(blankToNull(form.getDescription()));
@@ -393,11 +400,31 @@ public class LearningPathService {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Tên lộ trình không được để trống.");
         }
+        int len = name.trim().length();
+        if (len < 3 || len > 150) {
+            throw new IllegalArgumentException("Tên lộ trình phải có độ dài từ 3 đến 150 ký tự.");
+        }
+    }
+
+    private void validatePathDescription(String description) {
+        if (description != null && description.trim().length() > 1000) {
+            throw new IllegalArgumentException("Mô tả không được vượt quá 1000 ký tự.");
+        }
     }
 
     private void validateNodeTitle(String title) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Tiêu đề node không được để trống.");
+        }
+        int len = title.trim().length();
+        if (len < 3 || len > 200) {
+            throw new IllegalArgumentException("Tiêu đề node phải có độ dài từ 3 đến 200 ký tự.");
+        }
+    }
+
+    private void validateNodeDescription(String description) {
+        if (description != null && description.trim().length() > 2000) {
+            throw new IllegalArgumentException("Mô tả không được vượt quá 2000 ký tự.");
         }
     }
 

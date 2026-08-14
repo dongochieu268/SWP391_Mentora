@@ -197,7 +197,11 @@ public class ClassroomService {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Tên lớp không được để trống.");
         }
-        if (name.trim().length() > 200) {
+        int len = name.trim().length();
+        if (len < 3) {
+            throw new IllegalArgumentException("Tên lớp phải có độ dài từ 3 đến 200 ký tự.");
+        }
+        if (len > 200) {
             throw new IllegalArgumentException("Tên lớp tối đa 200 ký tự.");
         }
     }

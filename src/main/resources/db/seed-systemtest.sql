@@ -6,12 +6,18 @@
    thanh vien / moi may chay test ra cung mot ket qua.
 
    Tao ra:
-     - 5 tai khoan (mat khau deu la "password"):
-         st.gv1@mentora.test   LECTURER  (chu du lieu chinh)
-         st.gv2@mentora.test   LECTURER  (chu 1 material - dung tai hien bug #12)
-         st.sv1@mentora.test   STUDENT   (ACTIVE trong lop)
-         st.sv2@mentora.test   STUDENT   (ACTIVE trong lop)
-         st.sv3@mentora.test   STUDENT   (KHONG thuoc lop nao - danh cho test join)
+     - 7 tai khoan (mat khau deu la "password"):
+         st.gv1@mentora.test      LECTURER  (chu du lieu chinh)
+         st.gv2@mentora.test      LECTURER  (chu 1 material - dung tai hien bug #12)
+         st.sv1@mentora.test      STUDENT   (ACTIVE trong lop)
+         st.sv2@mentora.test      STUDENT   (ACTIVE trong lop)
+         st.sv3@mentora.test      STUDENT   (KHONG thuoc lop nao - danh cho FD-08 TC-08)
+         st.sv4@mentora.test      STUDENT   (KHONG thuoc lop nao - danh cho FD-08 TC-09,
+                                              tach rieng voi sv3 de 2 test khong dung
+                                              chung 1 tai khoan dung 1 lan)
+         st.locked1@mentora.test  STUDENT   (status = INACTIVE co dinh - test dang nhap tai khoan bi khoa)
+     - 1 lop CLOSE co dinh, ma moi ABCD2345, thuoc lo trinh "Lo trinh ST" - danh cho
+       FD-08 TC-06 (mo mot lop da dong bang tay khong the ep duoc ma moi, nen seed san)
      - 1 mon ST-DEMO + question bank
      - 3 material:
          GV1: "ST Co ban" (6 cau), "ST Nang cao" (4 cau)
@@ -19,11 +25,16 @@
               (danh sach sap theo created_at DESC) => GV1 mo trang
               /lecturer/materials?subjectId=<ST-DEMO> se auto-select
               material cua GV2 -> tai hien bug 500 (business-process 9 #12)
-     - 1 path (GV1) 2 node:
-         Node 1: Level 1 (M1, 3 cau, khong gioi han luot)
-                 Level 2 (M2, 3 cau, maxAttempts=2 - test het luot + grant L7)
-         Node 2 (tien quyet Node 1): Level 1 (M1, 2 cau)
-     - 1 lop OPEN cua GV1, ma moi ST2026OK, sv1+sv2 ACTIVE, moi node VISIBLE
+     - 3 path cua GV1:
+         "Lo trinh ST" - 2 node (Node 1: Level 1 M1 3 cau khong gioi han luot,
+           Level 2 M2 3 cau maxAttempts=2 - test het luot + grant L7; Node 2
+           tien quyet Node 1: Level 1 M1 2 cau) - BI KHOA cau truc vi co lop
+           dung (xem duoi) - KHONG dung de test them/sua node.
+         "Lo trinh ST Them Node" - rong, khong lop nao dung - dung cho FD-04.
+         "Lo trinh ST Trong" - CO Y de trong vinh vien - dung rieng cho
+           Phu luc A TC-09 ("lo trinh chua co bai hoc nao").
+     - 1 lop OPEN cua GV1 (thuoc "Lo trinh ST"), ma moi ST2026OK, sv1+sv2
+       ACTIVE, moi node VISIBLE
 
    Khong tao attempt san - attempt sinh ra khi chay test.
    Admin dung tai khoan app tu tao: admin1@mentora.com / admin123.
@@ -97,6 +108,27 @@ BEGIN
         INSERT INTO dbo.users (full_name, email, password, role_id, status, email_verified)
         VALUES (N'ST Sinh viên 3 (chưa vào lớp)', N'st.sv3@mentora.test', @pw, @studentRoleId, N'ACTIVE', 1);
         SET @sv3 = SCOPE_IDENTITY();
+    END;
+
+    /* Danh rieng cho FD-08 TC-09 (khong dung chung sv3 voi TC-08 de 2 test
+       case khong tranh nhau 1 tai khoan "chua vao lop" dung 1 lan). */
+    DECLARE @sv4 INT = (SELECT id FROM dbo.users WHERE email = N'st.sv4@mentora.test');
+    IF @sv4 IS NULL
+    BEGIN
+        INSERT INTO dbo.users (full_name, email, password, role_id, status, email_verified)
+        VALUES (N'ST Sinh viên 4 (chưa vào lớp)', N'st.sv4@mentora.test', @pw, @studentRoleId, N'ACTIVE', 1);
+        SET @sv4 = SCOPE_IDENTITY();
+    END;
+
+    /* Tai khoan INACTIVE co dinh - dung cho test case "dang nhap bang tai
+       khoan da bi khoa" (FD-01 TC-14). Khong xoa/kich hoat lai tai khoan
+       nay qua UI - de test case luon co du lieu that de chay. */
+    DECLARE @svLocked INT = (SELECT id FROM dbo.users WHERE email = N'st.locked1@mentora.test');
+    IF @svLocked IS NULL
+    BEGIN
+        INSERT INTO dbo.users (full_name, email, password, role_id, status, email_verified)
+        VALUES (N'ST Sinh viên Bị khóa', N'st.locked1@mentora.test', @pw, @studentRoleId, N'INACTIVE', 1);
+        SET @svLocked = SCOPE_IDENTITY();
     END;
 
     /* -----------------------------------------------------------------
@@ -207,6 +239,26 @@ BEGIN
     SET @lvl = SCOPE_IDENTITY();
     INSERT INTO dbo.level_materials (node_level_id, material_id, question_count) VALUES (@lvl, @m1, 2);
 
+    /* "Lộ trình ST" o tren se bi khoa cau truc ngay khi lop hoc ben duoi
+       duoc tao (co lop dung no) - nen KHONG dung duoc cho FD-04 (them
+       node). Tao them 2 lo trinh rong, cung do GV1 so huu:
+         - "Lộ trình ST Thêm Node": khong lop nao dung, danh cho FD-04
+           (test them/sua node - se co node tich luy dan qua cac lan chay).
+         - "Lộ trình ST Trống": CO Y de trong vinh vien, danh RIENG cho
+           Phu luc A TC-09 ("lo trinh chua co bai hoc nao"). Khong dung
+           lo trinh nay cho FD-04. */
+    IF NOT EXISTS (SELECT 1 FROM dbo.learning_paths WHERE name = N'Lộ trình ST Thêm Node' AND created_by = @gv1)
+    BEGIN
+        INSERT INTO dbo.learning_paths (subject_id, name, description, created_by, status, created_at)
+        VALUES (@subjectId, N'Lộ trình ST Thêm Node', N'Lộ trình dự để test thêm/sửa node (FD-04) - không bị khóa vì không lớp nào dùng', @gv1, N'ACTIVE', SYSDATETIME());
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.learning_paths WHERE name = N'Lộ trình ST Trống' AND created_by = @gv1)
+    BEGIN
+        INSERT INTO dbo.learning_paths (subject_id, name, description, created_by, status, created_at)
+        VALUES (@subjectId, N'Lộ trình ST Trống', N'Lộ trình CỐ Ý để trống, không thêm node - dùng riêng cho Phụ lục A TC-09. KHÔNG dùng lộ trình này cho test thêm node.', @gv1, N'ACTIVE', SYSDATETIME());
+    END;
+
     /* -----------------------------------------------------------------
        Hoc ky + lop + thanh vien + node visible.
        ----------------------------------------------------------------- */
@@ -231,6 +283,18 @@ BEGIN
     INSERT INTO dbo.classroom_node_status (classroom_id, node_id, status, updated_at)
     SELECT @classroomId, ln.id, N'VISIBLE', SYSDATETIME()
     FROM dbo.learning_nodes ln WHERE ln.learning_path_id = @pathId;
+
+    /* Lop CLOSE co dinh, ma moi ABCD2345 - danh cho FD-08 TC-06 ("ma lop
+       khop mot lop da dong"). Ma moi do he thong SecureRandom sinh ra khi
+       tao lop qua UI nen KHONG the ep ra dung "ABCD2345" bang tay - phai
+       seed san moi co du lieu that de test. */
+    IF NOT EXISTS (SELECT 1 FROM dbo.classrooms WHERE invite_code = N'ABCD2345')
+    BEGIN
+        INSERT INTO dbo.classrooms
+            (subject_id, learning_path_id, teacher_id, name, semester_id, status, invite_code, created_by, created_at)
+        VALUES
+            (@subjectId, @pathId, @gv1, N'ST Lớp Đã Đóng (FD-08 TC-06)', @semesterId, N'CLOSE', N'ABCD2345', @gv1, SYSDATETIME());
+    END;
 
     COMMIT TRANSACTION;
 

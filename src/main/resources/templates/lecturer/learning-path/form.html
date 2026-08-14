@@ -28,10 +28,10 @@
                             <a th:replace="~{components/back-button :: backButton(@{/lecturer/learning-paths}, 'Quay lại')}"></a>
                         </div>
 
-                        <form th:action="@{/lecturer/learning-paths}" method="post">
+                        <form th:action="@{/lecturer/learning-paths}" method="post" novalidate>
                             <div class="mb-3">
                                 <label for="subjectId" class="form-label">Môn học <span class="text-danger">*</span></label>
-                                <select class="form-select" id="subjectId" name="subjectId" required>
+                                <select class="form-select" id="subjectId" name="subjectId">
                                     <option value="">-- Chọn môn học --</option>
                                     <option th:each="s : ${activeSubjects}"
                                             th:value="${s.id}"
@@ -42,12 +42,12 @@
                             <div class="mb-3">
                                 <label for="pathName" class="form-label">Tên lộ trình <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="pathName" name="name"
-                                       maxlength="150" required placeholder="VD: Lộ trình cơ bản môn SWP391">
+                                       placeholder="VD: Lộ trình cơ bản môn SWP391">
                             </div>
                             <div class="mb-3">
                                 <label for="pathDescription" class="form-label">Mô tả</label>
                                 <textarea class="form-control" id="pathDescription" name="description" rows="3"
-                                          maxlength="1000" placeholder="Mô tả ngắn về lộ trình..."></textarea>
+                                          placeholder="Mô tả ngắn về lộ trình..."></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-check me-1"></i> Tạo lộ trình

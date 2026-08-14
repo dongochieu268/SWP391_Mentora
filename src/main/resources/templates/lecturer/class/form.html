@@ -36,20 +36,20 @@
                         </div>
 
                         <form th:action="${isEdit} ? @{/lecturer/classes/{id}/edit(id=${form.id})} : @{/lecturer/classes}"
-                              method="post">
+                              method="post" novalidate>
 
                             <!-- ===== CHỈ HIỂN THỊ KHI TẠO MỚI (isEdit = false) ===== -->
 
                             <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Tên lớp <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="name"
-                                       th:value="${form.name}" maxlength="200" required
+                                       th:value="${form.name}"
                                        placeholder="VD: SWP391 — Nhóm 01">
                             </div>
 
                             <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Môn học <span class="text-danger">*</span></label>
-                                <select class="form-select" id="subjectId" name="subjectId" required>
+                                <select class="form-select" id="subjectId" name="subjectId">
                                     <option value="">-- Chọn môn học --</option>
                                     <option th:each="s : ${activeSubjects}"
                                             th:value="${s.id}"
@@ -61,7 +61,7 @@
 
                             <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Lộ trình học <span class="text-danger">*</span></label>
-                                <select class="form-select" id="learningPathId" name="learningPathId" required>
+                                <select class="form-select" id="learningPathId" name="learningPathId">
                                     <option value="">-- Chọn lộ trình --</option>
                                     <option th:each="p : ${learningPaths}"
                                             th:value="${p.id}"
@@ -76,7 +76,7 @@
 
                             <div class="mb-3" th:unless="${isEdit}">
                                 <label class="form-label">Học kỳ <span class="text-danger">*</span></label>
-                                <select class="form-select" name="semesterId" required>
+                                <select class="form-select" name="semesterId">
                                     <option value="">-- Chọn học kỳ --</option>
                                     <option th:each="sem : ${activeSemesters}"
                                             th:value="${sem.id}"

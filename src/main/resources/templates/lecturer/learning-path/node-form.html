@@ -35,19 +35,19 @@
                         <form th:action="${isEdit}
                                 ? @{/lecturer/learning-paths/{pid}/nodes/{nid}/edit(pid=${path.id},nid=${nodeId})}
                                 : @{/lecturer/learning-paths/{pid}/nodes(pid=${path.id})}"
-                              method="post">
+                              method="post" novalidate>
 
                             <div class="mb-3">
                                 <label for="nodeTitle" class="form-label">Tiêu đề node <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="nodeTitle" name="title"
-                                       th:value="${form.title}" maxlength="200" required
+                                       th:value="${form.title}"
                                        placeholder="VD: Bài 1 — Giới thiệu">
                             </div>
 
                             <div class="mb-3">
                                 <label for="nodeDescription" class="form-label">Mô tả</label>
                                 <textarea class="form-control" id="nodeDescription" name="description" rows="3"
-                                          maxlength="1000" th:text="${form.description}"
+                                          th:text="${form.description}"
                                           placeholder="Mô tả ngắn về nội dung bài học..."></textarea>
                             </div>
 

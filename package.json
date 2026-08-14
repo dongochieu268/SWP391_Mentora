@@ -5,7 +5,9 @@
     "test:e2e": "playwright test",
     "test:e2e:readonly": "playwright test tests/e2e/import-dump-readonly.spec.js",
     "test:e2e:mutating": "playwright test tests/e2e/import-dump-mutating.spec.js",
-    "test:e2e:full": "playwright test tests/e2e/full-system-mutating.spec.js"
+    "test:e2e:full": "playwright test tests/e2e/full-system-mutating.spec.js",
+    "test:e2e:validation": "playwright test tests/e2e/validation-rules-mutating.spec.js",
+    "test:e2e:join-classroom": "playwright test tests/e2e/join-classroom.spec.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2"
